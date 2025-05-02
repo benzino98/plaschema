@@ -194,7 +194,7 @@
                 <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                     <h3 class="text-xl font-bold mb-4">Recent News</h3>
                     <div class="space-y-4">
-                        <a href="{{ route('news.detail', 'new-partnership-announced') }}" class="flex items-start group">
+                        <a href="{{ route('news.show', 'new-partnership-announced') }}" class="flex items-start group">
                             <div class="w-16 h-16 rounded overflow-hidden flex-shrink-0">
                                 <img src="{{ asset('images/news-1.jpg') }}" alt="News" class="w-full h-full object-cover" loading="lazy">
                             </div>
@@ -204,7 +204,7 @@
                             </div>
                         </a>
                         
-                        <a href="{{ route('news.detail', 'enrollment-drive-success') }}" class="flex items-start group">
+                        <a href="{{ route('news.show', 'enrollment-drive-success') }}" class="flex items-start group">
                             <div class="w-16 h-16 rounded overflow-hidden flex-shrink-0">
                                 <img src="{{ asset('images/news-2.jpg') }}" alt="News" class="w-full h-full object-cover" loading="lazy">
                             </div>
@@ -214,7 +214,7 @@
                             </div>
                         </a>
                         
-                        <a href="{{ route('news.detail', 'new-health-benefits-added') }}" class="flex items-start group">
+                        <a href="{{ route('news.show', 'new-health-benefits-added') }}" class="flex items-start group">
                             <div class="w-16 h-16 rounded overflow-hidden flex-shrink-0">
                                 <img src="{{ asset('images/news-3.jpg') }}" alt="News" class="w-full h-full object-cover" loading="lazy">
                             </div>
@@ -274,7 +274,7 @@
                 <p class="text-gray-600 mb-4">PLASCHEMA launches statewide awareness campaign to educate citizens about healthcare benefits.</p>
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-500">January 17, 2023</span>
-                    <x-button href="{{ route('news.detail', 'healthcare-awareness-campaign') }}" variant="text" class="flex items-center">
+                    <x-button href="{{ route('news.show', 'healthcare-awareness-campaign') }}" variant="text" class="flex items-center">
                         Read More
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -291,7 +291,7 @@
                 <p class="text-gray-600 mb-4">PLASCHEMA releases annual performance report showing significant growth in healthcare coverage.</p>
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-500">December 10, 2022</span>
-                    <x-button href="{{ route('news.detail', 'annual-performance-review') }}" variant="text" class="flex items-center">
+                    <x-button href="{{ route('news.show', 'annual-performance-review') }}" variant="text" class="flex items-center">
                         Read More
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -308,7 +308,7 @@
                 <p class="text-gray-600 mb-4">PLASCHEMA expands its network with the addition of 15 new healthcare facilities across the state.</p>
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-500">November 5, 2022</span>
-                    <x-button href="{{ route('news.detail', 'new-healthcare-facilities') }}" variant="text" class="flex items-center">
+                    <x-button href="{{ route('news.show', 'new-healthcare-facilities') }}" variant="text" class="flex items-center">
                         Read More
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>

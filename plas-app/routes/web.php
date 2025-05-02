@@ -33,7 +33,6 @@ Route::get('/providers/{id}', [ProviderController::class, 'show'])->name('provid
 // News Routes
 Route::get('/news', [NewsController::class, 'index'])->name('news');
 Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
-Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.detail');
 
 // FAQ Routes
 Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
