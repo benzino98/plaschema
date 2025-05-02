@@ -51,7 +51,7 @@ class ActivityLog extends Model
      * @param  Model  $entity
      * @return $this
      */
-    public function on(Model $entity)
+    public function forEntity(Model $entity)
     {
         $this->entity_type = get_class($entity);
         $this->entity_id = $entity->getKey();

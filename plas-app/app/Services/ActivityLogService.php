@@ -37,7 +37,7 @@ class ActivityLogService
         ]);
         
         if ($entity) {
-            $log->on($entity);
+            $log->forEntity($entity);
         }
         
         $log->save();

@@ -16,6 +16,7 @@ class HealthcareProvider extends Model
      */
     protected $fillable = [
         'name',
+        'type',
         'description',
         'address',
         'city',

@@ -28,6 +28,17 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Check if user has admin role and redirect accordingly
+        $user = Auth::user();
+        
+        // Debug logs removed for clarity
+        
+        // Check for admin roles and redirect to admin dashboard
+        if ($user && ($user->hasRole('admin') || $user->hasRole('super-admin') || $user->hasRole('editor') || $user->hasRole('viewer'))) {
+            // Use the absolute URL to avoid any redirection issues
+            return redirect()->to('/admin');
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
