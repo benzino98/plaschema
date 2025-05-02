@@ -9,6 +9,7 @@
 - **Permission Integration**: Applied permission checks throughout controllers - COMPLETED (100%)
 - **Bulk Operations**: Adding functionality for batch editing and deletion of records
 - **Image Management Improvements**: Enhancing the image upload and management system with better validation and optimization
+- **Contact Page Backend**: Implementing the backend functionality for the contact form to store messages and allow admin users to manage and reply to messages
 
 ### Frontend Improvements
 
@@ -50,28 +51,52 @@
 - ✅ Added entity-specific activity log views for each main module (News, FAQs, Healthcare Providers, Roles, Users)
 - ✅ Created filtering options for activity logs with date range and action type filters
 - ✅ Added links to activity logs in entity index views
+- ✅ Finalized contact page backend implementation plan
 
 ### In Progress
 
 - 🔄 Expanding test coverage for new features
 - 🔄 Implementing responsive image handling for various device sizes
+- 🔄 Planning contact page backend implementation for message management
 
 ## Next Steps
 
 ### Immediate (Next 2 Weeks)
 
-1. Improve mobile responsiveness
+1. Implement contact page backend functionality
+
+   - Create database migration and model for contact messages with fields:
+     - Sender information: name, email, phone
+     - Message details: subject, message
+     - Status tracking: status (new, read, responded, archived), is_read
+     - Admin tracking: responded_by, responded_at
+     - Archiving: archived_at, auto_archive
+   - Create database migration and model for message categories:
+     - Categories: General Inquiry, Enrollment Question, Provider Question, Feedback, Technical Issue
+     - Fields: name, description, slug, priority
+   - Develop ContactMessageRepository and MessageCategoryRepository
+   - Implement ContactMessageService with business logic
+   - Create form request validation for message submissions
+   - Create controllers for public submission and admin management
+   - Build admin interface for message management with:
+     - Message listing with filters for status, category, date
+     - Message detail view with response functionality
+     - Category management interface
+   - Implement in-app notifications for new messages
+   - Create automated archiving system for messages older than 3 months
+   - Configure super admin only permissions for message management
+
+2. Improve mobile responsiveness
 
    - ✅ Fix table overflow issues on smaller screens
    - ✅ Enhance navigation menu for mobile devices
    - 🔄 Implement responsive image handling
    - 🔄 Test on various device sizes
 
-2.Implement bulk operations for resource management
-
-- 🔄 Add batch editing functionality for relevant resources
-- 🔄 Implement batch deletion with proper confirmation
-- 🔄 Ensure all bulk operations are properly logged
+3. Implement bulk operations for resource management
+   - 🔄 Add batch editing functionality for relevant resources
+   - 🔄 Implement batch deletion with proper confirmation
+   - 🔄 Ensure all bulk operations are properly logged
 
 ### Medium-term (Next Month)
 
@@ -125,6 +150,14 @@
 
 5. **Caching Implementation**: Evaluating options between Redis, Memcached, or file-based caching based on performance needs and infrastructure constraints.
 
+6. **Contact Message Management**:
+   - Messages will be stored in the database with automatic archiving after 3 months
+   - Using in-app notifications for new messages (no email notifications)
+   - Admin users will mark messages as "responded to" after replying from their email client
+   - Implementing message categories to aid in triaging
+   - Only showing a simple success message to users after form submission
+   - Restricting message management to super admin role only
+
 ### Design & UX Decisions
 
 1. **Mobile-First Approach**: Improved mobile experience in admin area. Need to evaluate usability on various devices.
@@ -135,6 +168,8 @@
 
 4. **Theming System**: Considering the implementation of a light/dark mode toggle based on user preferences.
 
+5. **Contact Message Interface**: Implementing a clean listing interface with status indicators, filtering options by category and status, and a detailed view for individual messages with response tracking.
+
 ### Product Decisions
 
 1. **Feature Prioritization**: Healthcare provider search and filtering features have been prioritized based on user feedback.
@@ -142,6 +177,13 @@
 2. **Content Management Flow**: Streamlining the content creation process with a more intuitive workflow.
 
 3. **User Account Requirements**: Determining what level of user registration is required for public site features.
+
+4. **Contact Message Workflow**:
+   - New messages will be flagged in the admin interface
+   - Super admin will review and can update status (new → read → responded → archived)
+   - Implementing predefined categories: General Inquiry, Enrollment Question, Provider Question, Feedback, Technical Issue
+   - Messages will be automatically archived after 3 months
+   - No internal notes functionality needed
 
 ### Current Challenges
 
@@ -153,9 +195,11 @@
 
 4. **Responsive Image Handling**: Implementing proper responsive image solutions for various device sizes and connection speeds.
 
+5. **Contact Message Notifications**: Implementing effective in-app notification system for new contact messages to ensure timely responses.
+
 ## Team Focus
 
-- **Backend Development**: Shifting focus to performance optimization and caching implementation
+- **Backend Development**: Shifting focus to performance optimization, caching implementation, and contact page backend functionality
 - **Frontend Development**: Completing mobile responsiveness and form UX improvements
 - **QA & Testing**: Expanding test coverage for new permissions system and activity logging features
 - **DevOps**: Setting up deployment pipeline for staging environment

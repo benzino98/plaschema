@@ -104,8 +104,8 @@
             </div>
 
             <div class="bg-black/30 rounded-lg p-6 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2" id="stat-treatments">0</div>
-                <div class="text-xl">Treatments Provided</div>
+                <div class="text-4xl md:text-5xl font-bold text-white mb-2" id="stat-accredited-hmos">0</div>
+                <div class="text-xl">Accredited HMOs</div>
             </div>
 
             <div class="bg-black/30 rounded-lg p-6 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
@@ -184,9 +184,9 @@
     // Simple counter animation for statistics
     document.addEventListener('DOMContentLoaded', function() {
         const stats = [
-            { id: 'stat-enrolled', target: 150000 },
-            { id: 'stat-providers', target: 250 },
-            { id: 'stat-treatments', target: 350000 },
+            { id: 'stat-enrolled', target: 218473},
+            { id: 'stat-providers', target: 443 },
+            { id: 'stat-accredited-hmos', target: 13},
             { id: 'stat-lgas', target: 17 }
         ];
         
@@ -205,7 +205,7 @@
         document.querySelectorAll('.fade-in').forEach(el => {
             if (el.contains(document.getElementById('stat-enrolled')) || 
                 el.contains(document.getElementById('stat-providers')) ||
-                el.contains(document.getElementById('stat-treatments')) ||
+                el.contains(document.getElementById('stat-accredited-hmos')) ||
                 el.contains(document.getElementById('stat-lgas'))) {
                 observer.observe(el);
             }
