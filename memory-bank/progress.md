@@ -71,14 +71,14 @@
   - [x] Entity-specific activity log views
   - [x] Filtering options for activity logs
 - [ ] Contact message management system (0%)
-  - [ ] Database migrations for contact messages and categories
-  - [ ] Message models with appropriate relationships
-  - [ ] Repository and service layers for message handling
+  - [x] Database migrations for contact messages and categories
+  - [x] Message models with appropriate relationships
+  - [x] Repository and service layers for message handling
   - [ ] Message submission handling from contact form
   - [ ] Admin interface for super admin to view and manage messages
   - [ ] Message filtering by status, category, and date
   - [ ] Status management (new, read, responded, archived)
-  - [ ] Message categories (General Inquiry, Enrollment Question, Provider Question, Feedback, Technical Issue)
+  - [x] Message categories (General Inquiry, Enrollment Question, Provider Question, Feedback, Technical Issue)
   - [ ] In-app notification system for new messages
   - [ ] Automatic archiving system for messages older than 3 months
 - [ ] Bulk operations for resource management (15%)

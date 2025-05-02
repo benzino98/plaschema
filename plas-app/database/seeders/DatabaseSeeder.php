@@ -36,5 +36,8 @@ class DatabaseSeeder extends Seeder
         
         // Seed roles and permissions
         $this->call(RoleAndPermissionSeeder::class);
+        
+        // Seed message categories
+        $this->call(MessageCategoriesSeeder::class);
     }
 }
