@@ -1,0 +1,90 @@
+<?php
+
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProviderController;
+use App\Http\Controllers\NewsController;
+use App\Http\Controllers\FaqController;
+use App\Http\Controllers\Admin\NewsController as AdminNewsController;
+use App\Http\Controllers\Admin\HealthcareProviderController as AdminProviderController;
+use App\Http\Controllers\Admin\FaqController as AdminFaqController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserRoleController;
+use App\Http\Controllers\Admin\ActivityLogController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return view('pages.home');
+})->name('home');
+
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Provider Routes
+Route::get('/providers', [ProviderController::class, 'index'])->name('providers.index');
+Route::get('/providers/{id}', [ProviderController::class, 'show'])->name('providers.show');
+
+// News Routes
+Route::get('/news', [NewsController::class, 'index'])->name('news');
+Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
+
+// FAQ Routes
+Route::get('/faq', [FaqController::class, 'index'])->name('faq');
+
+// Contact Route
+Route::get('/contact', function () {
+    return view('pages.contact');
+})->name('contact');
+
+// About Route
+Route::get('/about', function () {
+    return view('pages.about');
+})->name('about');
+
+// Plans Route
+Route::get('/plans', function () {
+    return view('pages.plans');
+})->name('plans');
+
+// Admin Routes
+Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewer'])->name('admin.')->group(function () {
+    Route::get('/', function () {
+        return view('admin.dashboard');
+    })->name('dashboard');
+    
+    // News Management
+    Route::resource('news', AdminNewsController::class);
+    Route::get('news/activity/logs', [AdminNewsController::class, 'activity'])->name('news.activity');
+    
+    // Healthcare Providers Management
+    Route::resource('providers', AdminProviderController::class);
+    Route::get('providers/activity/logs', [AdminProviderController::class, 'activity'])->name('providers.activity');
+    
+    // FAQ Management
+    Route::resource('faqs', AdminFaqController::class);
+    Route::get('faqs/activity/logs', [AdminFaqController::class, 'activity'])->name('faqs.activity');
+    
+    // Role Management - restrict to super admin
+    Route::resource('roles', RoleController::class)->middleware('role:super-admin');
+    Route::get('roles/activity/logs', [RoleController::class, 'activity'])->name('roles.activity')->middleware('role:super-admin');
+    
+    // User Role Management - restrict to super admin and admin
+    Route::middleware('role:super-admin,admin')->group(function() {
+        Route::get('users', [UserRoleController::class, 'index'])->name('users.index');
+        Route::get('users/{user}/roles', [UserRoleController::class, 'edit'])->name('users.roles.edit');
+        Route::put('users/{user}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
+        Route::get('users/activity/logs', [UserRoleController::class, 'activity'])->name('users.activity');
+    });
+    
+    // Activity Log
+    Route::get('activities', [ActivityLogController::class, 'index'])->name('activities.index');
+    Route::get('activities/{activityLog}', [ActivityLogController::class, 'show'])->name('activities.show');
+});
+
+require __DIR__.'/auth.php';

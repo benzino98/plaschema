@@ -1,0 +1,36 @@
+# Plaschema Project Rules and Patterns
+
+## Code Style
+
+- Follow PSR-12 coding standards for PHP
+- Use camelCase for variables and methods
+- Use PascalCase for classes
+- Use snake_case for database columns
+- Use ; and not && for combining powershell commands
+
+## Project Structure
+
+- Keep controllers thin, move business logic to services
+- Use repositories for complex database queries
+- Store global helpers in dedicated helper files
+- Organize CSS/JS by component when possible
+
+## Implementation Patterns
+
+- Use Laravel's built-in features instead of reinventing solutions
+- Prefer dependency injection over facade usage in complex classes
+- Use form requests for validation logic
+- Use resource controllers for CRUD operations
+
+## Documentation Requirements
+
+- Add DocBlocks to classes and methods
+- Document all non-trivial code blocks with comments
+- Keep README updated with installation and configuration instructions
+- Document API endpoints if created
+
+## Development Workflow
+
+- Create migrations for all database changes
+- Use feature branches for new features
+- Keep commits focused and descriptive
