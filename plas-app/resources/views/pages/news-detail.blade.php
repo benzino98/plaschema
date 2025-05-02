@@ -4,18 +4,18 @@
 
 @section('content')
     <!-- Hero Section -->
-    <section class="bg-navy text-white py-12 md:py-16">
+    <section class="bg-plaschema-dark text-white py-16 md:py-24">
         <div class="container-custom">
             <div class="max-w-4xl mx-auto">
                 <div class="mb-3">
-                    <a href="{{ route('news') }}" class="text-white hover:text-primary flex items-center">
+                    <a href="{{ route('news') }}" class="text-white hover:text-plaschema flex items-center slide-up">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                         </svg>
                         Back to News
                     </a>
                 </div>
-                <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">
+                <h1 class="text-3xl md:text-5xl font-bold mb-4 text-white slide-up">
                     @if($slug == 'new-partnership-announced')
                         New Partnership Announced with Healthcare Providers
                     @elseif($slug == 'enrollment-drive-success')
@@ -26,7 +26,7 @@
                         {{ ucwords(str_replace('-', ' ', $slug)) }}
                     @endif
                 </h1>
-                <div class="flex items-center">
+                <div class="flex items-center slide-up">
                     <span class="text-sm text-gray-300">April 15, 2023</span>
                     <span class="mx-3">|</span>
                     <span class="text-sm text-gray-300">PLASCHEMA News</span>
@@ -165,22 +165,22 @@
                 <div class="mt-6">
                     <p class="text-sm font-medium text-gray-700 mb-2">Share this article:</p>
                     <div class="flex space-x-4">
-                        <a href="#" class="text-gray-500 hover:text-primary">
+                        <a href="#" class="text-gray-500 hover:text-plaschema">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                             </svg>
                         </a>
-                        <a href="#" class="text-gray-500 hover:text-primary">
+                        <a href="#" class="text-gray-500 hover:text-plaschema">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723 10.054 10.054 0 01-3.127 1.184 4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
                             </svg>
                         </a>
-                        <a href="#" class="text-gray-500 hover:text-primary">
+                        <a href="#" class="text-gray-500 hover:text-plaschema">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
                             </svg>
                         </a>
-                        <a href="#" class="text-gray-500 hover:text-primary">
+                        <a href="#" class="text-gray-500 hover:text-plaschema">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M10 .4C4.698.4.4 4.698.4 10s4.298 9.6 9.6 9.6 9.6-4.298 9.6-9.6S15.302.4 10 .4zm3.905 7.864c.004.082.005.164.005.244 0 2.5-1.901 5.381-5.379 5.381a5.335 5.335 0 01-2.898-.85c.147.018.298.025.451.025.887 0 1.704-.301 2.351-.809a1.895 1.895 0 01-1.767-1.312 1.9 1.9 0 00.853-.033 1.892 1.892 0 01-1.517-1.854v-.023c.255.141.547.227.857.237a1.89 1.89 0 01-.585-2.526 5.376 5.376 0 003.897 1.977 1.891 1.891 0 013.222-1.725 3.797 3.797 0 001.2-.459 1.9 1.9 0 01-.831 1.047 3.799 3.799 0 001.086-.299 3.834 3.834 0 01-.943.979z"/>
                             </svg>
@@ -199,7 +199,7 @@
                                 <img src="{{ asset('images/news-1.jpg') }}" alt="News" class="w-full h-full object-cover" loading="lazy">
                             </div>
                             <div class="ml-4">
-                                <h4 class="font-medium group-hover:text-primary transition-colors">New Partnership Announced</h4>
+                                <h4 class="font-medium group-hover:text-plaschema transition-colors">New Partnership Announced</h4>
                                 <span class="text-sm text-gray-500">April 15, 2023</span>
                             </div>
                         </a>
@@ -209,7 +209,7 @@
                                 <img src="{{ asset('images/news-2.jpg') }}" alt="News" class="w-full h-full object-cover" loading="lazy">
                             </div>
                             <div class="ml-4">
-                                <h4 class="font-medium group-hover:text-primary transition-colors">Enrollment Drive Success</h4>
+                                <h4 class="font-medium group-hover:text-plaschema transition-colors">Enrollment Drive Success</h4>
                                 <span class="text-sm text-gray-500">March 22, 2023</span>
                             </div>
                         </a>
@@ -219,7 +219,7 @@
                                 <img src="{{ asset('images/news-3.jpg') }}" alt="News" class="w-full h-full object-cover" loading="lazy">
                             </div>
                             <div class="ml-4">
-                                <h4 class="font-medium group-hover:text-primary transition-colors">New Health Benefits Added</h4>
+                                <h4 class="font-medium group-hover:text-plaschema transition-colors">New Health Benefits Added</h4>
                                 <span class="text-sm text-gray-500">February 9, 2023</span>
                             </div>
                         </a>
@@ -233,24 +233,24 @@
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h3 class="text-xl font-bold mb-4">Categories</h3>
                     <ul class="space-y-2">
-                        <li><a href="#" class="flex justify-between items-center hover:text-primary">
+                        <li><a href="#" class="flex justify-between items-center hover:text-plaschema">
                             <span>Press Releases</span>
                             <span class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs">12</span>
                         </a></li>
-                        <li><a href="#" class="flex justify-between items-center hover:text-primary">
+                        <li><a href="#" class="flex justify-between items-center hover:text-plaschema">
                             <span>Events & Activities</span>
                             <span class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs">8</span>
                         </a></li>
-                        <li><a href="#" class="flex justify-between items-center hover:text-primary">
+                        <li><a href="#" class="flex justify-between items-center hover:text-plaschema">
                             <span>Health Updates</span>
                             <span class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs">15</span>
                         </a></li>
-                        <li><a href="#" class="flex justify-between items-center hover:text-primary">
+                        <li><a href="#" class="flex justify-between items-center hover:text-plaschema">
                             <span>Policy Changes</span>
                             <span class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs">6</span>
                         </a></li>
-                        <li><a href="#" class="flex justify-between items-center hover:text-primary">
-                            <span>Success Stories</span>
+                        <li><a href="#" class="flex justify-between items-center hover:text-plaschema">
+                            <span>Community Outreach</span>
                             <span class="bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs">10</span>
                         </a></li>
                     </ul>

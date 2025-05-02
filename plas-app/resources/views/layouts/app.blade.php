@@ -19,7 +19,7 @@
             :root {
                 --plaschema-green: #74BA03;
                 --plaschema-dark: #558A02;  /* Darker green for better contrast with white text */
-                --primary: #3e92cc;
+                --primary: #74BA03; /* Updated to match plaschema green for consistency */
                 --secondary: #2a628f;
                 --accent: #f13c20;
                 --light: #f8f9fa;

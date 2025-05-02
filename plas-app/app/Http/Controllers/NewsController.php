@@ -64,6 +64,7 @@ class NewsController extends Controller
         return view('pages.news-detail', [
             'news' => $news,
             'relatedNews' => $relatedNews,
+            'slug' => $slug
         ]);
     }
 }
