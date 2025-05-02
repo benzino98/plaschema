@@ -35,9 +35,9 @@
                 class="text-center"
                 icon='<svg class="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>'
             >
-                <p class="mb-2">Main Office: +234 (0) 123 456 7890</p>
-                <p class="mb-2">Customer Care: +234 (0) 123 456 7891</p>
-                <p>Toll-Free: 0800-PLASCHEMA</p>
+                <p class="mb-2">Main Office: +234 700-700-1111</p>
+                <p class="mb-2">Customer Care: +234 700-700-1111</p>
+               
             </x-card>
 
             <x-card 
@@ -46,9 +46,9 @@
                 class="text-center"
                 icon='<svg class="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>'
             >
-                <p class="mb-2">General Inquiries: info@plaschema.gov.ng</p>
-                <p class="mb-2">Support: support@plaschema.gov.ng</p>
-                <p>Media: media@plaschema.gov.ng</p>
+                <p class="mb-2">General Inquiries: info@plaschema.pl.gov.ng</p>
+                <p class="mb-2">Support: support@plaschema.pl.gov.ng</p>
+                <p>Media: media@plaschema.pl.gov.ng</p>
             </x-card>
         </div>
 
@@ -103,7 +103,15 @@
         <div class="container-custom">
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div class="aspect-w-16 aspect-h-9">
-                    <img src="{{ asset('images/map-placeholder.jpg') }}" alt="PLASCHEMA Office Location" class="w-full h-full object-cover" loading="lazy">
+                    <!-- Google Maps Embed -->
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d252149.61338331932!2d8.739369957068796!3d9.932885904183888!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1052ea82e8732969%3A0xba26a19f2f8df626!2sJos%2C%20Plateau%20State%2C%20Nigeria!5e0!3m2!1sen!2sus!4v1718624431841!5m2!1sen!2sus"
+                        class="w-full h-full border-0"
+                        style="min-height: 400px;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
                 </div>
             </div>
         </div>
@@ -121,14 +129,11 @@
                     <ul class="space-y-2">
                         <li class="flex justify-between">
                             <span>Monday - Friday</span>
-                            <span class="font-semibold text-plaschema">8:00 AM - 5:00 PM</span>
+                            <span class="font-semibold text-plaschema">8:00 AM - 4:00 PM</span>
                         </li>
+                      
                         <li class="flex justify-between">
-                            <span>Saturday</span>
-                            <span class="font-semibold text-plaschema">9:00 AM - 1:00 PM</span>
-                        </li>
-                        <li class="flex justify-between">
-                            <span>Sunday</span>
+                            <span>Weekends</span>
                             <span class="font-semibold">Closed</span>
                         </li>
                     </ul>
@@ -138,23 +143,16 @@
                     <h3 class="text-xl font-bold mb-4 text-gray-800">Customer Service Center</h3>
                     <ul class="space-y-2">
                         <li class="flex justify-between">
-                            <span>Monday - Friday</span>
-                            <span class="font-semibold text-plaschema">7:30 AM - 6:00 PM</span>
+                            <span>Monday - Sunday</span>
+                            <span class="font-semibold text-plaschema">24 Hrs Services</span>
                         </li>
-                        <li class="flex justify-between">
-                            <span>Saturday</span>
-                            <span class="font-semibold text-plaschema">9:00 AM - 3:00 PM</span>
-                        </li>
-                        <li class="flex justify-between">
-                            <span>Sunday</span>
-                            <span class="font-semibold">Closed</span>
-                        </li>
+                      
                     </ul>
                 </div>
             </div>
             
             <div class="mt-8 pt-8 border-t border-gray-200">
-                <p class="text-center text-gray-600">Our toll-free customer service line (0800-PLASCHEMA) is available 24/7 for emergencies.</p>
+                <p class="text-center text-gray-600">Our toll-free customer service line (0700-700-1111) is available 24/7 for emergencies.</p>
             </div>
         </div>
     </x-section>

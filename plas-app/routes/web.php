@@ -35,6 +35,7 @@ Route::get('/news', [NewsController::class, 'index'])->name('news');
 Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 
 // FAQ Routes
+Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 
 // Contact Route

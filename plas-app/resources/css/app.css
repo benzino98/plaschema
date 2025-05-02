@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Navigation Animation Styles */
+@layer base {
+    :root {
+        --color-plaschema-rgb: 16, 185, 129;
+    }
+}
+
+@layer components {
+    /* Underline animation for nav links */
+    .nav-underline-animation {
+        @apply relative overflow-hidden;
+    }
+
+    .nav-underline-animation::after {
+        content: "";
+        @apply absolute w-full h-0.5 bg-plaschema left-0 bottom-0;
+        transform: translateX(-110%);
+        transition: transform 0.3s ease;
+    }
+
+    .nav-underline-animation:hover::after {
+        transform: translateX(0);
+    }
+
+    /* Glow effect on hover */
+    .nav-hover-glow:hover {
+        text-shadow: 0 0 8px rgba(var(--color-plaschema-rgb), 0.4);
+    }
+
+    /* Additional animation styles to ensure visibility */
+    .nav-item-animation {
+        transition: all 0.3s ease;
+    }
+
+    .nav-item-animation:hover {
+        transform: translateY(-2px);
+    }
+}
