@@ -67,72 +67,87 @@
                 </div>
             @endif
 
-            <!-- Providers Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($providers as $provider)
-                    <x-card 
-                        title="{{ $provider->name }}" 
-                        image="{{ $provider->logo_path ? asset('storage/' . $provider->logo_path) : asset('images/provider-placeholder.jpg') }}"
-                        animation="slide-up"
-                        url="{{ route('providers.show', $provider->id) }}"
-                    >
-                        <div class="mb-4">
-                            @if($provider->category)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-plaschema mb-2">
-                                    {{ $provider->category }}
-                                </span>
-                            @endif
-                            <p class="text-gray-600">{{ $provider->address }}</p>
-                        </div>
-                        
-                        <div class="space-y-2 mb-4">
-                            @if($provider->phone)
-                                <div class="flex items-center text-gray-600">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                    </svg>
-                                    <span>{{ $provider->phone }}</span>
-                                </div>
-                            @endif
-                            
-                            @if($provider->email)
-                                <div class="flex items-center text-gray-600">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                    </svg>
-                                    <span>{{ $provider->email }}</span>
-                                </div>
-                            @endif
-                        </div>
-                        
-                        @if($provider->description)
-                            <p class="text-gray-600 mb-4">{{ Str::limit($provider->description, 100) }}</p>
-                        @endif
-                        
-                        <div class="mt-4 flex justify-between items-center">
-                            <a href="{{ route('providers.show', $provider->id) }}" class="text-plaschema hover:underline flex items-center">
-                                View Details
-                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                                </svg>
-                            </a>
-                            
-                            @if($provider->website)
-                                <a href="{{ $provider->website }}" target="_blank" class="text-plaschema hover:underline flex items-center">
-                                    Visit Website
-                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                                    </svg>
-                                </a>
-                            @endif
-                        </div>
-                    </x-card>
-                @endforeach
+            <!-- Providers Table -->
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($providers as $provider)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                       
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ $provider->name }}</div>
+                                            @if($provider->description)
+                                                <div class="text-sm text-gray-500">{{ Str::limit($provider->description, 50) }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($provider->category)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-plaschema">
+                                            {{ $provider->category }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    @if($provider->phone)
+                                        <div class="text-sm text-gray-600 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                            </svg>
+                                            <span>{{ $provider->phone }}</span>
+                                        </div>
+                                    @endif
+                                    
+                                    @if($provider->email)
+                                        <div class="text-sm text-gray-600 flex items-center mt-1">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span>{{ $provider->email }}</span>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-600">{{ $provider->address }}</div>
+                                    @if($provider->city)
+                                        <div class="text-sm text-gray-500">{{ $provider->city }}</div>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-3">
+                                        <a href="{{ route('providers.show', $provider->id) }}" class="text-plaschema hover:text-plaschema-dark">
+                                            View Details
+                                        </a>
+                                        @if($provider->website)
+                                            <a href="{{ $provider->website }}" target="_blank" class="text-plaschema hover:text-plaschema-dark">
+                                                Website
+                                            </a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
 
             <!-- Pagination -->
             @if($providers->hasPages())
-                <div class="mt-12 flex justify-center">
+                <div class="mt-6 flex justify-center">
                     {{ $providers->links() }}
                 </div>
             @endif

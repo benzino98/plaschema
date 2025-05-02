@@ -42,7 +42,7 @@ class ProviderController extends Controller
             ->whereNotNull('category')
             ->pluck('category');
             
-        $providers = $query->orderBy('name')->paginate(12);
+        $providers = $query->orderBy('name')->paginate(10);
         
         // Preserve query parameters in pagination links
         if ($request->has('search') || $request->has('category')) {
