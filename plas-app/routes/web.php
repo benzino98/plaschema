@@ -4,12 +4,14 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\HealthcareProviderController as AdminProviderController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -38,10 +40,9 @@ Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
 
-// Contact Route
-Route::get('/contact', function () {
-    return view('pages.contact');
-})->name('contact');
+// Contact Routes
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 // About Route
 Route::get('/about', function () {
@@ -86,6 +87,16 @@ Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewe
     // Activity Log
     Route::get('activities', [ActivityLogController::class, 'index'])->name('activities.index');
     Route::get('activities/{activityLog}', [ActivityLogController::class, 'show'])->name('activities.show');
+
+    // Contact Message Management - restricted to super admin
+    Route::middleware('role:super-admin')->group(function() {
+        Route::get('messages', [ContactMessageController::class, 'index'])->name('messages.index');
+        Route::get('messages/{message}', [ContactMessageController::class, 'show'])->name('messages.show');
+        Route::put('messages/{message}/status', [ContactMessageController::class, 'updateStatus'])->name('messages.status.update');
+        Route::put('messages/{message}/respond', [ContactMessageController::class, 'markResponded'])->name('messages.respond');
+        Route::put('messages/{message}/archive', [ContactMessageController::class, 'archive'])->name('messages.archive');
+        Route::get('messages/activity/logs', [ContactMessageController::class, 'activity'])->name('messages.activity');
+    });
 });
 
 require __DIR__.'/auth.php';

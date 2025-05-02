@@ -56,43 +56,71 @@
         <div class="bg-white rounded-lg shadow-lg p-8 max-w-3xl mx-auto">
             <h2 class="text-2xl font-bold mb-6 text-center">Send Us a Message</h2>
             
-            <form>
+            @if(session('success'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
+            @endif
+            
+            <form action="{{ route('contact.store') }}" method="POST">
+                @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input type="text" id="name" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema">
+                        <input type="text" id="name" name="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema @error('name') border-red-500 @enderror" value="{{ old('name') }}">
+                        @error('name')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                        <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema">
+                        <input type="email" id="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema @error('email') border-red-500 @enderror" value="{{ old('email') }}">
+                        @error('email')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
                 
                 <div class="mb-6">
                     <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema">
+                    <input type="tel" id="phone" name="phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema @error('phone') border-red-500 @enderror" value="{{ old('phone') }}">
+                    @error('phone')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                
+                <div class="mb-6">
+                    <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select id="category_id" name="category_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema @error('category_id') border-red-500 @enderror">
+                        <option value="">Select a category</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('category_id')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 
                 <div class="mb-6">
                     <label for="subject" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                    <select id="subject" name="subject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema">
-                        <option value="">Select a subject</option>
-                        <option value="enrollment">Enrollment Inquiry</option>
-                        <option value="benefits">Benefits Information</option>
-                        <option value="payment">Payment Issue</option>
-                        <option value="provider">Provider Question</option>
-                        <option value="other">Other</option>
-                    </select>
+                    <input type="text" id="subject" name="subject" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema @error('subject') border-red-500 @enderror" value="{{ old('subject') }}">
+                    @error('subject')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 
                 <div class="mb-6">
                     <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                    <textarea id="message" name="message" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema"></textarea>
+                    <textarea id="message" name="message" rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-plaschema focus:border-plaschema @error('message') border-red-500 @enderror">{{ old('message') }}</textarea>
+                    @error('message')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 
                 <div class="text-center">
-                    <x-button class="px-8 py-3">Send Message</x-button>
+                    <x-button type="submit" class="px-8 py-3">Send Message</x-button>
                 </div>
             </form>
         </div>
