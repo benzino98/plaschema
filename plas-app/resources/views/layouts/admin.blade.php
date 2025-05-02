@@ -40,11 +40,11 @@
                     FAQ Management
                 </a>
                 
-                @can('role:super-admin')
+                @if(auth()->user()->hasRole('super-admin'))
                 <a href="{{ route('admin.messages.index') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-white/20 {{ request()->routeIs('admin.messages.*') ? 'bg-white/20' : '' }}">
                     Contact Messages
                 </a>
-                @endcan
+                @endif
                 
                 <div class="mt-4 px-4">
                     <h2 class="text-xs uppercase tracking-wider text-white/70">User Management</h2>

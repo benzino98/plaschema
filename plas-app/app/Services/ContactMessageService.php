@@ -220,7 +220,7 @@ class ContactMessageService
      * @param int $id
      * @return bool
      */
-    public function markMessageAsRead(int $id): bool
+    public function markAsRead(int $id): bool
     {
         try {
             $result = $this->messageRepository->markAsRead($id);
@@ -228,10 +228,11 @@ class ContactMessageService
             if ($result) {
                 // Log the status change
                 $this->activityLogService->log(
-                    'contact_message',
-                    'updated',
+                    'update',
+                    auth()->user()->id,
+                    'ContactMessage',
                     $id,
-                    "Contact message marked as read"
+                    ['message' => 'Contact message marked as read']
                 );
             }
             
@@ -248,7 +249,7 @@ class ContactMessageService
      * @param int $id
      * @return bool
      */
-    public function markMessageAsResponded(int $id): bool
+    public function markAsResponded(int $id): bool
     {
         try {
             $userId = Auth::id();
@@ -257,10 +258,11 @@ class ContactMessageService
             if ($result) {
                 // Log the status change
                 $this->activityLogService->log(
-                    'contact_message',
-                    'updated',
+                    'update',
+                    auth()->user()->id,
+                    'ContactMessage',
                     $id,
-                    "Contact message marked as responded"
+                    ['message' => 'Contact message marked as responded']
                 );
             }
             
@@ -351,5 +353,80 @@ class ContactMessageService
     public function getUnreadCount(): int
     {
         return $this->messageRepository->getUnread(1)->total();
+    }
+
+    /**
+     * Get filtered messages based on criteria.
+     *
+     * @param string|null $status
+     * @param int|null $categoryId
+     * @param string|null $dateFrom
+     * @param string|null $dateTo
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function getFilteredMessages(?string $status = null, ?int $categoryId = null, ?string $dateFrom = null, ?string $dateTo = null)
+    {
+        $query = ContactMessage::query()->with('category');
+        
+        // Filter by status
+        if ($status) {
+            $query->where('status', $status);
+        }
+        
+        // Filter by category
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+        
+        // Filter by date range
+        if ($dateFrom) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+        
+        if ($dateTo) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+        
+        // Order by newest first
+        $query->orderBy('created_at', 'desc');
+        
+        return $query;
+    }
+
+    /**
+     * Update a message's status.
+     *
+     * @param int $id
+     * @param string $status
+     * @return bool
+     */
+    public function updateStatus(int $id, string $status): bool
+    {
+        try {
+            $message = $this->messageRepository->findById($id);
+            
+            if (!$message) {
+                return false;
+            }
+            
+            $data = ['status' => $status];
+            
+            // Additional data based on status
+            if ($status === 'read' && !$message->is_read) {
+                $data['is_read'] = true;
+            } else if ($status === 'responded') {
+                $data['responded_by'] = Auth::id();
+                $data['responded_at'] = now();
+            } else if ($status === 'archived') {
+                $data['archived_at'] = now();
+            }
+            
+            $this->messageRepository->update($id, $data);
+            
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to update message status: ' . $e->getMessage());
+            throw $e;
+        }
     }
 } 
