@@ -41,7 +41,8 @@ class ProviderController extends Controller
             ->distinct()
             ->whereNotNull('category')
             ->pluck('category');
-            
+        
+        // Get providers with pagination    
         $providers = $query->orderBy('name')->paginate(10);
         
         // Preserve query parameters in pagination links
