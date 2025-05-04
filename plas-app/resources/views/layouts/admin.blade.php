@@ -20,7 +20,10 @@
         <!-- Sidebar -->
         <aside class="w-64 bg-[#74BA03] text-white hidden md:block">
             <div class="p-4">
-                <h1 class="text-xl font-bold">PLASCHEMA Admin</h1>
+                <div class="flex items-center">
+                    <img src="{{ asset('images/PLASCHEMA-LOGO.png') }}" alt="PLASCHEMA Logo" class="w-8 h-8 mr-2">
+                    <h1 class="text-xl font-bold">PLASCHEMA Admin</h1>
+                </div>
             </div>
             <nav class="mt-8">
                 <a href="{{ route('admin.dashboard') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-white/20 {{ request()->routeIs('admin.dashboard') ? 'bg-white/20' : '' }}">
@@ -44,8 +47,8 @@
                 <a href="{{ route('admin.messages.index') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-white/20 {{ request()->routeIs('admin.messages.*') ? 'bg-white/20' : '' }}">
                     Contact Messages
                 </a>
-                @endif
-                
+
+
                 <div class="mt-4 px-4">
                     <h2 class="text-xs uppercase tracking-wider text-white/70">User Management</h2>
                 </div>
@@ -55,6 +58,10 @@
                 <a href="{{ route('admin.roles.index') }}" class="block py-2.5 px-4 rounded transition duration-200 hover:bg-white/20 {{ request()->routeIs('admin.roles.*') ? 'bg-white/20' : '' }}">
                     Role Management
                 </a>
+
+                @endif
+                
+                
                 
                 <div class="mt-4 px-4">
                     <h2 class="text-xs uppercase tracking-wider text-white/70">System</h2>

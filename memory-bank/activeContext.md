@@ -62,10 +62,7 @@
 
 ### In Progress
 
-- 🔄 Expanding test coverage for new features
 - 🔄 Implementing responsive image handling for various device sizes
-- 🔄 Implementing in-app notifications for new messages
-- 🔄 Creating automated archiving system for messages older than 3 months
 
 ## Next Steps
 
@@ -90,8 +87,6 @@
      - Message listing with filters for status, category, date
      - Message detail view with response functionality
      - Category management interface
-   - 🔄 Implement in-app notifications for new messages
-   - 🔄 Create automated archiving system for messages older than 3 months
    - ✅ Configure super admin only permissions for message management
 
 2. Improve mobile responsiveness

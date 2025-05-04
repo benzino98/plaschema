@@ -79,8 +79,6 @@
   - [x] Message filtering by status, category, and date
   - [x] Status management (new, read, responded, archived)
   - [x] Message categories (General Inquiry, Enrollment Question, Provider Question, Feedback, Technical Issue)
-  - [ ] In-app notification system for new messages
-  - [ ] Automatic archiving system for messages older than 3 months
 - [ ] Bulk operations for resource management (15%)
 - [ ] Admin API endpoints (0%)
 
@@ -204,31 +202,20 @@ Project completion by component:
 
 ## Next Priorities
 
-1. **Complete contact message management system**
+1.**Enhance mobile responsiveness**
 
-   - Implement in-app notification system for new messages
-   - Create auto-archiving system for messages older than 3 months
-   - Fix navigation issue with contact message link visibility
+- Test responsive layouts on various device sizes
+- Implement responsive image handling
+- Ensure consistent UI across devices
 
-2. **Enhance mobile responsiveness**
+  2.**Optimize performance**
 
-   - Test responsive layouts on various device sizes
-   - Implement responsive image handling
-   - Ensure consistent UI across devices
+- Implement caching for frequently accessed data
+- Improve image handling for better performance
+- Optimize database queries for listing pages
 
-3. **Expand test coverage**
+  3.**Implement bulk operations**
 
-   - Implement browser testing with Laravel Dusk
-   - Add tests for new permission and activity logging features
-   - Create tests for complex user flows
-
-4. **Optimize performance**
-
-   - Implement caching for frequently accessed data
-   - Improve image handling for better performance
-   - Optimize database queries for listing pages
-
-5. **Implement bulk operations**
-   - Add batch editing functionality for relevant resources
-   - Implement batch deletion with proper confirmation
-   - Ensure all bulk operations are properly logged
+- Add batch editing functionality for relevant resources
+- Implement batch deletion with proper confirmation
+- Ensure all bulk operations are properly logged
