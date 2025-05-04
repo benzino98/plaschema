@@ -87,74 +87,241 @@
         </form>
     </div>
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Question
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Order
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($faqs as $faq)
-                <tr>
-                    <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">{{ Str::limit($faq->question, 60) }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                            {{ $faq->category ?? 'General' }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ $faq->order }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $faq->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $faq->is_active ? 'Active' : 'Inactive' }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <a href="{{ route('admin.faqs.edit', $faq->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                            <form action="{{ route('admin.faqs.destroy', $faq->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this FAQ?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
-                        @if(request('search') || request('category'))
-                            No FAQs found matching your criteria. <a href="{{ route('admin.faqs.index') }}" class="text-blue-600 hover:underline">Clear filters</a>.
-                        @else
-                            No FAQs found. <a href="{{ route('admin.faqs.create') }}" class="text-blue-600 hover:underline">Create one now</a>.
-                        @endif
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <!-- Bulk Actions Form -->
+    <form id="bulk-action-form" action="{{ route('admin.faqs.bulk-action') }}" method="POST">
+        @csrf
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center">
+                    <input type="checkbox" id="select-all" class="mr-2 h-5 w-5 text-blue-600">
+                    <label for="select-all" class="text-sm font-medium text-gray-700">Select All</label>
+                </div>
+                <div class="flex items-center flex-wrap gap-2">
+                    <select name="action" id="bulk-action-select" class="mr-2 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">-- Select Action --</option>
+                        <option value="delete">Delete</option>
+                        <option value="change-category">Change Category</option>
+                    </select>
+                    
+                    <div id="category-select-container" class="hidden">
+                        <select name="category" class="mr-2 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                            <option value="">-- Select Category --</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category }}">{{ $category }}</option>
+                            @endforeach
+                            <option value="General">General</option>
+                            <option value="new-category">+ Add New Category</option>
+                        </select>
+                        
+                        <input type="text" id="new-category-input" name="new_category" placeholder="Enter new category name" class="hidden mr-2 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    </div>
+                    
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="return confirmBulkAction()">
+                        Apply
+                    </button>
+                </div>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Select
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Question
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Category
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Order
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($faqs as $faq)
+                    <tr>
+                        <td class="px-6 py-4">
+                            <input type="checkbox" name="ids[]" value="{{ $faq->id }}" class="item-checkbox h-5 w-5 text-blue-600">
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900">{{ Str::limit($faq->question, 60) }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                {{ $faq->category ?? 'General' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ $faq->order }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $faq->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $faq->is_active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{{ route('admin.faqs.edit', $faq->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                <form action="{{ route('admin.faqs.destroy', $faq->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this FAQ?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
+                            @if(request('search') || request('category'))
+                                No FAQs found matching your criteria. <a href="{{ route('admin.faqs.index') }}" class="text-blue-600 hover:underline">Clear filters</a>.
+                            @else
+                                No FAQs found. <a href="{{ route('admin.faqs.create') }}" class="text-blue-600 hover:underline">Create one now</a>.
+                            @endif
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
     
     <div class="mt-4">
         {{ $faqs->links() }}
     </div>
 </div>
+
+@push('scripts')
+<script>
+    // Select All functionality
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checked = this.checked;
+        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+    });
+    
+    // Toggle category select visibility based on action
+    document.getElementById('bulk-action-select').addEventListener('change', function() {
+        const categoryContainer = document.getElementById('category-select-container');
+        if (this.value === 'change-category') {
+            categoryContainer.classList.remove('hidden');
+        } else {
+            categoryContainer.classList.add('hidden');
+        }
+    });
+    
+    // Handle new category input
+    document.querySelector('select[name="category"]').addEventListener('change', function() {
+        const newCategoryInput = document.getElementById('new-category-input');
+        if (this.value === 'new-category') {
+            newCategoryInput.classList.remove('hidden');
+            newCategoryInput.focus();
+            // Set the actual category field to empty, will be filled by the new category input
+            this.selectedIndex = 0;
+        } else {
+            newCategoryInput.classList.add('hidden');
+        }
+    });
+    
+    // Handle new category submission
+    document.getElementById('new-category-input').addEventListener('blur', function() {
+        if (this.value.trim()) {
+            // Find the category select
+            const categorySelect = document.querySelector('select[name="category"]');
+            
+            // Check if this category already exists
+            let exists = false;
+            for (let i = 0; i < categorySelect.options.length; i++) {
+                if (categorySelect.options[i].value.toLowerCase() === this.value.trim().toLowerCase()) {
+                    categorySelect.selectedIndex = i;
+                    exists = true;
+                    break;
+                }
+            }
+            
+            // If it doesn't exist, add it as a new option
+            if (!exists) {
+                const newOption = document.createElement('option');
+                newOption.value = this.value.trim();
+                newOption.text = this.value.trim();
+                
+                // Insert before the "Add New Category" option
+                const addNewOption = categorySelect.querySelector('option[value="new-category"]');
+                categorySelect.insertBefore(newOption, addNewOption);
+                
+                // Select the new option
+                newOption.selected = true;
+            }
+            
+            // Hide the input field
+            this.classList.add('hidden');
+            this.value = '';
+        }
+    });
+    
+    // Confirm bulk action
+    function confirmBulkAction() {
+        const selectedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        if (selectedCount === 0) {
+            alert('Please select at least one item.');
+            return false;
+        }
+        
+        const action = document.querySelector('select[name="action"]').value;
+        if (!action) {
+            alert('Please select an action to perform.');
+            return false;
+        }
+        
+        // Check if category is selected for change-category action
+        if (action === 'change-category') {
+            const category = document.querySelector('select[name="category"]').value;
+            const newCategory = document.getElementById('new-category-input').value.trim();
+            
+            if (!category && !newCategory) {
+                alert('Please select or enter a category.');
+                return false;
+            }
+            
+            // If using new category input, transfer the value to a hidden input
+            if (newCategory) {
+                // Create hidden input if it doesn't exist
+                let hiddenCategoryInput = document.querySelector('input[name="category"]');
+                if (!hiddenCategoryInput) {
+                    hiddenCategoryInput = document.createElement('input');
+                    hiddenCategoryInput.type = 'hidden';
+                    hiddenCategoryInput.name = 'category';
+                    document.getElementById('bulk-action-form').appendChild(hiddenCategoryInput);
+                }
+                hiddenCategoryInput.value = newCategory;
+            }
+        }
+        
+        // Customized confirmation message based on action
+        let message = '';
+        
+        switch (action) {
+            case 'delete':
+                message = `Are you sure you want to delete ${selectedCount} selected FAQ(s)? This action cannot be undone.`;
+                break;
+            case 'change-category':
+                const categoryName = document.querySelector('select[name="category"]').value || document.getElementById('new-category-input').value.trim();
+                message = `Are you sure you want to change the category of ${selectedCount} selected FAQ(s) to "${categoryName}"?`;
+                break;
+            default:
+                message = `Are you sure you want to perform this action on ${selectedCount} selected FAQ(s)?`;
+        }
+        
+        return confirm(message);
+    }
+</script>
+@endpush
 @endsection 

@@ -63,75 +63,156 @@
         </form>
     </div>
 
-    <div class="bg-white rounded-lg shadow overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Title
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Published
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Featured
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($news as $article)
-                <tr>
-                    <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">{{ Str::limit($article->title, 60) }}</div>
-                        <div class="text-sm text-gray-500">{{ $article->created_at->format('M d, Y') }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($article->published_at)
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                {{ \Carbon\Carbon::parse($article->published_at)->format('M d, Y') }}
+    <!-- Bulk Actions Form -->
+    <form id="bulk-action-form" action="{{ route('admin.news.bulk-action') }}" method="POST">
+        @csrf
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
+            <div class="p-4 border-b flex items-center justify-between">
+                <div class="flex items-center">
+                    <input type="checkbox" id="select-all" class="mr-2 h-5 w-5 text-blue-600">
+                    <label for="select-all" class="text-sm font-medium text-gray-700">Select All</label>
+                </div>
+                <div class="flex items-center">
+                    <select name="action" class="mr-2 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">-- Select Action --</option>
+                        <option value="publish">Publish</option>
+                        <option value="unpublish">Unpublish</option>
+                        <option value="feature">Mark as Featured</option>
+                        <option value="unfeature">Remove Featured</option>
+                        <option value="delete">Delete</option>
+                    </select>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="return confirmBulkAction()">
+                        Apply
+                    </button>
+                </div>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Select
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Title
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Published
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Featured
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($news as $article)
+                    <tr>
+                        <td class="px-6 py-4">
+                            <input type="checkbox" name="ids[]" value="{{ $article->id }}" class="item-checkbox h-5 w-5 text-blue-600">
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900">{{ Str::limit($article->title, 60) }}</div>
+                            <div class="text-sm text-gray-500">{{ $article->created_at->format('M d, Y') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($article->published_at)
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    {{ \Carbon\Carbon::parse($article->published_at)->format('M d, Y') }}
+                                </span>
+                            @else
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    Draft
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $article->is_featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ $article->is_featured ? 'Yes' : 'No' }}
                             </span>
-                        @else
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                Draft
-                            </span>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $article->is_featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                            {{ $article->is_featured ? 'Yes' : 'No' }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <a href="{{ route('admin.news.edit', $article->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                            <form action="{{ route('admin.news.destroy', $article->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this news article?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="4" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
-                        @if(request('search'))
-                            No news articles found matching "{{ request('search') }}". <a href="{{ route('admin.news.index') }}" class="text-blue-600 hover:underline">Clear search</a>.
-                        @else
-                            No news articles found. <a href="{{ route('admin.news.create') }}" class="text-blue-600 hover:underline">Create one now</a>.
-                        @endif
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{{ route('admin.news.edit', $article->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                <form action="{{ route('admin.news.destroy', $article->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this news article?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
+                            @if(request('search'))
+                                No news articles found matching "{{ request('search') }}". <a href="{{ route('admin.news.index') }}" class="text-blue-600 hover:underline">Clear search</a>.
+                            @else
+                                No news articles found. <a href="{{ route('admin.news.create') }}" class="text-blue-600 hover:underline">Create one now</a>.
+                            @endif
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
     
     <div class="mt-4">
         {{ $news->links() }}
     </div>
 </div>
+
+@push('scripts')
+<script>
+    // Select All functionality
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checked = this.checked;
+        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+    });
+    
+    // Confirm bulk action
+    function confirmBulkAction() {
+        const selectedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        if (selectedCount === 0) {
+            alert('Please select at least one item.');
+            return false;
+        }
+        
+        const action = document.querySelector('select[name="action"]').value;
+        if (!action) {
+            alert('Please select an action to perform.');
+            return false;
+        }
+        
+        // Customized confirmation message based on action
+        let message = '';
+        
+        switch (action) {
+            case 'delete':
+                message = `Are you sure you want to delete ${selectedCount} selected item(s)? This action cannot be undone.`;
+                break;
+            case 'publish':
+                message = `Are you sure you want to publish ${selectedCount} selected item(s)?`;
+                break;
+            case 'unpublish':
+                message = `Are you sure you want to unpublish ${selectedCount} selected item(s)?`;
+                break;
+            case 'feature':
+                message = `Are you sure you want to mark ${selectedCount} selected item(s) as featured?`;
+                break;
+            case 'unfeature':
+                message = `Are you sure you want to remove ${selectedCount} selected item(s) from featured?`;
+                break;
+            default:
+                message = `Are you sure you want to perform this action on ${selectedCount} selected item(s)?`;
+        }
+        
+        return confirm(message);
+    }
+</script>
+@endpush
 @endsection 

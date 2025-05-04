@@ -34,7 +34,7 @@ class NewsController extends Controller
         $this->middleware('permission:view-news')->only(['index', 'show']);
         $this->middleware('permission:create-news')->only(['create', 'store']);
         $this->middleware('permission:edit-news')->only(['edit', 'update']);
-        $this->middleware('permission:delete-news')->only(['destroy']);
+        $this->middleware('permission:delete-news')->only(['destroy', 'bulkAction']);
     }
 
     /**
@@ -182,6 +182,105 @@ class NewsController extends Controller
         } catch (\Exception $e) {
             return back()
                 ->with('error', 'There was a problem deleting the news article: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Perform bulk actions on selected news articles.
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function bulkAction(Request $request)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'action' => 'required|string|in:delete,publish,unpublish,feature,unfeature',
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:news,id',
+        ]);
+        
+        // Get the selected news articles
+        $newsItems = News::whereIn('id', $validated['ids'])->get();
+        
+        // If no items were found, return with an error
+        if ($newsItems->isEmpty()) {
+            return back()->with('error', 'No news articles were selected.');
+        }
+        
+        try {
+            // Perform the selected action
+            switch ($validated['action']) {
+                case 'delete':
+                    foreach ($newsItems as $news) {
+                        // Delete image if exists
+                        if ($news->image_path) {
+                            $this->imageService->delete($news->image_path);
+                        }
+                        
+                        // Log the activity before deletion
+                        $this->activityLogService->logDeleted($news, ['bulk_action' => true]);
+                        
+                        $news->delete();
+                    }
+                    $message = count($newsItems) . ' news article(s) deleted successfully.';
+                    break;
+                    
+                case 'publish':
+                    foreach ($newsItems as $news) {
+                        $originalValues = $news->getAttributes();
+                        $news->published_at = now();
+                        $news->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($news, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($newsItems) . ' news article(s) published successfully.';
+                    break;
+                    
+                case 'unpublish':
+                    foreach ($newsItems as $news) {
+                        $originalValues = $news->getAttributes();
+                        $news->published_at = null;
+                        $news->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($news, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($newsItems) . ' news article(s) unpublished successfully.';
+                    break;
+                    
+                case 'feature':
+                    foreach ($newsItems as $news) {
+                        $originalValues = $news->getAttributes();
+                        $news->is_featured = true;
+                        $news->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($news, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($newsItems) . ' news article(s) featured successfully.';
+                    break;
+                    
+                case 'unfeature':
+                    foreach ($newsItems as $news) {
+                        $originalValues = $news->getAttributes();
+                        $news->is_featured = false;
+                        $news->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($news, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($newsItems) . ' news article(s) unfeatured successfully.';
+                    break;
+                    
+                default:
+                    return back()->with('error', 'Invalid action selected.');
+            }
+            
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->with('error', 'There was a problem performing the bulk action: ' . $e->getMessage());
         }
     }
 

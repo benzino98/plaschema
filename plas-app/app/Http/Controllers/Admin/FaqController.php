@@ -26,7 +26,7 @@ class FaqController extends Controller
         $this->middleware('permission:view-faqs')->only(['index', 'show']);
         $this->middleware('permission:create-faqs')->only(['create', 'store']);
         $this->middleware('permission:edit-faqs')->only(['edit', 'update']);
-        $this->middleware('permission:delete-faqs')->only(['destroy']);
+        $this->middleware('permission:delete-faqs')->only(['destroy', 'bulkAction']);
     }
 
     /**
@@ -155,6 +155,69 @@ class FaqController extends Controller
         } catch (\Exception $e) {
             return back()
                 ->with('error', 'There was a problem deleting the FAQ: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Perform bulk actions on selected FAQs.
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function bulkAction(Request $request)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'action' => 'required|string|in:delete,change-category',
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:faqs,id',
+            'category' => 'nullable|required_if:action,change-category|string|max:255',
+        ]);
+        
+        // Get the selected FAQs
+        $faqs = Faq::whereIn('id', $validated['ids'])->get();
+        
+        // If no items were found, return with an error
+        if ($faqs->isEmpty()) {
+            return back()->with('error', 'No FAQs were selected.');
+        }
+        
+        try {
+            // Perform the selected action
+            switch ($validated['action']) {
+                case 'delete':
+                    foreach ($faqs as $faq) {
+                        // Log the activity before deletion
+                        $this->activityLogService->logDeleted($faq, ['bulk_action' => true]);
+                        
+                        $faq->delete();
+                    }
+                    $message = count($faqs) . ' FAQ(s) deleted successfully.';
+                    break;
+                    
+                case 'change-category':
+                    if (!isset($validated['category']) || empty($validated['category'])) {
+                        return back()->with('error', 'Please select a category to assign.');
+                    }
+                    
+                    foreach ($faqs as $faq) {
+                        $originalValues = $faq->getAttributes();
+                        $faq->category = $validated['category'];
+                        $faq->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($faq, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($faqs) . ' FAQ(s) moved to category "' . $validated['category'] . '" successfully.';
+                    break;
+                    
+                default:
+                    return back()->with('error', 'Invalid action selected.');
+            }
+            
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->with('error', 'There was a problem performing the bulk action: ' . $e->getMessage());
         }
     }
 

@@ -33,7 +33,7 @@ class HealthcareProviderController extends Controller
         $this->middleware('permission:view-providers')->only(['index', 'show']);
         $this->middleware('permission:create-providers')->only(['create', 'store']);
         $this->middleware('permission:edit-providers')->only(['edit', 'update']);
-        $this->middleware('permission:delete-providers')->only(['destroy']);
+        $this->middleware('permission:delete-providers')->only(['destroy', 'bulkAction']);
     }
 
     /**
@@ -221,5 +221,104 @@ class HealthcareProviderController extends Controller
             ->pluck('type');
         
         return view('admin.providers.activity', compact('logs', 'actions', 'types'));
+    }
+
+    /**
+     * Perform bulk actions on selected healthcare providers.
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function bulkAction(Request $request)
+    {
+        // Validate the request
+        $validated = $request->validate([
+            'action' => 'required|string|in:delete,activate,deactivate,feature,unfeature',
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:healthcare_providers,id',
+        ]);
+        
+        // Get the selected providers
+        $providers = HealthcareProvider::whereIn('id', $validated['ids'])->get();
+        
+        // If no items were found, return with an error
+        if ($providers->isEmpty()) {
+            return back()->with('error', 'No healthcare providers were selected.');
+        }
+        
+        try {
+            // Perform the selected action
+            switch ($validated['action']) {
+                case 'delete':
+                    foreach ($providers as $provider) {
+                        // Delete image if exists
+                        if ($provider->image_path) {
+                            $this->imageService->delete($provider->image_path);
+                        }
+                        
+                        // Log the activity before deletion
+                        $this->activityLogService->logDeleted($provider, ['bulk_action' => true]);
+                        
+                        $provider->delete();
+                    }
+                    $message = count($providers) . ' healthcare provider(s) deleted successfully.';
+                    break;
+                    
+                case 'activate':
+                    foreach ($providers as $provider) {
+                        $originalValues = $provider->getAttributes();
+                        $provider->is_active = true;
+                        $provider->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($provider, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($providers) . ' healthcare provider(s) activated successfully.';
+                    break;
+                    
+                case 'deactivate':
+                    foreach ($providers as $provider) {
+                        $originalValues = $provider->getAttributes();
+                        $provider->is_active = false;
+                        $provider->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($provider, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($providers) . ' healthcare provider(s) deactivated successfully.';
+                    break;
+                    
+                case 'feature':
+                    foreach ($providers as $provider) {
+                        $originalValues = $provider->getAttributes();
+                        $provider->is_featured = true;
+                        $provider->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($provider, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($providers) . ' healthcare provider(s) featured successfully.';
+                    break;
+                    
+                case 'unfeature':
+                    foreach ($providers as $provider) {
+                        $originalValues = $provider->getAttributes();
+                        $provider->is_featured = false;
+                        $provider->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($provider, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($providers) . ' healthcare provider(s) unfeatured successfully.';
+                    break;
+                    
+                default:
+                    return back()->with('error', 'Invalid action selected.');
+            }
+            
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->with('error', 'There was a problem performing the bulk action: ' . $e->getMessage());
+        }
     }
 }

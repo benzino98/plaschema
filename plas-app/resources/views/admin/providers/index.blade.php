@@ -87,82 +87,163 @@
         </form>
     </div>
 
-    <div class="bg-white rounded-lg shadow overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Provider
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Location
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Contact
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                @forelse($providers as $provider)
-                <tr>
-                    <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">{{ $provider->name }}</div>
-                        <div class="text-sm text-gray-500">{{ $provider->type }}</div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="text-sm text-gray-900">{{ $provider->city }}</div>
-                        <div class="text-sm text-gray-500">{{ $provider->state }}</div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="text-sm text-gray-900">{{ $provider->phone }}</div>
-                        <div class="text-sm text-gray-500">{{ $provider->email }}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex flex-col space-y-1">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $provider->is_featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ $provider->is_featured ? 'Featured' : 'Standard' }}
-                            </span>
-                            @if(isset($provider->is_active))
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $provider->is_active ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $provider->is_active ? 'Active' : 'Inactive' }}
-                            </span>
+    <!-- Bulk Actions Form -->
+    <form id="bulk-action-form" action="{{ route('admin.providers.bulk-action') }}" method="POST">
+        @csrf
+        <div class="bg-white rounded-lg shadow overflow-x-auto">
+            <div class="p-4 border-b flex items-center justify-between">
+                <div class="flex items-center">
+                    <input type="checkbox" id="select-all" class="mr-2 h-5 w-5 text-blue-600">
+                    <label for="select-all" class="text-sm font-medium text-gray-700">Select All</label>
+                </div>
+                <div class="flex items-center">
+                    <select name="action" class="mr-2 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                        <option value="">-- Select Action --</option>
+                        <option value="activate">Activate</option>
+                        <option value="deactivate">Deactivate</option>
+                        <option value="feature">Mark as Featured</option>
+                        <option value="unfeature">Remove Featured</option>
+                        <option value="delete">Delete</option>
+                    </select>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" onclick="return confirmBulkAction()">
+                        Apply
+                    </button>
+                </div>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Select
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Provider
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Location
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contact
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($providers as $provider)
+                    <tr>
+                        <td class="px-6 py-4">
+                            <input type="checkbox" name="ids[]" value="{{ $provider->id }}" class="item-checkbox h-5 w-5 text-blue-600">
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900">{{ $provider->name }}</div>
+                            <div class="text-sm text-gray-500">{{ $provider->type }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ $provider->city }}</div>
+                            <div class="text-sm text-gray-500">{{ $provider->state }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ $provider->phone }}</div>
+                            <div class="text-sm text-gray-500">{{ $provider->email }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-col space-y-1">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $provider->is_featured ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ $provider->is_featured ? 'Featured' : 'Standard' }}
+                                </span>
+                                @if(isset($provider->is_active))
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $provider->is_active ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $provider->is_active ? 'Active' : 'Inactive' }}
+                                </span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{{ route('admin.providers.edit', $provider->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                <form action="{{ route('admin.providers.destroy', $provider->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this provider?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
+                            @if(request('search') || request('type'))
+                                No healthcare providers found matching your criteria. <a href="{{ route('admin.providers.index') }}" class="text-blue-600 hover:underline">Clear filters</a>.
+                            @else
+                                No healthcare providers found. <a href="{{ route('admin.providers.create') }}" class="text-blue-600 hover:underline">Create one now</a>.
                             @endif
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
-                            <a href="{{ route('admin.providers.edit', $provider->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                            <form action="{{ route('admin.providers.destroy', $provider->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this provider?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
-                        @if(request('search') || request('type'))
-                            No healthcare providers found matching your criteria. <a href="{{ route('admin.providers.index') }}" class="text-blue-600 hover:underline">Clear filters</a>.
-                        @else
-                            No healthcare providers found. <a href="{{ route('admin.providers.create') }}" class="text-blue-600 hover:underline">Create one now</a>.
-                        @endif
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
     
     <div class="mt-4">
         {{ $providers->links() }}
     </div>
 </div>
+
+@push('scripts')
+<script>
+    // Select All functionality
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checked = this.checked;
+        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+            checkbox.checked = checked;
+        });
+    });
+    
+    // Confirm bulk action
+    function confirmBulkAction() {
+        const selectedCount = document.querySelectorAll('.item-checkbox:checked').length;
+        if (selectedCount === 0) {
+            alert('Please select at least one item.');
+            return false;
+        }
+        
+        const action = document.querySelector('select[name="action"]').value;
+        if (!action) {
+            alert('Please select an action to perform.');
+            return false;
+        }
+        
+        // Customized confirmation message based on action
+        let message = '';
+        
+        switch (action) {
+            case 'delete':
+                message = `Are you sure you want to delete ${selectedCount} selected provider(s)? This action cannot be undone.`;
+                break;
+            case 'activate':
+                message = `Are you sure you want to activate ${selectedCount} selected provider(s)?`;
+                break;
+            case 'deactivate':
+                message = `Are you sure you want to deactivate ${selectedCount} selected provider(s)?`;
+                break;
+            case 'feature':
+                message = `Are you sure you want to mark ${selectedCount} selected provider(s) as featured?`;
+                break;
+            case 'unfeature':
+                message = `Are you sure you want to remove ${selectedCount} selected provider(s) from featured?`;
+                break;
+            default:
+                message = `Are you sure you want to perform this action on ${selectedCount} selected provider(s)?`;
+        }
+        
+        return confirm(message);
+    }
+</script>
+@endpush
 @endsection 

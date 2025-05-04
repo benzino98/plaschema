@@ -63,14 +63,17 @@ Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewe
     // News Management
     Route::resource('news', AdminNewsController::class);
     Route::get('news/activity/logs', [AdminNewsController::class, 'activity'])->name('news.activity');
+    Route::post('news/bulk-action', [AdminNewsController::class, 'bulkAction'])->name('news.bulk-action');
     
     // Healthcare Providers Management
     Route::resource('providers', AdminProviderController::class);
     Route::get('providers/activity/logs', [AdminProviderController::class, 'activity'])->name('providers.activity');
+    Route::post('providers/bulk-action', [AdminProviderController::class, 'bulkAction'])->name('providers.bulk-action');
     
     // FAQ Management
     Route::resource('faqs', AdminFaqController::class);
     Route::get('faqs/activity/logs', [AdminFaqController::class, 'activity'])->name('faqs.activity');
+    Route::post('faqs/bulk-action', [AdminFaqController::class, 'bulkAction'])->name('faqs.bulk-action');
     
     // Role Management - restrict to super admin
     Route::resource('roles', RoleController::class)->middleware('role:super-admin');
