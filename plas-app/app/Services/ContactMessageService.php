@@ -99,9 +99,8 @@ class ContactMessageService
                 // Log the creation (no user if from public form)
                 if (Auth::check()) {
                     $this->activityLogService->log(
-                        'contact_message',
-                        'created',
-                        $message->id,
+                        'create',
+                        $message,
                         "Contact message created"
                     );
                 }
@@ -129,9 +128,8 @@ class ContactMessageService
                 
                 // Log the update
                 $this->activityLogService->log(
-                    'contact_message',
-                    'updated',
-                    $message->id,
+                    'update',
+                    $message,
                     "Contact message updated"
                 );
                 
@@ -164,9 +162,8 @@ class ContactMessageService
                 if ($result) {
                     // Log the deletion
                     $this->activityLogService->log(
-                        'contact_message',
-                        'deleted',
-                        $id,
+                        'delete',
+                        $message,
                         "Contact message deleted"
                     );
                 }
@@ -223,16 +220,20 @@ class ContactMessageService
     public function markAsRead(int $id): bool
     {
         try {
+            $message = $this->messageRepository->findById($id);
+            
+            if (!$message) {
+                return false;
+            }
+            
             $result = $this->messageRepository->markAsRead($id);
             
             if ($result) {
                 // Log the status change
                 $this->activityLogService->log(
                     'update',
-                    auth()->user()->id,
-                    'ContactMessage',
-                    $id,
-                    ['message' => 'Contact message marked as read']
+                    $message,
+                    'Contact message marked as read'
                 );
             }
             
@@ -252,6 +253,12 @@ class ContactMessageService
     public function markAsResponded(int $id): bool
     {
         try {
+            $message = $this->messageRepository->findById($id);
+            
+            if (!$message) {
+                return false;
+            }
+            
             $userId = Auth::id();
             $result = $this->messageRepository->markAsResponded($id, $userId);
             
@@ -259,10 +266,8 @@ class ContactMessageService
                 // Log the status change
                 $this->activityLogService->log(
                     'update',
-                    auth()->user()->id,
-                    'ContactMessage',
-                    $id,
-                    ['message' => 'Contact message marked as responded']
+                    $message,
+                    'Contact message marked as responded'
                 );
             }
             
@@ -282,15 +287,20 @@ class ContactMessageService
     public function archiveMessage(int $id): bool
     {
         try {
+            $message = $this->messageRepository->findById($id);
+            
+            if (!$message) {
+                return false;
+            }
+            
             $result = $this->messageRepository->archive($id);
             
             if ($result) {
                 // Log the archiving
                 $this->activityLogService->log(
-                    'contact_message',
-                    'updated',
-                    $id,
-                    "Contact message archived"
+                    'update',
+                    $message,
+                    'Contact message archived'
                 );
             }
             
@@ -421,9 +431,18 @@ class ContactMessageService
                 $data['archived_at'] = now();
             }
             
-            $this->messageRepository->update($id, $data);
+            $result = $this->messageRepository->update($id, $data);
             
-            return true;
+            if ($result) {
+                // Log the status update
+                $this->activityLogService->log(
+                    'update',
+                    $message,
+                    "Contact message status updated to '{$status}'"
+                );
+            }
+            
+            return $result;
         } catch (\Exception $e) {
             Log::error('Failed to update message status: ' . $e->getMessage());
             throw $e;

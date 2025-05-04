@@ -70,10 +70,8 @@ class ContactMessageController extends Controller
         
         $this->activityLogService->log(
             'view',
-            auth()->user()->id,
-            'ContactMessage',
-            $message->id,
-            ['message' => 'Viewed contact message from ' . $message->name]
+            $message,
+            'Viewed contact message from ' . $message->name
         );
         
         return view('admin.messages.show', compact('message'));
@@ -99,14 +97,10 @@ class ContactMessageController extends Controller
         
         $this->activityLogService->log(
             'update',
-            auth()->user()->id,
-            'ContactMessage',
-            $message->id,
-            [
-                'message' => 'Updated message status from ' . $oldStatus . ' to ' . $newStatus,
-                'old_status' => $oldStatus,
-                'new_status' => $newStatus
-            ]
+            $message,
+            'Updated message status from ' . $oldStatus . ' to ' . $newStatus,
+            ['old_status' => $oldStatus],
+            ['new_status' => $newStatus]
         );
         
         return redirect()->route('admin.messages.index')->with('success', 'Message status updated successfully.');
@@ -124,10 +118,8 @@ class ContactMessageController extends Controller
         
         $this->activityLogService->log(
             'update',
-            auth()->user()->id,
-            'ContactMessage',
-            $message->id,
-            ['message' => 'Marked message as responded']
+            $message,
+            'Marked message as responded'
         );
         
         return redirect()->route('admin.messages.index')->with('success', 'Message marked as responded.');
@@ -145,10 +137,8 @@ class ContactMessageController extends Controller
         
         $this->activityLogService->log(
             'update',
-            auth()->user()->id,
-            'ContactMessage',
-            $message->id,
-            ['message' => 'Archived contact message']
+            $message,
+            'Archived contact message'
         );
         
         return redirect()->route('admin.messages.index')->with('success', 'Message archived successfully.');
