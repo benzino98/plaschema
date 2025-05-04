@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class ActivityLog extends Model
 {
@@ -53,7 +54,8 @@ class ActivityLog extends Model
      */
     public function forEntity(Model $entity)
     {
-        $this->entity_type = get_class($entity);
+        // Store the short class name for easier readability and consistency
+        $this->entity_type = class_basename($entity);
         $this->entity_id = $entity->getKey();
         return $this;
     }
@@ -70,5 +72,22 @@ class ActivityLog extends Model
         }
         
         return null;
+    }
+    
+    /**
+     * Scope a query to filter logs by entity type.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $entityType
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForEntityType($query, string $entityType)
+    {
+        // If a full class name is provided, convert it to the short name
+        if (class_exists($entityType)) {
+            $entityType = class_basename($entityType);
+        }
+        
+        return $query->where('entity_type', $entityType);
     }
 } 

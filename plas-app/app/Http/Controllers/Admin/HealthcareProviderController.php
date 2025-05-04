@@ -206,45 +206,11 @@ class HealthcareProviderController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $query = \App\Models\ActivityLog::with('user')
-            ->where('entity_type', \App\Models\HealthcareProvider::class)
-            ->orderBy('created_at', 'desc');
-            
-        // Filter by action if specified
-        if ($request->has('action') && $request->action) {
-            $query->where('action', $request->action);
-        }
-        
-        // Filter by provider type (need to check old_values for deleted providers)
-        if ($request->has('type') && $request->type) {
-            $type = $request->type;
-            $query->where(function($q) use ($type) {
-                // For non-deleted providers, we can check directly
-                $q->whereHas('entity', function($q) use ($type) {
-                    $q->where('type', $type);
-                });
-                
-                // For deleted providers, we need to check old_values
-                $q->orWhere(function($q) use ($type) {
-                    $q->where('action', 'deleted')
-                      ->whereJsonContains('old_values->type', $type);
-                });
-            });
-        }
-        
-        // Filter by date range if specified
-        if ($request->has('from_date') && $request->from_date) {
-            $query->whereDate('created_at', '>=', $request->from_date);
-        }
-        
-        if ($request->has('to_date') && $request->to_date) {
-            $query->whereDate('created_at', '<=', $request->to_date);
-        }
-        
-        $logs = $query->paginate(20)->withQueryString();
+        // Get logs using activity log service
+        $logs = $this->activityLogService->getLogsByEntityType('HealthcareProvider', 20);
         
         // Get unique values for filters
-        $actions = \App\Models\ActivityLog::where('entity_type', \App\Models\HealthcareProvider::class)
+        $actions = \App\Models\ActivityLog::forEntityType('HealthcareProvider')
             ->distinct()
             ->pluck('action');
             
