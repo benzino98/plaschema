@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
@@ -26,7 +27,7 @@ class CheckRole
         $user = Auth::user();
         
         // Log for debugging
-        \Log::info('CheckRole middleware', [
+        Log::info('CheckRole middleware', [
             'user_id' => $user->id,
             'roles_required' => $roles,
             'uri' => $request->getRequestUri()

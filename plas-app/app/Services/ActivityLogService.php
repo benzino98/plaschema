@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\ActivityLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -46,7 +47,7 @@ class ActivityLogService
         
         try {
             $log->save();
-            \Illuminate\Support\Facades\Log::info('Activity log saved', [
+            Log::info('Activity log saved', [
                 'log_id' => $log->id,
                 'action' => $action,
                 'entity' => $entity ? get_class($entity) . ' #' . $entity->getKey() : 'None',
@@ -54,7 +55,7 @@ class ActivityLogService
                 'description' => $description
             ]);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to save activity log', [
+            Log::error('Failed to save activity log', [
                 'exception' => $e->getMessage(),
                 'action' => $action,
                 'entity' => $entity ? get_class($entity) . ' #' . $entity->getKey() : 'None',

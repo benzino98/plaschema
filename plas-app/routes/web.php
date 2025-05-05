@@ -94,8 +94,8 @@ Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewe
     });
     
     // Activity Log
-    Route::get('activities', [ActivityLogController::class, 'index'])->name('activities.index');
-    Route::get('activities/{activityLog}', [ActivityLogController::class, 'show'])->name('activities.show');
+    Route::get('activity', [ActivityLogController::class, 'index'])->name('activity.index');
+    Route::get('activity/{activityLog}', [ActivityLogController::class, 'show'])->name('activity.show');
 
     // Contact Message Management - restricted to super admin
     Route::middleware('role:super-admin')->group(function() {
