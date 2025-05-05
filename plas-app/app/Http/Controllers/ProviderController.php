@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\HealthcareProvider;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
@@ -14,6 +14,22 @@ class ProviderController extends Controller
      * Cache time in seconds
      */
     protected $cacheTime = 3600; // 1 hour
+    
+    /**
+     * The cache service instance
+     */
+    protected $cacheService;
+    
+    /**
+     * Create a new controller instance.
+     * 
+     * @param CacheService $cacheService
+     * @return void
+     */
+    public function __construct(CacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
 
     /**
      * Check if a column exists in the healthcare_providers table
@@ -38,7 +54,7 @@ class ProviderController extends Controller
         $hasProviderTypeColumn = $this->columnExists('provider_type');
         
         // Get all categories for filter dropdown from cache
-        $categories = Cache::remember('provider_categories', $this->cacheTime, function () {
+        $categories = $this->cacheService->remember('provider_categories', $this->cacheTime, function () {
             return HealthcareProvider::active()
                 ->select('category')
                 ->distinct()
@@ -47,7 +63,7 @@ class ProviderController extends Controller
         });
         
         // Get all cities for location filter dropdown from cache
-        $cities = Cache::remember('provider_cities', $this->cacheTime, function () {
+        $cities = $this->cacheService->remember('provider_cities', $this->cacheTime, function () {
             return HealthcareProvider::active()
                 ->select('city')
                 ->distinct()
@@ -58,7 +74,7 @@ class ProviderController extends Controller
         // Get provider types only if the column exists
         $providerTypes = collect();
         if ($hasProviderTypeColumn) {
-            $providerTypes = Cache::remember('provider_types', $this->cacheTime, function () {
+            $providerTypes = $this->cacheService->remember('provider_types', $this->cacheTime, function () {
                 return HealthcareProvider::active()
                     ->select('provider_type')
                     ->distinct()
@@ -125,7 +141,8 @@ class ProviderController extends Controller
             $page = $request->input('page', 1);
             
             // Get providers with pagination from cache or database
-            $providers = Cache::remember("providers_page_{$page}", $this->cacheTime, function () use ($page) {
+            $cacheKey = "providers_page_{$page}";
+            $providers = $this->cacheService->remember($cacheKey, $this->cacheTime, function () use ($page) {
                 return HealthcareProvider::active()->orderBy('name')->paginate(10, ['*'], 'page', $page);
             });
         }
@@ -158,12 +175,14 @@ class ProviderController extends Controller
     public function show($id)
     {
         // Get provider from cache or database
-        $provider = Cache::remember("provider_{$id}", $this->cacheTime, function () use ($id) {
+        $cacheKey = $this->cacheService->collectionKey(HealthcareProvider::class, ['id' => $id]);
+        $provider = $this->cacheService->remember($cacheKey, $this->cacheTime, function () use ($id) {
             return HealthcareProvider::active()->findOrFail($id);
         });
         
         // Get similar providers by category from cache or database
-        $similarProviders = Cache::remember("similar_providers_{$id}", $this->cacheTime, function () use ($provider) {
+        $similarCacheKey = "similar_providers_{$id}";
+        $similarProviders = $this->cacheService->remember($similarCacheKey, $this->cacheTime, function () use ($provider) {
             return HealthcareProvider::active()
                 ->where('id', '!=', $provider->id)
                 ->where(function($query) use ($provider) {

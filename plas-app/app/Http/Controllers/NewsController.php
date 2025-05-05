@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\News;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class NewsController extends Controller
 {
@@ -12,6 +12,22 @@ class NewsController extends Controller
      * Cache time in seconds
      */
     protected $cacheTime = 3600; // 1 hour
+    
+    /**
+     * The cache service instance
+     */
+    protected $cacheService;
+    
+    /**
+     * Create a new controller instance.
+     * 
+     * @param CacheService $cacheService
+     * @return void
+     */
+    public function __construct(CacheService $cacheService)
+    {
+        $this->cacheService = $cacheService;
+    }
 
     /**
      * Display a listing of the news.
@@ -47,7 +63,7 @@ class NewsController extends Controller
         // For non-search requests, use caching
         
         // Get featured news from cache or database
-        $featuredNews = Cache::remember('featured_news', $this->cacheTime, function () {
+        $featuredNews = $this->cacheService->remember('featured_news', $this->cacheTime, function () {
             return News::published()->featured()->latest('published_at')->take(3)->get();
         });
         
@@ -55,7 +71,8 @@ class NewsController extends Controller
         $page = $request->input('page', 1);
         
         // Get latest news with pagination from cache or database
-        $latestNews = Cache::remember("latest_news_page_{$page}", $this->cacheTime, function () use ($page) {
+        $cacheKey = $this->cacheService->collectionKey(News::class, ['page' => $page, 'type' => 'latest']);
+        $latestNews = $this->cacheService->remember($cacheKey, $this->cacheTime, function () use ($page) {
             return News::published()->latest('published_at')->paginate(9, ['*'], 'page', $page);
         });
 
@@ -75,12 +92,14 @@ class NewsController extends Controller
     public function show($slug)
     {
         // Get news article from cache or database
-        $news = Cache::remember("news_article_{$slug}", $this->cacheTime, function () use ($slug) {
+        $cacheKey = "news_article_{$slug}";
+        $news = $this->cacheService->remember($cacheKey, $this->cacheTime, function () use ($slug) {
             return News::where('slug', $slug)->published()->firstOrFail();
         });
         
         // Get related news from cache or database
-        $relatedNews = Cache::remember("related_news_{$news->id}", $this->cacheTime, function () use ($news) {
+        $relatedCacheKey = "related_news_{$news->id}";
+        $relatedNews = $this->cacheService->remember($relatedCacheKey, $this->cacheTime, function () use ($news) {
             return News::published()
                 ->where('id', '!=', $news->id)
                 ->latest('published_at')

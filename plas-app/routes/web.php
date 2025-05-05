@@ -5,6 +5,7 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\HealthcareProviderController as AdminProviderController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
@@ -39,6 +40,10 @@ Route::get('/news/{slug}', [NewsController::class, 'show'])->name('news.show');
 // FAQ Routes
 Route::get('/faqs', [FaqController::class, 'index'])->name('faqs.index');
 Route::get('/faq', [FaqController::class, 'index'])->name('faq');
+
+// Search Routes
+Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/search/results', [SearchController::class, 'search'])->name('search.results');
 
 // Contact Routes
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
