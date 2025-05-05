@@ -134,20 +134,38 @@ return [
     |
     */
 
-    'providers' => ServiceProvider::defaultProviders()->merge([
+    'providers' => \Illuminate\Support\ServiceProvider::defaultProviders()->merge([
         /*
          * Package Service Providers...
          */
+        Barryvdh\DomPDF\ServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
 
         /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
+        // App\Providers\AuthServiceProvider::class, // Removed since it doesn't exist
         // App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
+        // App\Providers\EventServiceProvider::class, // Removed if it doesn't exist
         App\Providers\RouteServiceProvider::class,
         App\Providers\CacheServiceProvider::class,
+        App\Providers\RepositoryServiceProvider::class,
     ])->toArray(),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Class Aliases
+    |--------------------------------------------------------------------------
+    |
+    | This array of class aliases will be registered when this application
+    | is started. However, feel free to register as many as you wish as
+    | the aliases are "lazy" loaded so they don't hinder performance.
+    |
+    */
+    'aliases' => [
+        // Other aliases...
+        'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+    ],
 ];
