@@ -1,0 +1,178 @@
+/**
+ * PLASCHEMA Form Validation and Accessibility Styles
+ */
+
+/* Form validation styling */
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.status-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.valid-icon {
+    color: #10b981; /* Success green color */
+}
+
+.invalid-icon {
+    color: #ef4444; /* Error red color */
+}
+
+/* Adjusted padding on inputs to accommodate the icon */
+.input-wrapper input,
+.input-wrapper select,
+.input-wrapper textarea {
+    padding-right: 40px;
+}
+
+/* Visual indicators for form validation states */
+.is-valid {
+    border-color: #10b981 !important;
+}
+
+.is-invalid {
+    border-color: #ef4444 !important;
+}
+
+/* Error message styles */
+.validation-error {
+    font-size: 0.875rem;
+    color: #ef4444;
+    margin-top: 0.25rem;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.form-error-message {
+    background-color: #fee2e2;
+    border-left: 4px solid #ef4444;
+    color: #b91c1c;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.25rem;
+    animation: slideDown 0.3s ease-in-out;
+}
+
+.form-error-message.fade-out {
+    animation: fadeOut 0.5s ease-in-out;
+}
+
+/* Required field indicator */
+.required-field::after {
+    content: " *";
+    color: #ef4444;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Accessibility enhancements */
+:focus {
+    outline: 2px solid #3b82f6 !important;
+    outline-offset: 2px !important;
+}
+
+/* Improved focus visibility for input fields */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: 2px solid #3b82f6 !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Skip to main content link */
+.skip-to-content {
+    background: #3b82f6;
+    color: white;
+    font-weight: 700;
+    left: 50%;
+    padding: 8px;
+    position: absolute;
+    transform: translateY(-100%) translateX(-50%);
+    transition: transform 0.3s;
+    z-index: 100;
+}
+
+.skip-to-content:focus {
+    transform: translateY(0%) translateX(-50%);
+}
+
+/* Improved color contrast for better readability */
+.plaschema-contrast-text {
+    color: #1f2937 !important; /* Darker text color for better contrast */
+}
+
+.plaschema-contrast-link {
+    color: #1d4ed8 !important; /* Darker link color for better contrast */
+}
+
+/* Enhanced form elements for better accessibility */
+input,
+select,
+textarea {
+    font-size: 1rem !important;
+}
+
+/* Provide better contrast for placeholder text */
+::placeholder {
+    color: #6b7280 !important;
+    opacity: 1 !important;
+}
+
+/* Improved button focus styles */
+.btn:focus,
+button:focus {
+    outline: 2px solid #3b82f6 !important;
+    outline-offset: 2px !important;
+}
+
+/* Make sure error messages are properly associated with form fields */
+[aria-invalid="true"] {
+    border-color: #ef4444 !important;
+}
+
+/* Larger clickable areas for form controls */
+input[type="checkbox"],
+input[type="radio"] {
+    min-width: 1.25rem;
+    min-height: 1.25rem;
+}

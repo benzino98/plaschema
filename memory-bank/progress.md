@@ -266,9 +266,3 @@ Project completion by component:
 - Add proper ARIA attributes throughout the site
 - Ensure proper keyboard navigation support
 - Improve color contrast for better readability
-
-3. **Prepare for User Account System**
-
-- Design user registration and login flows
-- Plan user profile management features
-- Determine scope of favorites and rating functionality

@@ -16,13 +16,13 @@
     <h1 class="text-3xl font-bold mb-6">Add Healthcare Provider</h1>
 
     <div class="bg-white rounded-lg shadow p-6">
-        <form action="{{ route('admin.providers.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.providers.store') }}" method="POST" enctype="multipart/form-data" data-validate="true">
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="mb-4">
                     <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Provider Name</label>
-                    <input type="text" name="name" id="name" value="{{ old('name') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('name') border-red-500 @enderror" required>
+                    <input type="text" name="name" id="name" value="{{ old('name') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('name') border-red-500 @enderror" required data-type="name">
                     @error('name')
                     <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                     @enderror
@@ -47,7 +47,7 @@
 
             <div class="mb-4">
                 <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Description</label>
-                <textarea name="description" id="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('description') border-red-500 @enderror" rows="4">{{ old('description') }}</textarea>
+                <textarea name="description" id="description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('description') border-red-500 @enderror" rows="4" required>{{ old('description') }}</textarea>
                 @error('description')
                 <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                 @enderror
@@ -84,7 +84,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="mb-4">
                     <label for="phone" class="block text-gray-700 text-sm font-bold mb-2">Phone Number</label>
-                    <input type="text" name="phone" id="phone" value="{{ old('phone') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('phone') border-red-500 @enderror" required>
+                    <input type="text" name="phone" id="phone" value="{{ old('phone') }}" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('phone') border-red-500 @enderror" required data-type="phone">
                     @error('phone')
                     <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                     @enderror
@@ -110,7 +110,7 @@
 
                 <div class="mb-4">
                     <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Category</label>
-                    <select name="category" id="category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('category') border-red-500 @enderror">
+                    <select name="category" id="category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('category') border-red-500 @enderror" required>
                         <option value="">Select Category</option>
                         <option value="Primary" {{ old('category') == 'Primary' ? 'selected' : '' }}>Primary</option>
                         <option value="Secondary" {{ old('category') == 'Secondary' ? 'selected' : '' }}>Secondary</option>
@@ -125,7 +125,7 @@
 
             <div class="mb-4">
                 <label for="services" class="block text-gray-700 text-sm font-bold mb-2">Services Offered</label>
-                <textarea name="services" id="services" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('services') border-red-500 @enderror" rows="3" placeholder="List services separated by commas">{{ old('services') }}</textarea>
+                <textarea name="services" id="services" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('services') border-red-500 @enderror" rows="3" placeholder="List services separated by commas" required>{{ old('services') }}</textarea>
                 <p class="text-gray-500 text-xs mt-1">Enter services separated by commas (e.g., General Medicine, Pediatrics, Surgery)</p>
                 @error('services')
                 <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
@@ -134,8 +134,8 @@
 
             <div class="mb-4">
                 <label for="logo" class="block text-gray-700 text-sm font-bold mb-2">Logo</label>
-                <input type="file" name="logo" id="logo" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('logo') border-red-500 @enderror">
-                <p class="text-gray-500 text-xs mt-1">Accepted formats: JPG, PNG, GIF (max: 2MB)</p>
+                <input type="file" name="logo" id="logo" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('logo') border-red-500 @enderror" aria-describedby="logo-help">
+                <p id="logo-help" class="text-gray-500 text-xs mt-1">Accepted formats: JPG, PNG, GIF (max: 2MB)</p>
                 @error('logo')
                 <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                 @enderror

@@ -73,11 +73,6 @@
    - ⏳ Ensure proper keyboard navigation support
    - ⏳ Improve color contrast for better readability
 
-3. Testing and Documentation
-   - ⏳ Add unit tests for new caching and notification functionality
-   - ⏳ Create documentation for the new responsive image system
-   - ⏳ Create system diagram for notification flow
-
 ### Medium-term (Next Month)
 
 1. Implement user account system for public site

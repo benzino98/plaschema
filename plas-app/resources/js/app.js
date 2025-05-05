@@ -1,4 +1,6 @@
 import "./bootstrap";
+import "./validation";
+import "./accessibility";
 
 import Alpine from "alpinejs";
 

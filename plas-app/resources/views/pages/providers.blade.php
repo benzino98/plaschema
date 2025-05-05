@@ -33,7 +33,7 @@
                         </div>
                         
                         <!-- Advanced Filter Options -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-{{ $hasProviderTypeColumn ? '3' : '2' }} gap-4">
                             <div>
                                 <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Filter by Category</label>
                                 <select id="category" name="category" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-plaschema focus:border-plaschema sm:text-sm rounded-md">
@@ -54,6 +54,7 @@
                                 </select>
                             </div>
                             
+                            @if($hasProviderTypeColumn)
                             <div>
                                 <label for="provider_type" class="block text-sm font-medium text-gray-700 mb-1">Filter by Provider Type</label>
                                 <select id="provider_type" name="provider_type" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-plaschema focus:border-plaschema sm:text-sm rounded-md">
@@ -63,6 +64,7 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @endif
                         </div>
                         
                         <!-- Search Button -->
@@ -81,7 +83,7 @@
             </div>
 
             <!-- Search Results Summary -->
-            @if(isset($searchQuery) && $searchQuery || isset($currentCategory) && $currentCategory || isset($currentCity) && $currentCity || isset($currentProviderType) && $currentProviderType)
+            @if(isset($searchQuery) && $searchQuery || isset($currentCategory) && $currentCategory || isset($currentCity) && $currentCity || (isset($hasProviderTypeColumn) && $hasProviderTypeColumn && isset($currentProviderType) && $currentProviderType))
                 <div class="mb-6">
                     <h2 class="text-xl font-semibold">
                         @if(count($providers) > 0)
@@ -119,7 +121,7 @@
                             </div>
                         @endif
                         
-                        @if($currentProviderType)
+                        @if(isset($hasProviderTypeColumn) && $hasProviderTypeColumn && $currentProviderType)
                             <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
                                 Provider Type: {{ $currentProviderType }}
                                 <a href="{{ route('providers.index', array_merge(request()->except('provider_type'), ['page' => 1])) }}" class="ml-2 text-gray-500 hover:text-gray-700">
@@ -130,7 +132,7 @@
                             </div>
                         @endif
                         
-                        @if($searchQuery || $currentCategory || $currentCity || $currentProviderType)
+                        @if($searchQuery || $currentCategory || $currentCity || (isset($hasProviderTypeColumn) && $hasProviderTypeColumn && $currentProviderType))
                             <div class="inline-flex items-center">
                                 <a href="{{ route('providers.index') }}" class="text-plaschema hover:underline text-sm">
                                     Clear all filters
