@@ -200,71 +200,94 @@
 
 @push('scripts')
 <script>
-    // Select All functionality
-    document.getElementById('select-all').addEventListener('change', function() {
-        const checked = this.checked;
-        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-            checkbox.checked = checked;
+    // Make sure DOM is fully loaded before attaching events
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select All functionality
+        const selectAllCheckbox = document.getElementById('select-all');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('click', function() {
+                // Toggle state for all checkboxes to match select-all checkbox
+                const checkboxes = document.querySelectorAll('.item-checkbox');
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = selectAllCheckbox.checked;
+                });
+            });
+            
+            // Also monitor individual checkboxes to update "select all" state
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.addEventListener('click', function() {
+                    // If any checkbox is unchecked, uncheck "select all"
+                    if (!this.checked) {
+                        selectAllCheckbox.checked = false;
+                    } 
+                    // If all checkboxes are checked, check "select all"
+                    else {
+                        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                        selectAllCheckbox.checked = allChecked;
+                    }
+                });
+            });
+        }
+        
+        // Toggle category select visibility based on action
+        document.getElementById('bulk-action-select').addEventListener('change', function() {
+            const categoryContainer = document.getElementById('category-select-container');
+            if (this.value === 'change-category') {
+                categoryContainer.classList.remove('hidden');
+            } else {
+                categoryContainer.classList.add('hidden');
+            }
         });
-    });
-    
-    // Toggle category select visibility based on action
-    document.getElementById('bulk-action-select').addEventListener('change', function() {
-        const categoryContainer = document.getElementById('category-select-container');
-        if (this.value === 'change-category') {
-            categoryContainer.classList.remove('hidden');
-        } else {
-            categoryContainer.classList.add('hidden');
-        }
-    });
-    
-    // Handle new category input
-    document.querySelector('select[name="category"]').addEventListener('change', function() {
-        const newCategoryInput = document.getElementById('new-category-input');
-        if (this.value === 'new-category') {
-            newCategoryInput.classList.remove('hidden');
-            newCategoryInput.focus();
-            // Set the actual category field to empty, will be filled by the new category input
-            this.selectedIndex = 0;
-        } else {
-            newCategoryInput.classList.add('hidden');
-        }
-    });
-    
-    // Handle new category submission
-    document.getElementById('new-category-input').addEventListener('blur', function() {
-        if (this.value.trim()) {
-            // Find the category select
-            const categorySelect = document.querySelector('select[name="category"]');
-            
-            // Check if this category already exists
-            let exists = false;
-            for (let i = 0; i < categorySelect.options.length; i++) {
-                if (categorySelect.options[i].value.toLowerCase() === this.value.trim().toLowerCase()) {
-                    categorySelect.selectedIndex = i;
-                    exists = true;
-                    break;
+        
+        // Handle new category input
+        document.querySelector('select[name="category"]').addEventListener('change', function() {
+            const newCategoryInput = document.getElementById('new-category-input');
+            if (this.value === 'new-category') {
+                newCategoryInput.classList.remove('hidden');
+                newCategoryInput.focus();
+                // Set the actual category field to empty, will be filled by the new category input
+                this.selectedIndex = 0;
+            } else {
+                newCategoryInput.classList.add('hidden');
+            }
+        });
+        
+        // Handle new category submission
+        document.getElementById('new-category-input').addEventListener('blur', function() {
+            if (this.value.trim()) {
+                // Find the category select
+                const categorySelect = document.querySelector('select[name="category"]');
+                
+                // Check if this category already exists
+                let exists = false;
+                for (let i = 0; i < categorySelect.options.length; i++) {
+                    if (categorySelect.options[i].value.toLowerCase() === this.value.trim().toLowerCase()) {
+                        categorySelect.selectedIndex = i;
+                        exists = true;
+                        break;
+                    }
                 }
-            }
-            
-            // If it doesn't exist, add it as a new option
-            if (!exists) {
-                const newOption = document.createElement('option');
-                newOption.value = this.value.trim();
-                newOption.text = this.value.trim();
                 
-                // Insert before the "Add New Category" option
-                const addNewOption = categorySelect.querySelector('option[value="new-category"]');
-                categorySelect.insertBefore(newOption, addNewOption);
+                // If it doesn't exist, add it as a new option
+                if (!exists) {
+                    const newOption = document.createElement('option');
+                    newOption.value = this.value.trim();
+                    newOption.text = this.value.trim();
+                    
+                    // Insert before the "Add New Category" option
+                    const addNewOption = categorySelect.querySelector('option[value="new-category"]');
+                    categorySelect.insertBefore(newOption, addNewOption);
+                    
+                    // Select the new option
+                    newOption.selected = true;
+                }
                 
-                // Select the new option
-                newOption.selected = true;
+                // Hide the input field
+                this.classList.add('hidden');
+                this.value = '';
             }
-            
-            // Hide the input field
-            this.classList.add('hidden');
-            this.value = '';
-        }
+        });
     });
     
     // Confirm bulk action

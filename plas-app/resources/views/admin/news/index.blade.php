@@ -166,12 +166,35 @@
 
 @push('scripts')
 <script>
-    // Select All functionality
-    document.getElementById('select-all').addEventListener('change', function() {
-        const checked = this.checked;
-        document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-            checkbox.checked = checked;
-        });
+    // Make sure DOM is fully loaded before attaching event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select All functionality
+        const selectAllCheckbox = document.getElementById('select-all');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('click', function() {
+                // Toggle state for all checkboxes to match select-all checkbox
+                const checkboxes = document.querySelectorAll('.item-checkbox');
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = selectAllCheckbox.checked;
+                });
+            });
+            
+            // Also monitor individual checkboxes to update "select all" state
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.addEventListener('click', function() {
+                    // If any checkbox is unchecked, uncheck "select all"
+                    if (!this.checked) {
+                        selectAllCheckbox.checked = false;
+                    } 
+                    // If all checkboxes are checked, check "select all"
+                    else {
+                        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                        selectAllCheckbox.checked = allChecked;
+                    }
+                });
+            });
+        }
     });
     
     // Confirm bulk action

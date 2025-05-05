@@ -1,14 +1,47 @@
-@props(['title' => '', 'image' => null, 'icon' => null, 'animation' => 'fade-in', 'url' => null])
+@props([
+    'title' => '', 
+    'image' => null, 
+    'imageSmall' => null,
+    'imageMedium' => null,
+    'imageLarge' => null,
+    'icon' => null, 
+    'animation' => 'fade-in', 
+    'url' => null
+])
 
 <div {{ $attributes->merge(['class' => 'card rounded-lg shadow-md p-6 md:p-8 ' . $animation]) }}>
     @if($image)
         <div class="mb-4 overflow-hidden rounded-lg -mt-6 -mx-6 md:-mx-8 md:-mt-8">
             @if($url)
                 <a href="{{ $url }}">
-                    <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-auto object-cover transition-transform duration-300 hover:scale-105" loading="lazy">
+                    @if($imageSmall || $imageMedium || $imageLarge)
+                        <x-responsive-image
+                            :path-small="$imageSmall"
+                            :path-medium="$imageMedium"
+                            :path-large="$imageLarge"
+                            :path-original="$image"
+                            :alt="$title"
+                            class="w-full h-auto object-cover transition-transform duration-300 hover:scale-105"
+                            loading="lazy"
+                        />
+                    @else
+                        <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-auto object-cover transition-transform duration-300 hover:scale-105" loading="lazy">
+                    @endif
                 </a>
             @else
-                <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-auto object-cover" loading="lazy">
+                @if($imageSmall || $imageMedium || $imageLarge)
+                    <x-responsive-image
+                        :path-small="$imageSmall"
+                        :path-medium="$imageMedium"
+                        :path-large="$imageLarge"
+                        :path-original="$image"
+                        :alt="$title"
+                        class="w-full h-auto object-cover"
+                        loading="lazy"
+                    />
+                @else
+                    <img src="{{ $image }}" alt="{{ $title }}" class="w-full h-auto object-cover" loading="lazy">
+                @endif
             @endif
         </div>
     @endif

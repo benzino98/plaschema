@@ -77,12 +77,15 @@ class NewsController extends Controller
         
         // Handle file upload with optimization
         if ($request->hasFile('image')) {
-            $validated['image_path'] = $this->imageService->store(
+            $imagePaths = $this->imageService->storeResponsive(
                 $request->file('image'),
-                'news',
-                1200, // Max width
-                800   // Max height
+                'news'
             );
+            
+            $validated['image_path'] = $imagePaths['original'];
+            $validated['image_path_small'] = $imagePaths['small'];
+            $validated['image_path_medium'] = $imagePaths['medium'];
+            $validated['image_path_large'] = $imagePaths['large'];
         }
 
         try {
@@ -133,17 +136,29 @@ class NewsController extends Controller
         try {
             // Handle file upload with optimization
             if ($request->hasFile('image')) {
-                // Delete old image if exists
+                // Delete old images if they exist
                 if ($news->image_path) {
                     $this->imageService->delete($news->image_path);
                 }
+                if ($news->image_path_small) {
+                    $this->imageService->delete($news->image_path_small);
+                }
+                if ($news->image_path_medium) {
+                    $this->imageService->delete($news->image_path_medium);
+                }
+                if ($news->image_path_large) {
+                    $this->imageService->delete($news->image_path_large);
+                }
                 
-                $validated['image_path'] = $this->imageService->store(
+                $imagePaths = $this->imageService->storeResponsive(
                     $request->file('image'),
-                    'news',
-                    1200, // Max width
-                    800   // Max height
+                    'news'
                 );
+                
+                $validated['image_path'] = $imagePaths['original'];
+                $validated['image_path_small'] = $imagePaths['small'];
+                $validated['image_path_medium'] = $imagePaths['medium'];
+                $validated['image_path_large'] = $imagePaths['large'];
             }
 
             $news->update($validated);
@@ -170,6 +185,15 @@ class NewsController extends Controller
             // Delete image if exists
             if ($news->image_path) {
                 $this->imageService->delete($news->image_path);
+            }
+            if ($news->image_path_small) {
+                $this->imageService->delete($news->image_path_small);
+            }
+            if ($news->image_path_medium) {
+                $this->imageService->delete($news->image_path_medium);
+            }
+            if ($news->image_path_large) {
+                $this->imageService->delete($news->image_path_large);
             }
             
             // Log the activity before deletion
@@ -216,6 +240,15 @@ class NewsController extends Controller
                         // Delete image if exists
                         if ($news->image_path) {
                             $this->imageService->delete($news->image_path);
+                        }
+                        if ($news->image_path_small) {
+                            $this->imageService->delete($news->image_path_small);
+                        }
+                        if ($news->image_path_medium) {
+                            $this->imageService->delete($news->image_path_medium);
+                        }
+                        if ($news->image_path_large) {
+                            $this->imageService->delete($news->image_path_large);
                         }
                         
                         // Log the activity before deletion

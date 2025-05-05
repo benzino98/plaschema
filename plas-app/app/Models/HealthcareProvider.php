@@ -25,6 +25,9 @@ class HealthcareProvider extends Model
         'email',
         'services',
         'logo_path',
+        'logo_path_small',
+        'logo_path_medium',
+        'logo_path_large',
         'category',
         'status',
     ];

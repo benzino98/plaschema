@@ -10,7 +10,79 @@ use Illuminate\Support\Str;
 class ImageService
 {
     /**
-     * Process and store an uploaded image with optimization
+     * Responsive image size configurations
+     */
+    protected $sizes = [
+        'small' => ['width' => 400, 'height' => null],
+        'medium' => ['width' => 800, 'height' => null],
+        'large' => ['width' => 1200, 'height' => null],
+    ];
+
+    /**
+     * Process and store an uploaded image with responsive versions
+     *
+     * @param UploadedFile $image The uploaded image file
+     * @param string $path The storage path (e.g., 'news', 'providers')
+     * @param bool $generateResponsive Whether to generate responsive versions
+     * @param bool $maintainAspectRatio Whether to maintain aspect ratio when resizing
+     * @return array The paths to the stored images
+     */
+    public function storeResponsive(
+        UploadedFile $image, 
+        string $path, 
+        bool $generateResponsive = true,
+        bool $maintainAspectRatio = true
+    ): array {
+        // Generate a unique filename with the original extension
+        $extension = $image->getClientOriginalExtension();
+        $baseFilename = Str::uuid();
+        $result = [];
+        
+        // Process and store each size if responsive is enabled
+        if ($generateResponsive) {
+            foreach ($this->sizes as $sizeName => $dimensions) {
+                $filename = "{$baseFilename}_{$sizeName}.{$extension}";
+                $fullPath = $path . '/' . $filename;
+                
+                // Create image instance and resize
+                $img = Image::make($image);
+                
+                // Resize based on dimensions
+                if ($maintainAspectRatio) {
+                    $img->resize($dimensions['width'], $dimensions['height'], function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+                } else {
+                    $img->resize($dimensions['width'], $dimensions['height']);
+                }
+                
+                // Optimize the image (reduce quality slightly to save space)
+                $img->encode($extension, 80);
+                
+                // Store the processed image
+                Storage::disk('public')->put($fullPath, $img->stream());
+                
+                $result["{$sizeName}"] = $fullPath;
+            }
+        }
+        
+        // Always store the original version
+        $originalFilename = "{$baseFilename}_original.{$extension}";
+        $originalFullPath = $path . '/' . $originalFilename;
+        
+        // Store the original image with minimal compression
+        $originalImg = Image::make($image);
+        $originalImg->encode($extension, 90);
+        Storage::disk('public')->put($originalFullPath, $originalImg->stream());
+        
+        $result['original'] = $originalFullPath;
+        
+        return $result;
+    }
+
+    /**
+     * Process and store an uploaded image with optimization (legacy method)
      *
      * @param UploadedFile $image The uploaded image file
      * @param string $path The storage path (e.g., 'news', 'providers')
@@ -66,5 +138,28 @@ class ImageService
         }
         
         return Storage::disk('public')->delete($path);
+    }
+    
+    /**
+     * Delete responsive images from storage
+     *
+     * @param array $paths Array of image paths
+     * @return bool Whether all deletions were successful
+     */
+    public function deleteResponsive(?array $paths): bool
+    {
+        if (!$paths || empty($paths)) {
+            return false;
+        }
+        
+        $success = true;
+        
+        foreach ($paths as $path) {
+            if (!Storage::disk('public')->delete($path)) {
+                $success = false;
+            }
+        }
+        
+        return $success;
     }
 } 

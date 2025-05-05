@@ -10,6 +10,9 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Notifications\NewContactMessageNotification;
+use Illuminate\Support\Facades\Cache;
 
 class ContactMessageService
 {
@@ -104,6 +107,12 @@ class ContactMessageService
                         "Contact message created"
                     );
                 }
+                
+                // Clear the unread count cache since we've added a new message
+                Cache::forget('unread_messages_count');
+                
+                // Notify super admin users about the new message
+                $this->notifySuperAdmins($message);
                 
                 return $message;
             });
@@ -235,6 +244,9 @@ class ContactMessageService
                     $message,
                     'Contact message marked as read'
                 );
+                
+                // Clear the unread count cache since we've read a message
+                Cache::forget('unread_messages_count');
             }
             
             return $result;
@@ -362,7 +374,10 @@ class ContactMessageService
      */
     public function getUnreadCount(): int
     {
-        return $this->messageRepository->getUnread(1)->total();
+        // Cache the unread count for 15 minutes to reduce database queries
+        return Cache::remember('unread_messages_count', 900, function () {
+            return $this->messageRepository->getUnread(1)->total();
+        });
     }
 
     /**
@@ -446,6 +461,31 @@ class ContactMessageService
         } catch (\Exception $e) {
             Log::error('Failed to update message status: ' . $e->getMessage());
             throw $e;
+        }
+    }
+
+    /**
+     * Notify super admin users about a new contact message
+     *
+     * @param ContactMessage $message
+     * @return void
+     */
+    private function notifySuperAdmins(ContactMessage $message): void
+    {
+        try {
+            // Get all super admin users
+            $superAdmins = User::role('super-admin')->get();
+            
+            foreach ($superAdmins as $admin) {
+                $admin->notify(new NewContactMessageNotification($message));
+            }
+            
+            if (count($superAdmins) > 0) {
+                Log::info('Sent notifications about new contact message to ' . count($superAdmins) . ' super admin(s)');
+            }
+        } catch (\Exception $e) {
+            // Just log the error but don't throw it to avoid disrupting the message creation
+            Log::error('Failed to send notifications for new contact message: ' . $e->getMessage());
         }
     }
 } 

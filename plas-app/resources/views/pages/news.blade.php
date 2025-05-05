@@ -56,6 +56,9 @@
                     <x-card 
                         title="{{ $item->title }}" 
                         image="{{ $item->image_path ? asset('storage/' . $item->image_path) : asset('images/news-placeholder.jpg') }}"
+                        imageSmall="{{ $item->image_path_small ? asset('storage/' . $item->image_path_small) : null }}"
+                        imageMedium="{{ $item->image_path_medium ? asset('storage/' . $item->image_path_medium) : null }}"
+                        imageLarge="{{ $item->image_path_large ? asset('storage/' . $item->image_path_large) : null }}"
                         animation="slide-up"
                         url="{{ route('news.show', $item->slug) }}"
                     >
@@ -84,6 +87,9 @@
                     <x-card 
                         title="{{ $item->title }}" 
                         image="{{ $item->image_path ? asset('storage/' . $item->image_path) : asset('images/news-placeholder.jpg') }}"
+                        imageSmall="{{ $item->image_path_small ? asset('storage/' . $item->image_path_small) : null }}"
+                        imageMedium="{{ $item->image_path_medium ? asset('storage/' . $item->image_path_medium) : null }}"
+                        imageLarge="{{ $item->image_path_large ? asset('storage/' . $item->image_path_large) : null }}"
                         animation="slide-up"
                         url="{{ route('news.show', $item->slug) }}"
                     >

@@ -57,7 +57,15 @@
                 <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Featured Image</label>
                 @if($news->image_path)
                 <div class="mb-2">
-                    <img src="{{ asset('storage/' . $news->image_path) }}" alt="{{ $news->title }}" class="w-48 h-auto mb-2" loading="lazy">
+                    <x-responsive-image
+                        :path-small="$news->image_path_small"
+                        :path-medium="$news->image_path_medium"
+                        :path-large="$news->image_path_large"
+                        :path-original="$news->image_path"
+                        :alt="$news->title"
+                        class="w-48 h-auto mb-2"
+                        loading="lazy"
+                    />
                     <p class="text-sm text-gray-500">Current image</p>
                 </div>
                 @endif

@@ -27,8 +27,13 @@ class News extends Model
         'excerpt',
         'content',
         'image_path',
-        'published_at',
+        'image_path_small',
+        'image_path_medium',
+        'image_path_large',
+        'is_published',
         'is_featured',
+        'published_at',
+        'category_id',
     ];
 
     /**

@@ -89,12 +89,15 @@ class HealthcareProviderController extends Controller
         try {
             // Handle file upload with optimization
             if ($request->hasFile('image')) {
-                $validated['image_path'] = $this->imageService->store(
+                $imagePaths = $this->imageService->storeResponsive(
                     $request->file('image'),
-                    'providers',
-                    800, // Max width
-                    600   // Max height
+                    'providers'
                 );
+                
+                $validated['logo_path'] = $imagePaths['original'];
+                $validated['logo_path_small'] = $imagePaths['small'];
+                $validated['logo_path_medium'] = $imagePaths['medium'];
+                $validated['logo_path_large'] = $imagePaths['large'];
             }
             
             $provider = HealthcareProvider::create($validated);
@@ -144,17 +147,29 @@ class HealthcareProviderController extends Controller
         try {
             // Handle file upload with optimization
             if ($request->hasFile('image')) {
-                // Delete old image if exists
-                if ($provider->image_path) {
-                    $this->imageService->delete($provider->image_path);
+                // Delete old images if they exist
+                if ($provider->logo_path) {
+                    $this->imageService->delete($provider->logo_path);
+                }
+                if ($provider->logo_path_small) {
+                    $this->imageService->delete($provider->logo_path_small);
+                }
+                if ($provider->logo_path_medium) {
+                    $this->imageService->delete($provider->logo_path_medium);
+                }
+                if ($provider->logo_path_large) {
+                    $this->imageService->delete($provider->logo_path_large);
                 }
                 
-                $validated['image_path'] = $this->imageService->store(
+                $imagePaths = $this->imageService->storeResponsive(
                     $request->file('image'),
-                    'providers',
-                    800, // Max width
-                    600   // Max height
+                    'providers'
                 );
+                
+                $validated['logo_path'] = $imagePaths['original'];
+                $validated['logo_path_small'] = $imagePaths['small'];
+                $validated['logo_path_medium'] = $imagePaths['medium'];
+                $validated['logo_path_large'] = $imagePaths['large'];
             }
             
             $provider->update($validated);
@@ -179,8 +194,17 @@ class HealthcareProviderController extends Controller
         
         try {
             // Delete image if exists
-            if ($provider->image_path) {
-                $this->imageService->delete($provider->image_path);
+            if ($provider->logo_path) {
+                $this->imageService->delete($provider->logo_path);
+            }
+            if ($provider->logo_path_small) {
+                $this->imageService->delete($provider->logo_path_small);
+            }
+            if ($provider->logo_path_medium) {
+                $this->imageService->delete($provider->logo_path_medium);
+            }
+            if ($provider->logo_path_large) {
+                $this->imageService->delete($provider->logo_path_large);
             }
             
             // Log the activity before deletion
@@ -252,8 +276,17 @@ class HealthcareProviderController extends Controller
                 case 'delete':
                     foreach ($providers as $provider) {
                         // Delete image if exists
-                        if ($provider->image_path) {
-                            $this->imageService->delete($provider->image_path);
+                        if ($provider->logo_path) {
+                            $this->imageService->delete($provider->logo_path);
+                        }
+                        if ($provider->logo_path_small) {
+                            $this->imageService->delete($provider->logo_path_small);
+                        }
+                        if ($provider->logo_path_medium) {
+                            $this->imageService->delete($provider->logo_path_medium);
+                        }
+                        if ($provider->logo_path_large) {
+                            $this->imageService->delete($provider->logo_path_large);
                         }
                         
                         // Log the activity before deletion
