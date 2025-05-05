@@ -58,3 +58,15 @@
 - Skip caching for personalized search results
 - Use progressive loading for search result displays
 - Implement context-specific empty states for no results
+
+## API Implementation
+
+- Use Laravel Sanctum for API authentication
+- Implement OpenAPI/Swagger annotations for API documentation
+- Use API resources for consistent data transformation
+- Apply cache tags for optimized API response caching
+- Use proper HTTP status codes for different response types
+- Validate all API inputs with appropriate validation rules
+- Include proper error messages in API responses
+- Implement pagination for list endpoints
+- Add filtering options for collections
