@@ -32,19 +32,48 @@
                             </div>
                         </div>
                         
-                        <div class="md:w-1/3">
-                            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Filter by Category</label>
-                            <select id="category" name="category" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-plaschema focus:border-plaschema sm:text-sm rounded-md">
-                                <option value="">All Categories</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category }}" {{ $currentCategory == $category ? 'selected' : '' }}>{{ $category }}</option>
-                                @endforeach
-                            </select>
+                        <!-- Advanced Filter Options -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Filter by Category</label>
+                                <select id="category" name="category" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-plaschema focus:border-plaschema sm:text-sm rounded-md">
+                                    <option value="">All Categories</option>
+                                    @foreach($categories as $category)
+                                        <option value="{{ $category }}" {{ $currentCategory == $category ? 'selected' : '' }}>{{ $category }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">Filter by Location</label>
+                                <select id="city" name="city" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-plaschema focus:border-plaschema sm:text-sm rounded-md">
+                                    <option value="">All Locations</option>
+                                    @foreach($cities as $city)
+                                        <option value="{{ $city }}" {{ $currentCity == $city ? 'selected' : '' }}>{{ $city }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="provider_type" class="block text-sm font-medium text-gray-700 mb-1">Filter by Provider Type</label>
+                                <select id="provider_type" name="provider_type" class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-plaschema focus:border-plaschema sm:text-sm rounded-md">
+                                    <option value="">All Provider Types</option>
+                                    @foreach($providerTypes as $type)
+                                        <option value="{{ $type }}" {{ $currentProviderType == $type ? 'selected' : '' }}>{{ $type }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                         
-                        <div class="md:flex-shrink-0 flex items-end">
-                            <button type="submit" class="w-full md:w-auto bg-plaschema hover:bg-plaschema-dark text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-150">
-                                Search
+                        <!-- Search Button -->
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-plaschema hover:bg-plaschema-dark text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-150">
+                                <span class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    Search
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -52,18 +81,63 @@
             </div>
 
             <!-- Search Results Summary -->
-            @if(isset($searchQuery) && $searchQuery)
+            @if(isset($searchQuery) && $searchQuery || isset($currentCategory) && $currentCategory || isset($currentCity) && $currentCity || isset($currentProviderType) && $currentProviderType)
                 <div class="mb-6">
                     <h2 class="text-xl font-semibold">
                         @if(count($providers) > 0)
-                            Found {{ $providers->total() }} result(s) for "{{ $searchQuery }}"
+                            Found {{ $providers->total() }} result(s)
+                            @if(isset($searchQuery) && $searchQuery)
+                                for "{{ $searchQuery }}"
+                            @endif
                         @else
-                            No results found for "{{ $searchQuery }}"
+                            No results found
+                            @if(isset($searchQuery) && $searchQuery)
+                                for "{{ $searchQuery }}"
+                            @endif
                         @endif
                     </h2>
-                    @if($currentCategory)
-                        <p class="text-gray-600">Filtered by category: {{ $currentCategory }}</p>
-                    @endif
+                    <div class="text-gray-600 flex flex-wrap gap-2 mt-2">
+                        @if($currentCategory)
+                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                                Category: {{ $currentCategory }}
+                                <a href="{{ route('providers.index', array_merge(request()->except('category'), ['page' => 1])) }}" class="ml-2 text-gray-500 hover:text-gray-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        @endif
+                        
+                        @if($currentCity)
+                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                                Location: {{ $currentCity }}
+                                <a href="{{ route('providers.index', array_merge(request()->except('city'), ['page' => 1])) }}" class="ml-2 text-gray-500 hover:text-gray-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        @endif
+                        
+                        @if($currentProviderType)
+                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                                Provider Type: {{ $currentProviderType }}
+                                <a href="{{ route('providers.index', array_merge(request()->except('provider_type'), ['page' => 1])) }}" class="ml-2 text-gray-500 hover:text-gray-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        @endif
+                        
+                        @if($searchQuery || $currentCategory || $currentCity || $currentProviderType)
+                            <div class="inline-flex items-center">
+                                <a href="{{ route('providers.index') }}" class="text-plaschema hover:underline text-sm">
+                                    Clear all filters
+                                </a>
+                            </div>
+                        @endif
+                    </div>
                 </div>
             @endif
 
@@ -79,7 +153,7 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200" id="provider-list">
                         @foreach($providers as $provider)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -145,12 +219,98 @@
                 </table>
             </div>
 
+            <!-- Skeleton Loading Template (Hidden by default) -->
+            <template id="provider-skeleton-template">
+                <tr>
+                    <td colspan="5" class="px-6 py-4">
+                        <x-skeleton-loader type="table-row" />
+                    </td>
+                </tr>
+            </template>
+
             <!-- Pagination -->
             @if($providers->hasPages())
                 <div class="mt-6 flex justify-center">
                     {{ $providers->links() }}
                 </div>
             @endif
+
+            <!-- Progressive Loading Script -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Set up intersection observer for pagination links
+                    if (document.querySelector('.pagination')) {
+                        const observer = new IntersectionObserver((entries) => {
+                            entries.forEach(entry => {
+                                if (entry.isIntersecting) {
+                                    const nextPageLink = document.querySelector('.pagination a[rel="next"]');
+                                    if (nextPageLink) {
+                                        loadNextPage(nextPageLink.href);
+                                    }
+                                }
+                            });
+                        }, { threshold: 0.5 });
+                        
+                        // Observe the pagination element
+                        observer.observe(document.querySelector('.pagination'));
+                        
+                        // Function to load next page of providers
+                        function loadNextPage(url) {
+                            // Show skeleton loaders
+                            showSkeletonLoaders(3);
+                            
+                            fetch(url)
+                                .then(response => response.text())
+                                .then(html => {
+                                    // Create a temporary container
+                                    const tempContainer = document.createElement('div');
+                                    tempContainer.innerHTML = html;
+                                    
+                                    // Remove skeleton loaders
+                                    removeSkeletonLoaders();
+                                    
+                                    // Extract providers from next page
+                                    const newProviders = tempContainer.querySelectorAll('#provider-list tr');
+                                    const providerList = document.getElementById('provider-list');
+                                    
+                                    // Append new providers
+                                    newProviders.forEach(provider => {
+                                        providerList.appendChild(provider.cloneNode(true));
+                                    });
+                                    
+                                    // Update pagination with the new one
+                                    const newPagination = tempContainer.querySelector('.pagination');
+                                    if (newPagination) {
+                                        document.querySelector('.pagination').innerHTML = newPagination.innerHTML;
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error loading providers:', error);
+                                    removeSkeletonLoaders();
+                                });
+                        }
+                        
+                        // Function to show skeleton loaders
+                        function showSkeletonLoaders(count) {
+                            const template = document.getElementById('provider-skeleton-template');
+                            const providerList = document.getElementById('provider-list');
+                            
+                            for (let i = 0; i < count; i++) {
+                                const clone = document.importNode(template.content, true);
+                                clone.querySelector('tr').classList.add('skeleton-loader');
+                                providerList.appendChild(clone);
+                            }
+                        }
+                        
+                        // Function to remove skeleton loaders
+                        function removeSkeletonLoaders() {
+                            document.querySelectorAll('.skeleton-loader').forEach(loader => {
+                                loader.remove();
+                            });
+                        }
+                    }
+                });
+            </script>
         @else
             <!-- No Providers or Coming Soon -->
             <div class="text-center py-16">

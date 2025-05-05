@@ -19,6 +19,16 @@ class ImageService
     ];
 
     /**
+     * Compression quality settings
+     */
+    protected $compressionLevels = [
+        'small' => 70,    // Higher compression for small images
+        'medium' => 75,   // Medium compression for medium images
+        'large' => 80,    // Lower compression for large images
+        'original' => 85  // Minimal compression for original images
+    ];
+
+    /**
      * Process and store an uploaded image with responsive versions
      *
      * @param UploadedFile $image The uploaded image file
@@ -57,8 +67,8 @@ class ImageService
                     $img->resize($dimensions['width'], $dimensions['height']);
                 }
                 
-                // Optimize the image (reduce quality slightly to save space)
-                $img->encode($extension, 80);
+                // Apply advanced optimization
+                $this->optimizeImage($img, $extension, $sizeName);
                 
                 // Store the processed image
                 Storage::disk('public')->put($fullPath, $img->stream());
@@ -73,12 +83,42 @@ class ImageService
         
         // Store the original image with minimal compression
         $originalImg = Image::make($image);
-        $originalImg->encode($extension, 90);
+        $this->optimizeImage($originalImg, $extension, 'original');
         Storage::disk('public')->put($originalFullPath, $originalImg->stream());
         
         $result['original'] = $originalFullPath;
         
         return $result;
+    }
+
+    /**
+     * Optimize an image based on its type and target size
+     *
+     * @param \Intervention\Image\Image $img The image instance
+     * @param string $extension The image extension/format
+     * @param string $sizeName The target size name (small, medium, large, original)
+     * @return void
+     */
+    protected function optimizeImage($img, string $extension, string $sizeName): void
+    {
+        // Get the appropriate compression level for this size
+        $quality = $this->compressionLevels[$sizeName] ?? 80;
+        
+        // Apply format-specific optimizations
+        if (in_array(strtolower($extension), ['jpg', 'jpeg'])) {
+            // For JPEG, we can apply some additional filtering
+            $img->encode('jpg', $quality);
+        } elseif (strtolower($extension) === 'png') {
+            // For PNG, optimize with lower color depth if it's not the original
+            if ($sizeName !== 'original') {
+                // Try to reduce color palette for smaller file size
+                $img->limitColors(256);
+            }
+            $img->encode('png', $quality);
+        } else {
+            // Default encoding for other formats
+            $img->encode($extension, $quality);
+        }
     }
 
     /**
@@ -116,8 +156,8 @@ class ImageService
             }
         }
         
-        // Optimize the image (reduce quality slightly to save space)
-        $img->encode($image->getClientOriginalExtension(), 80);
+        // Apply advanced optimization
+        $this->optimizeImage($img, $image->getClientOriginalExtension(), 'large');
         
         // Store the processed image
         Storage::disk('public')->put($fullPath, $img->stream());
