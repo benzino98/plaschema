@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ContactMessageController;
+use App\Http\Controllers\Admin\AnalyticsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -104,6 +105,13 @@ Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewe
         Route::put('messages/{message}/respond', [ContactMessageController::class, 'markResponded'])->name('messages.respond');
         Route::put('messages/{message}/archive', [ContactMessageController::class, 'archive'])->name('messages.archive');
         Route::get('messages/activity/logs', [ContactMessageController::class, 'activity'])->name('messages.activity');
+    });
+    
+    // Analytics Dashboard - restricted to super admin and admin
+    Route::middleware('role:super-admin,admin')->group(function() {
+        Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.dashboard');
+        Route::get('analytics/reports', [AnalyticsController::class, 'showReportForm'])->name('analytics.reports');
+        Route::match(['get', 'post'], 'analytics/generate-report', [AnalyticsController::class, 'generateReport'])->name('analytics.generate-report');
     });
 });
 

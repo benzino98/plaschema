@@ -99,6 +99,12 @@ class RoleAndPermissionSeeder extends Seeder
             'activity-logs' => [
                 'view-activity-logs' => 'View activity logs',
             ],
+            
+            // Analytics permissions
+            'analytics' => [
+                'view-analytics' => 'View analytics dashboard',
+                'generate-reports' => 'Generate analytics reports',
+            ],
         ];
 
         // Create all permissions
