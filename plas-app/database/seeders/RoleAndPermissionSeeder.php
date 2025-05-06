@@ -105,6 +105,11 @@ class RoleAndPermissionSeeder extends Seeder
                 'view-analytics' => 'View analytics dashboard',
                 'generate-reports' => 'Generate analytics reports',
             ],
+            
+            // Translation permissions
+            'translations' => [
+                'manage_translations' => 'Manage translations',
+            ],
         ];
 
         // Create all permissions

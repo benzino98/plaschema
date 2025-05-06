@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Http\Middleware\CacheHeadersMiddleware;
 use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -40,6 +41,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             CacheHeadersMiddleware::class, // Apply cache headers to all web routes
+            SetLocale::class, // Set application locale based on user preferences
         ],
 
         'api' => [
@@ -70,5 +72,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'role' => CheckRole::class,
         'permission' => CheckPermission::class,
+        'localize' => SetLocale::class,
     ];
 } 

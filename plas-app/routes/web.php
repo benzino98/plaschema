@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\TranslationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -112,6 +113,13 @@ Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewe
         Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics')->withoutMiddleware('CheckPermission');
         Route::get('analytics/reports', [AnalyticsController::class, 'showReportForm'])->name('analytics.reports')->withoutMiddleware('CheckPermission');
         Route::match(['get', 'post'], 'analytics/generate-report', [AnalyticsController::class, 'generateReport'])->name('analytics.generate-report')->withoutMiddleware('CheckPermission');
+    });
+    
+    // Translation Management - restricted to super admin 
+    Route::middleware('role:super-admin')->group(function() {
+        Route::resource('translations', TranslationController::class)->except(['show']);
+        Route::post('translations/import', [TranslationController::class, 'import'])->name('translations.import');
+        Route::post('translations/export', [TranslationController::class, 'export'])->name('translations.export');
     });
 });
 
