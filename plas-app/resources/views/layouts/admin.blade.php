@@ -104,7 +104,6 @@
                                 <span>Activity Log</span>
                             </a>
                         </li>
-                        @can('view-analytics')
                         <li>
                             <a href="{{ route('admin.analytics') }}" class="px-4 py-2 flex items-center space-x-3 text-gray-300 hover:bg-gray-800 rounded {{ request()->routeIs('admin.analytics*') ? 'bg-gray-800 text-white' : '' }}">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,7 +112,6 @@
                                 <span>Analytics</span>
                             </a>
                         </li>
-                        @endcan
                     </ul>
                 </nav>
             </div>
@@ -130,10 +128,18 @@
                                 </svg>
                             </button>
                         </div>
-                        <div>
+                        <div class="flex items-center space-x-4">
                             <a href="{{ route('profile.edit') }}" class="text-gray-600 hover:text-gray-900">
                                 {{ Auth::user()->name }}
                             </a>
+                            
+                            <!-- Logout Form -->
+                            <form method="POST" action="{{ route('logout') }}" class="inline">
+                                @csrf
+                                <button type="submit" class="text-red-600 hover:text-red-900 font-medium">
+                                    {{ __('Log Out') }}
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

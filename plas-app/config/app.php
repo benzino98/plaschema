@@ -167,5 +167,6 @@ return [
         // Other aliases...
         'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'Str' => Illuminate\Support\Str::class,
     ],
 ];

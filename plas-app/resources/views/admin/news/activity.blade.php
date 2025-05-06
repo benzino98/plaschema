@@ -96,7 +96,7 @@
                                     {{ $log->description }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('admin.activities.show', $log) }}" class="text-indigo-600 hover:text-indigo-900">
+                                    <a href="{{ route('admin.activity.show', $log) }}" class="text-indigo-600 hover:text-indigo-900">
                                         View Details
                                     </a>
                                 </td>

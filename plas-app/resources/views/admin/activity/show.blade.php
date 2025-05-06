@@ -7,7 +7,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between">
             <h1 class="text-2xl font-semibold text-gray-900">Activity Log Details</h1>
-            <a href="{{ route('admin.activities.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded">
+            <a href="{{ route('admin.activity.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded">
                 Back to Logs
             </a>
         </div>

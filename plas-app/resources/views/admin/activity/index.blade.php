@@ -13,7 +13,7 @@
             <!-- Filters -->
             <div class="p-4 border-b border-gray-200">
                 <h2 class="text-sm font-medium text-gray-700 mb-3">Filter Logs</h2>
-                <form action="{{ route('admin.activities.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <form action="{{ route('admin.activity.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label for="action" class="block text-xs font-medium text-gray-700 mb-1">Action</label>
                         <select name="action" id="action" class="w-full rounded-md border-gray-300 shadow-sm focus:border-[#74BA03] focus:ring focus:ring-[#74BA03] focus:ring-opacity-50 text-sm">
@@ -103,7 +103,7 @@
                                     {{ $log->description }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('admin.activities.show', $log) }}" class="text-indigo-600 hover:text-indigo-900">
+                                    <a href="{{ route('admin.activity.show', $log) }}" class="text-indigo-600 hover:text-indigo-900">
                                         View Details
                                     </a>
                                 </td>

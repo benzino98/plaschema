@@ -28,7 +28,7 @@ class AnalyticsService
      */
     public function getDashboardSummary()
     {
-        return $this->cacheService->remember('analytics.dashboard.summary', function () {
+        return $this->cacheService->remember('analytics.dashboard.summary', 60 * 24, function () {
             return [
                 'totalProviders' => HealthcareProvider::count(),
                 'totalNews' => News::count(),
@@ -44,7 +44,7 @@ class AnalyticsService
                 'contentGrowth' => $this->getContentGrowth(),
                 'messageStatistics' => $this->getMessageStatistics(),
             ];
-        }, 60 * 24); // Cache for 24 hours
+        }); // Cache for 24 hours
     }
 
     /**
@@ -54,15 +54,26 @@ class AnalyticsService
      */
     public function getProvidersByCategory()
     {
-        return $this->cacheService->remember('analytics.providers.by.category', function () {
-            return DB::table('healthcare_providers')
-                ->select(DB::raw('categories.name as category, count(*) as count'))
-                ->join('categories', 'healthcare_providers.category_id', '=', 'categories.id')
-                ->groupBy('categories.name')
-                ->get()
-                ->pluck('count', 'category')
-                ->toArray();
-        }, 60 * 24); // Cache for 24 hours
+        return $this->cacheService->remember('analytics.providers.by.category', 60 * 24, function () {
+            try {
+                // Try to get categories from healthcare_provider_categories table if it exists
+                return DB::table('healthcare_providers')
+                    ->select(DB::raw('COALESCE(hpc.name, healthcare_providers.type) as category, count(*) as count'))
+                    ->leftJoin('healthcare_provider_categories as hpc', 'healthcare_providers.category_id', '=', 'hpc.id')
+                    ->groupBy(DB::raw('COALESCE(hpc.name, healthcare_providers.type)'))
+                    ->get()
+                    ->pluck('count', 'category')
+                    ->toArray();
+            } catch (\Exception $e) {
+                // Fallback to using type field if join fails
+                return DB::table('healthcare_providers')
+                    ->select('type as category', DB::raw('count(*) as count'))
+                    ->groupBy('type')
+                    ->get()
+                    ->pluck('count', 'category')
+                    ->toArray();
+            }
+        }); // Cache for 24 hours
     }
 
     /**
@@ -72,15 +83,42 @@ class AnalyticsService
      */
     public function getMessagesByCategory()
     {
-        return $this->cacheService->remember('analytics.messages.by.category', function () {
-            return DB::table('contact_messages')
-                ->select(DB::raw('message_categories.name as category, count(*) as count'))
-                ->join('message_categories', 'contact_messages.category_id', '=', 'message_categories.id')
-                ->groupBy('message_categories.name')
-                ->get()
-                ->pluck('count', 'category')
-                ->toArray();
-        }, 60 * 24); // Cache for 24 hours
+        return $this->cacheService->remember('analytics.messages.by.category', 60 * 24, function () {
+            try {
+                // Try joining with message_categories if the table and column exist
+                return DB::table('contact_messages')
+                    ->select(DB::raw('message_categories.name as category, count(*) as count'))
+                    ->join('message_categories', 'contact_messages.category_id', '=', 'message_categories.id')
+                    ->groupBy('message_categories.name')
+                    ->get()
+                    ->pluck('count', 'category')
+                    ->toArray();
+            } catch (\Exception $e) {
+                // Fallback: group by status if category isn't available
+                $statusMap = [
+                    'new' => 'New Messages',
+                    'in_progress' => 'In Progress',
+                    'resolved' => 'Resolved',
+                    'archived' => 'Archived'
+                ];
+                
+                $result = DB::table('contact_messages')
+                    ->select('status', DB::raw('count(*) as count'))
+                    ->groupBy('status')
+                    ->get()
+                    ->pluck('count', 'status')
+                    ->toArray();
+                
+                // Map the status codes to readable names
+                $mappedResult = [];
+                foreach ($result as $status => $count) {
+                    $mappedStatus = $statusMap[$status] ?? ucfirst($status);
+                    $mappedResult[$mappedStatus] = $count;
+                }
+                
+                return $mappedResult;
+            }
+        }); // Cache for 24 hours
     }
 
     /**
@@ -90,7 +128,7 @@ class AnalyticsService
      */
     public function getActivityTimeline()
     {
-        return $this->cacheService->remember('analytics.activity.timeline', function () {
+        return $this->cacheService->remember('analytics.activity.timeline', 60 * 24, function () {
             $startDate = Carbon::now()->subDays(30);
             $endDate = Carbon::now();
             
@@ -101,7 +139,7 @@ class AnalyticsService
                 ->get()
                 ->pluck('count', 'date')
                 ->toArray();
-        }, 60 * 24); // Cache for 24 hours
+        }); // Cache for 24 hours
     }
 
     /**
@@ -111,7 +149,7 @@ class AnalyticsService
      */
     public function getContentGrowth()
     {
-        return $this->cacheService->remember('analytics.content.growth', function () {
+        return $this->cacheService->remember('analytics.content.growth', 60 * 24, function () {
             // Get dates for last 12 months
             $months = collect(range(0, 11))->map(function ($i) {
                 return Carbon::now()->startOfMonth()->subMonths($i);
@@ -132,7 +170,7 @@ class AnalyticsService
             }
 
             return $result;
-        }, 60 * 24); // Cache for 24 hours
+        }); // Cache for 24 hours
     }
 
     /**
@@ -174,7 +212,7 @@ class AnalyticsService
      */
     public function getMessageStatistics()
     {
-        return $this->cacheService->remember('analytics.messages.statistics', function () {
+        return $this->cacheService->remember('analytics.messages.statistics', 60 * 24, function () {
             return [
                 'statusCounts' => DB::table('contact_messages')
                     ->select('status', DB::raw('count(*) as count'))
@@ -198,7 +236,7 @@ class AnalyticsService
                     ->pluck('count', 'month')
                     ->toArray(),
             ];
-        }, 60 * 24); // Cache for 24 hours
+        }); // Cache for 24 hours
     }
 
     /**
@@ -301,19 +339,31 @@ class AnalyticsService
      */
     protected function generateProviderReport($startDate, $endDate)
     {
+        try {
+            $byCategory = DB::table('healthcare_providers')
+                ->select('hpc.name as category', DB::raw('count(*) as count'))
+                ->leftJoin('healthcare_provider_categories as hpc', 'healthcare_providers.category_id', '=', 'hpc.id')
+                ->whereBetween('healthcare_providers.created_at', [$startDate, $endDate])
+                ->groupBy('hpc.name')
+                ->pluck('count', 'category')
+                ->toArray();
+        } catch (\Exception $e) {
+            // Fallback to grouping by type if category join fails
+            $byCategory = DB::table('healthcare_providers')
+                ->select('type as category', DB::raw('count(*) as count'))
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->groupBy('type')
+                ->pluck('count', 'category')
+                ->toArray();
+        }
+
         return [
             'period' => [
                 'start_date' => $startDate->format('Y-m-d'),
                 'end_date' => $endDate->format('Y-m-d'),
             ],
             'total' => HealthcareProvider::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'by_category' => DB::table('healthcare_providers')
-                ->select('categories.name as category', DB::raw('count(*) as count'))
-                ->join('categories', 'healthcare_providers.category_id', '=', 'categories.id')
-                ->whereBetween('healthcare_providers.created_at', [$startDate, $endDate])
-                ->groupBy('categories.name')
-                ->pluck('count', 'category')
-                ->toArray(),
+            'by_category' => $byCategory,
             'by_type' => DB::table('healthcare_providers')
                 ->select('type', DB::raw('count(*) as count'))
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -338,19 +388,46 @@ class AnalyticsService
      */
     protected function generateMessageReport($startDate, $endDate)
     {
+        try {
+            $byCategory = DB::table('contact_messages')
+                ->select('message_categories.name as category', DB::raw('count(*) as count'))
+                ->join('message_categories', 'contact_messages.category_id', '=', 'message_categories.id')
+                ->whereBetween('contact_messages.created_at', [$startDate, $endDate])
+                ->groupBy('message_categories.name')
+                ->pluck('count', 'category')
+                ->toArray();
+        } catch (\Exception $e) {
+            // Fallback for missing message_categories table
+            $statusMap = [
+                'new' => 'New Messages',
+                'in_progress' => 'In Progress',
+                'resolved' => 'Resolved',
+                'archived' => 'Archived'
+            ];
+            
+            $result = DB::table('contact_messages')
+                ->select('status as category', DB::raw('count(*) as count'))
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->groupBy('status')
+                ->get()
+                ->pluck('count', 'category')
+                ->toArray();
+            
+            // Map the status codes to readable names
+            $byCategory = [];
+            foreach ($result as $status => $count) {
+                $mappedStatus = $statusMap[$status] ?? ucfirst($status);
+                $byCategory[$mappedStatus] = $count;
+            }
+        }
+
         return [
             'period' => [
                 'start_date' => $startDate->format('Y-m-d'),
                 'end_date' => $endDate->format('Y-m-d'),
             ],
             'total' => ContactMessage::whereBetween('created_at', [$startDate, $endDate])->count(),
-            'by_category' => DB::table('contact_messages')
-                ->select('message_categories.name as category', DB::raw('count(*) as count'))
-                ->join('message_categories', 'contact_messages.category_id', '=', 'message_categories.id')
-                ->whereBetween('contact_messages.created_at', [$startDate, $endDate])
-                ->groupBy('message_categories.name')
-                ->pluck('count', 'category')
-                ->toArray(),
+            'by_category' => $byCategory,
             'by_status' => DB::table('contact_messages')
                 ->select('status', DB::raw('count(*) as count'))
                 ->whereBetween('created_at', [$startDate, $endDate])

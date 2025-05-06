@@ -107,11 +107,11 @@ Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewe
         Route::get('messages/activity/logs', [ContactMessageController::class, 'activity'])->name('messages.activity');
     });
     
-    // Analytics Dashboard - restricted to super admin and admin
+    // Analytics Dashboard - restricted to super admin and admin, not using permission middleware
     Route::middleware('role:super-admin,admin')->group(function() {
-        Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.dashboard');
-        Route::get('analytics/reports', [AnalyticsController::class, 'showReportForm'])->name('analytics.reports');
-        Route::match(['get', 'post'], 'analytics/generate-report', [AnalyticsController::class, 'generateReport'])->name('analytics.generate-report');
+        Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics')->withoutMiddleware('CheckPermission');
+        Route::get('analytics/reports', [AnalyticsController::class, 'showReportForm'])->name('analytics.reports')->withoutMiddleware('CheckPermission');
+        Route::match(['get', 'post'], 'analytics/generate-report', [AnalyticsController::class, 'generateReport'])->name('analytics.generate-report')->withoutMiddleware('CheckPermission');
     });
 });
 
