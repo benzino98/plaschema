@@ -133,3 +133,43 @@ The database follows normalized design principles with the following key tables:
 - Regular database backups
 - Monthly security updates
 - Performance monitoring
+
+## Multilingual Support
+
+### Language Framework
+
+- **Laravel Localization** - Built-in Laravel localization features
+- **TranslationService** - Custom service for advanced translation management
+- **Blade Translation Functions** - `@lang()`, `__()`, and `trans()` for view templates
+- **Flag Icons** - Country flag icons for language switcher UI
+
+### Key Components
+
+- **Translation Model** - Database model for storing custom translations
+- **SetLocale Middleware** - Detects and sets user language preference
+- **LanguageSwitcher Component** - Blade component for language selection UI
+- **TranslationController** - Admin interface for managing translations
+
+### Supported Languages
+
+- **English (en)** - Default language
+- **French (fr)** - Full translation support
+- **Igbo (ig)** - Full translation support
+- Extensible to add more languages as needed
+
+### Translation Storage
+
+- **File-based** - Primary translations stored in language files
+- **Database** - Custom/override translations stored in database
+- **Cache** - Redis caching for improved performance
+- **Import/Export** - Functionality to move between file and database storage
+
+### Language Detection
+
+The system detects user language preferences in the following priority order:
+
+1. URL parameter (`?lang=fr`)
+2. Session storage
+3. Cookie (30-day persistence)
+4. Browser Accept-Language headers
+5. Default application language (English)

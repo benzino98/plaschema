@@ -315,3 +315,108 @@ tests/
 - Model tests for relationships and scopes
 - Database transaction rollback for test isolation
 - Factory-generated test data with sensible defaults
+
+## Multilingual Support Patterns
+
+### Translation Management
+
+```
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│ TranslationController   │ TranslationService│      │    Translation   │
+├──────────────────┤      ├──────────────────┤      ├──────────────────┤
+│ index()          │      │ get()            │◄─────┤ id               │
+│ create()         │─────►│ parseKey()       │      │ locale           │
+│ store()          │      │ getFromDatabase()│      │ namespace        │
+│ edit()           │      │ getFromFile()    │      │ group            │
+│ update()         │      │ createOrUpdate() │      │ key              │
+│ destroy()        │      │ delete()         │      │ value            │
+│ import()         │      │ importTranslations│      │ is_custom        │
+│ export()         │      │ exportTranslations│      │ last_used_at     │
+└──────────────────┘      └──────────────────┘      └──────────────────┘
+```
+
+### Middleware and Components
+
+```
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│    SetLocale     │      │ LanguageSwitcher │      │      Blade       │
+├──────────────────┤      ├──────────────────┤      ├──────────────────┤
+│ handle()         │      │ getLocaleName()  │      │ @lang()          │
+│ isValidLocale()  │◄─────┤ getLocaleFlag()  │◄─────┤ __()             │
+│ getBrowserLocales│      │ render()         │      │ trans()          │
+└──────────────────┘      └──────────────────┘      └──────────────────┘
+```
+
+### Language Detection Flow
+
+```mermaid
+flowchart TD
+    Start[Request] --> URL{URL Parameter?}
+    URL -->|Yes| ValidURL{Valid Locale?}
+    ValidURL -->|Yes| SetURL[Set Locale from URL]
+    ValidURL -->|No| Session{Session?}
+    URL -->|No| Session
+
+    Session -->|Yes| ValidSession{Valid Locale?}
+    ValidSession -->|Yes| SetSession[Set Locale from Session]
+    ValidSession -->|No| Cookie{Cookie?}
+    Session -->|No| Cookie
+
+    Cookie -->|Yes| ValidCookie{Valid Locale?}
+    ValidCookie -->|Yes| SetCookie[Set Locale from Cookie]
+    ValidCookie -->|No| Browser{Browser?}
+    Cookie -->|No| Browser
+
+    Browser -->|Yes| ValidBrowser{Valid Locale?}
+    ValidBrowser -->|Yes| SetBrowser[Set Locale from Browser]
+    ValidBrowser -->|No| Default[Use Default Locale]
+    Browser -->|No| Default
+
+    SetURL --> Response[Response]
+    SetSession --> Response
+    SetCookie --> Response
+    SetBrowser --> Response
+    Default --> Response
+```
+
+### Translation Loading Strategy
+
+The translation system uses a multi-layer approach for efficient loading and caching:
+
+1. **Cache Layer**: First attempts to retrieve translations from cache
+2. **Database Layer**: If not in cache, checks for custom translations in database
+3. **File Layer**: Falls back to language files if not found in database
+4. **Fallback Layer**: Uses default language if translation not found in current language
+
+This strategy provides a balance between performance and flexibility, allowing for both static file-based translations and dynamic database-driven translations.
+
+### Key Implementation Patterns
+
+1. **Service-Based Translation Management**:
+
+   - TranslationService encapsulates all translation logic
+   - Provides methods for getting, creating, updating, and deleting translations
+   - Handles file and database interactions through a unified interface
+
+2. **Middleware Locale Detection**:
+
+   - Priority-based locale detection (URL → Session → Cookie → Browser → Default)
+   - Uses HTTP request information to determine user's preferred language
+   - Sets application locale and persists user preference
+
+3. **Component-Based UI**:
+
+   - LanguageSwitcher blade component provides reusable UI
+   - Supports both dropdown and inline display modes
+   - Uses flag icons for visual language identification
+
+4. **Cache-First Architecture**:
+
+   - All translations are cached for performance
+   - Cache is automatically invalidated on translation updates
+   - Cache keys are generated based on locale, namespace, group, and key
+
+5. **Permission-Based Access Control**:
+   - Translation management is restricted to authorized roles
+   - Separate permission for managing translations
+   - Proper middleware checks in admin routes

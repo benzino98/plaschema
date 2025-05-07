@@ -145,6 +145,7 @@
                                 <a href="{{ route('news') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('news*') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">News</a>
                                 <a href="{{ route('faq') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('faq') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">FAQs</a>
                                 <a href="{{ route('contact') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('contact') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">Contact</a>
+                                <x-language-switcher />
                             </div>
                         </div>
                         
@@ -169,6 +170,9 @@
                         <a href="{{ route('news') }}" class="block pl-3 pr-4 py-3 border-l-4 {{ request()->routeIs('news*') ? 'border-plaschema bg-green-50 text-green-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} text-base font-medium focus:outline-none transition duration-150 ease-in-out">News</a>
                         <a href="{{ route('faq') }}" class="block pl-3 pr-4 py-3 border-l-4 {{ request()->routeIs('faq') ? 'border-plaschema bg-green-50 text-green-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} text-base font-medium focus:outline-none transition duration-150 ease-in-out">FAQs</a>
                         <a href="{{ route('contact') }}" class="block pl-3 pr-4 py-3 border-l-4 {{ request()->routeIs('contact') ? 'border-plaschema bg-green-50 text-green-700' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800' }} text-base font-medium focus:outline-none transition duration-150 ease-in-out">Contact</a>
+                        <div class="pl-3 pr-4 py-3">
+                            <x-language-switcher style="inline" />
+                        </div>
                     </div>
                 </div>
             </nav>
