@@ -1,5 +1,5 @@
 <!-- Main Navigation -->
-<nav class="bg-white shadow-sm">
+<nav class="bg-white shadow-sm navbar transition-shadow" id="main-navbar">
     <div class="container mx-auto px-4">
         <div class="flex justify-between h-16">
             <div class="flex">
@@ -38,7 +38,7 @@
             
             <!-- Mobile menu button -->
             <div class="flex items-center sm:hidden">
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-plaschema hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-plaschema transition duration-150 ease-in-out">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-plaschema hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-plaschema transition duration-150 ease-in-out button-push">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': mobileMenuOpen, 'inline-flex': !mobileMenuOpen }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': !mobileMenuOpen, 'inline-flex': mobileMenuOpen }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -75,4 +75,15 @@
             </div>
         </div>
     </div>
-</nav> 
+</nav>
+
+@push('scripts')
+<script>
+    // Apply shadow on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof applyShadowOnScroll === 'function') {
+            applyShadowOnScroll('#main-navbar', 'shadow-md', 10);
+        }
+    });
+</script>
+@endpush 

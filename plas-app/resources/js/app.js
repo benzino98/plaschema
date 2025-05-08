@@ -1,6 +1,7 @@
 import "./bootstrap";
 import "./validation";
 import "./accessibility";
+import "./animations";
 
 import Alpine from "alpinejs";
 

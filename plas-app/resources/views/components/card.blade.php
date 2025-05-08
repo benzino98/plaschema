@@ -9,7 +9,7 @@
     'url' => null
 ])
 
-<div {{ $attributes->merge(['class' => 'card rounded-lg shadow-md p-6 md:p-8 ' . $animation]) }}>
+<div {{ $attributes->merge(['class' => 'card rounded-lg shadow-md card-hover p-6 md:p-8 animate-on-scroll']) }} data-animation="{{ $animation }}">
     @if($image)
         <div class="mb-4 overflow-hidden rounded-lg -mt-6 -mx-6 md:-mx-8 md:-mt-8">
             @if($url)

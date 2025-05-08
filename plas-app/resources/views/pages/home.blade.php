@@ -15,7 +15,7 @@
                         <a href="{{ route('about') }}" class="btn-outline">Learn More</a>
                     </div>
                 </div>
-                <div class="md:w-1/2 md:pl-12 fade-in">
+                <div class="md:w-1/2 md:pl-12 animate-on-scroll" data-animation="slide-right" data-delay="300" style="animation-duration: 800ms; transform: translateX(-40px); opacity: 0;">
                     <img src="{{ asset('images/hero-image.jpg') }}" alt="Healthcare Services" class="rounded-lg shadow-xl" loading="lazy">
                 </div>
             </div>

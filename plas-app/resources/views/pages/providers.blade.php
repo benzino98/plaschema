@@ -7,8 +7,8 @@
     <section class="bg-plaschema-dark text-white py-16 md:py-24">
         <div class="container-custom">
             <div class="text-center max-w-4xl mx-auto">
-                <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white slide-up">Healthcare Providers</h1>
-                <p class="text-xl mb-8 slide-up">Find accredited healthcare providers in your area that accept PLASCHEMA health plans.</p>
+                <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white animate-on-scroll" data-animation="slide-up">Healthcare Providers</h1>
+                <p class="text-xl mb-8 animate-on-scroll" data-animation="slide-up" data-delay="100">Find accredited healthcare providers in your area that accept PLASCHEMA health plans.</p>
             </div>
         </div>
     </section>
@@ -16,7 +16,7 @@
     <x-section>
         @if(count($providers) > 0)
             <!-- Search and Filter Section -->
-            <div class="mb-8">
+            <div class="mb-8 animate-on-scroll" data-animation="fade-in">
                 <form action="{{ route('providers.index') }}" method="GET" class="space-y-4">
                     <!-- Search input -->
                     <div class="flex flex-col md:flex-row gap-4">
@@ -69,7 +69,7 @@
                         
                         <!-- Search Button -->
                         <div class="flex justify-end">
-                            <button type="submit" class="bg-plaschema hover:bg-plaschema-dark text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-150">
+                            <button type="submit" class="bg-plaschema hover:bg-plaschema-dark text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-150 shadow-sm hover-shadow-md button-push">
                                 <span class="flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -84,7 +84,7 @@
 
             <!-- Search Results Summary -->
             @if(isset($searchQuery) && $searchQuery || isset($currentCategory) && $currentCategory || isset($currentCity) && $currentCity || (isset($hasProviderTypeColumn) && $hasProviderTypeColumn && isset($currentProviderType) && $currentProviderType))
-                <div class="mb-6">
+                <div class="mb-6 animate-on-scroll" data-animation="fade-in" data-delay="150">
                     <h2 class="text-xl font-semibold">
                         @if(count($providers) > 0)
                             Found {{ $providers->total() }} result(s)
@@ -100,7 +100,7 @@
                     </h2>
                     <div class="text-gray-600 flex flex-wrap gap-2 mt-2">
                         @if($currentCategory)
-                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm hover-lift">
                                 Category: {{ $currentCategory }}
                                 <a href="{{ route('providers.index', array_merge(request()->except('category'), ['page' => 1])) }}" class="ml-2 text-gray-500 hover:text-gray-700">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -111,7 +111,7 @@
                         @endif
                         
                         @if($currentCity)
-                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm hover-lift">
                                 Location: {{ $currentCity }}
                                 <a href="{{ route('providers.index', array_merge(request()->except('city'), ['page' => 1])) }}" class="ml-2 text-gray-500 hover:text-gray-700">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -122,7 +122,7 @@
                         @endif
                         
                         @if(isset($hasProviderTypeColumn) && $hasProviderTypeColumn && $currentProviderType)
-                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm">
+                            <div class="inline-flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm hover-lift">
                                 Provider Type: {{ $currentProviderType }}
                                 <a href="{{ route('providers.index', array_merge(request()->except('provider_type'), ['page' => 1])) }}" class="ml-2 text-gray-500 hover:text-gray-700">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -134,7 +134,7 @@
                         
                         @if($searchQuery || $currentCategory || $currentCity || (isset($hasProviderTypeColumn) && $hasProviderTypeColumn && $currentProviderType))
                             <div class="inline-flex items-center">
-                                <a href="{{ route('providers.index') }}" class="text-plaschema hover:underline text-sm">
+                                <a href="{{ route('providers.index') }}" class="text-plaschema hover:underline text-sm hover-glow">
                                     Clear all filters
                                 </a>
                             </div>
@@ -144,7 +144,7 @@
             @endif
 
             <!-- Providers Table -->
-            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg animate-on-scroll" data-animation="scale-in" data-delay="200">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -155,9 +155,9 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="provider-list">
+                    <tbody class="bg-white divide-y divide-gray-200 stagger-container" id="provider-list">
                         @foreach($providers as $provider)
-                            <tr class="hover:bg-gray-50">
+                            <tr class="hover:bg-gray-50 stagger-item">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                        
@@ -205,11 +205,11 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-3">
-                                        <a href="{{ route('providers.show', $provider->id) }}" class="text-plaschema hover:text-plaschema-dark">
+                                        <a href="{{ route('providers.show', $provider->id) }}" class="text-plaschema hover:text-plaschema-dark hover-glow">
                                             View Details
                                         </a>
                                         @if($provider->website)
-                                            <a href="{{ $provider->website }}" target="_blank" class="text-plaschema hover:text-plaschema-dark">
+                                            <a href="{{ $provider->website }}" target="_blank" class="text-plaschema hover:text-plaschema-dark hover-glow">
                                                 Website
                                             </a>
                                         @endif
@@ -232,7 +232,7 @@
 
             <!-- Pagination -->
             @if($providers->hasPages())
-                <div class="mt-6 flex justify-center">
+                <div class="mt-6 flex justify-center animate-on-scroll" data-animation="fade-in" data-delay="300">
                     {{ $providers->links() }}
                 </div>
             @endif

@@ -128,34 +128,34 @@
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
             <!-- Navigation -->
-            <nav class="bg-white shadow-md">
+            <nav class="bg-white shadow-sm navbar transition-shadow" id="main-navbar">
                 <div class="container-custom mx-auto px-4">
                     <div class="flex justify-between h-20">
                         <!-- Logo -->
                         <div class="flex-shrink-0 flex items-center">
                             <a href="{{ route('home') }}" class="flex items-center">
                                 <img src="{{ asset('images/PLASCHEMA-LOGO.png') }}" alt="PLASCHEMA Logo" class="h-12 w-auto">
-                                <span class="ml-3 font-bold text-2xl text-plaschema  sm:block">PLASCHEMA</span>
+                                <span class="ml-3 font-bold text-2xl text-plaschema sm:block">PLASCHEMA</span>
                             </a>
                         </div>
                         
                         <!-- Primary Navigation - Right Aligned -->
                         <div class="hidden sm:flex sm:items-center">
                             <div class="flex space-x-8 md:space-x-12">
-                                <a href="{{ route('home') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('home') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">Home</a>
-                                <a href="{{ route('about') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('about') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">About</a>
-                                <a href="{{ route('plans') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('plans') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">Health Plans</a>
-                                <a href="{{ route('providers.index') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('providers.*') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">Providers</a>
-                                <a href="{{ route('news') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('news*') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">News</a>
-                                <a href="{{ route('faq') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('faq') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">FAQs</a>
-                                <a href="{{ route('contact') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('contact') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition">Contact</a>
+                                <a href="{{ route('home') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('home') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition hover-lift nav-hover-glow">Home</a>
+                                <a href="{{ route('about') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('about') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition hover-lift nav-hover-glow">About</a>
+                                <a href="{{ route('plans') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('plans') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition hover-lift nav-hover-glow">Health Plans</a>
+                                <a href="{{ route('providers.index') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('providers.*') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition hover-lift nav-hover-glow">Providers</a>
+                                <a href="{{ route('news') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('news*') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition hover-lift nav-hover-glow">News</a>
+                                <a href="{{ route('faq') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('faq') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition hover-lift nav-hover-glow">FAQs</a>
+                                <a href="{{ route('contact') }}" class="inline-flex items-center px-3 pt-1 border-b-2 {{ request()->routeIs('contact') ? 'border-plaschema' : 'border-transparent' }} text-base font-medium leading-5 text-gray-900 hover:text-plaschema hover:border-plaschema transition hover-lift nav-hover-glow">Contact</a>
                                 <x-language-switcher />
                             </div>
                         </div>
                         
                         <!-- Mobile menu button -->
                         <div class="flex items-center sm:hidden">
-                            <button type="button" class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                            <button type="button" class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out button-push">
                                 <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                                 </svg>
@@ -211,6 +211,27 @@
                     mobileMenuButton.addEventListener('click', function() {
                         mobileMenu.classList.toggle('hidden');
                     });
+                }
+                
+                // Initialize scroll animations
+                if (typeof setupScrollAnimations === 'function') {
+                    setupScrollAnimations();
+                    
+                    // Additional component-specific animations
+                    setupScrollAnimations('.hero-animate', 'fade-in', {
+                        threshold: 0,
+                        rootMargin: '0px'
+                    });
+                    
+                    setupScrollAnimations('.card-animate', 'scale-in', {
+                        threshold: 0.1,
+                        rootMargin: '50px'
+                    });
+                }
+                
+                // Apply shadow to navbar on scroll
+                if (typeof applyShadowOnScroll === 'function') {
+                    applyShadowOnScroll('#main-navbar', 'shadow-md', 10);
                 }
             });
         </script>
