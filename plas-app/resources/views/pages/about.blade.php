@@ -36,42 +36,49 @@
         subtitle="Meet the team leading PLASCHEMA's mission to transform healthcare in Plateau State."
     >
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <x-card 
-                title="Dr. John Doe" 
-                image="{{ asset('images/team/leader-1.jpg') }}"
-                animation="slide-up"
-            >
-                <p class="text-gray-600 mb-4 italic">Director General</p>
-                <p class="text-gray-600">Leading PLASCHEMA's efforts to expand healthcare coverage across Plateau State.</p>
-            </x-card>
+            <div class="card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow slide-up">
+                <div class="overflow-hidden h-64 rounded-t-lg">
+                    <img src="{{ asset('images/team/leader-1.jpg') }}" alt="Dr. John Doe" class="w-full h-full object-cover object-center" loading="lazy">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-1">Dr. John Doe</h3>
+                    <p class="text-gray-600 mb-4 italic">Director General</p>
+                    <p class="text-gray-600">Leading PLASCHEMA's efforts to expand healthcare coverage across Plateau State.</p>
+                </div>
+            </div>
 
-            <x-card 
-                title="Mrs. Jane Smith" 
-                image="{{ asset('images/team/leader-2.jpg') }}"
-                animation="slide-up"
-            >
-                <p class="text-gray-600 mb-4 italic">Director of Operations</p>
-                <p class="text-gray-600">Overseeing the day-to-day operations and service delivery of PLASCHEMA.</p>
-            </x-card>
+            <div class="card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow slide-up">
+                <div class="overflow-hidden h-64 rounded-t-lg">
+                    <img src="{{ asset('images/team/leader-2.jpg') }}" alt="Mrs. Jane Smith" class="w-full h-full object-cover object-center" loading="lazy">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-1">Mrs. Jane Smith</h3>
+                    <p class="text-gray-600 mb-4 italic">Director of Operations</p>
+                    <p class="text-gray-600">Overseeing the day-to-day operations and service delivery of PLASCHEMA.</p>
+                </div>
+            </div>
 
-            <x-card 
-                title="Mr. James Johnson" 
-                image="{{ asset('images/team/leader-3.jpg') }}"
-                animation="slide-up"
-            >
-                <p class="text-gray-600 mb-4 italic">Director of Health Services, Standards and Quality Control</p>
-                <p class="text-gray-600">Managing the financial aspects of PLASCHEMA to ensure sustainability.</p>
-            </x-card>
+            <div class="card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow slide-up">
+                <div class="overflow-hidden h-64 rounded-t-lg">
+                    <img src="{{ asset('images/team/leader-3.jpg') }}" alt="Mr. James Johnson" class="w-full h-full object-cover object-center" loading="lazy">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-1">Mr. James Johnson</h3>
+                    <p class="text-gray-600 mb-4 italic">Director of Health Services, Standards and Quality Control</p>
+                    <p class="text-gray-600">Managing the financial aspects of PLASCHEMA to ensure sustainability.</p>
+                </div>
+            </div>
 
-
-            <x-card 
-                title="Mr. James Johnson" 
-                image="{{ asset('images/team/leader-4.jpg') }}"
-                animation="slide-up"
-            >
-                <p class="text-gray-600 mb-4 italic">Director of Marketing</p>
-                <p class="text-gray-600">Managing the financial aspects of PLASCHEMA to ensure sustainability.</p>
-            </x-card>
+            <div class="card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow slide-up">
+                <div class="overflow-hidden h-64 rounded-t-lg">
+                    <img src="{{ asset('images/team/leader-4.jpg') }}" alt="Mr. Robert Williams" class="w-full h-full object-cover object-center" loading="lazy">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-1">Mr. Robert Williams</h3>
+                    <p class="text-gray-600 mb-4 italic">Director of Marketing</p>
+                    <p class="text-gray-600">Managing the financial aspects of PLASCHEMA to ensure sustainability.</p>
+                </div>
+            </div>
         </div>
     </x-section>
 

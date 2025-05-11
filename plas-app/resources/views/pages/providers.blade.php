@@ -68,8 +68,8 @@
                         </div>
                         
                         <!-- Search Button -->
-                        <div class="flex justify-end">
-                            <button type="submit" class="bg-plaschema hover:bg-plaschema-dark text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline transition duration-150 shadow-sm hover-shadow-md button-push">
+                        <div class="flex items-end">
+                            <button type="submit" class="bg-plaschema hover:bg-plaschema-dark text-white font-bold rounded focus:outline-none focus:shadow-outline transition duration-150 shadow-sm hover-shadow-md button-push h-10 px-6 flex items-center">
                                 <span class="flex items-center">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>

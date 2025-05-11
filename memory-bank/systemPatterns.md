@@ -575,3 +575,140 @@ This strategy provides a balance between performance and flexibility, allowing f
    - Translation management is restricted to authorized roles
    - Separate permission for managing translations
    - Proper middleware checks in admin routes
+
+### Icon Implementation
+
+```
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│    Heroicons     │      │   Card Component  │      │     Section      │
+├──────────────────┤      ├──────────────────┤      ├──────────────────┤
+│ SVG Icons        │─────▶│ Icon Integration  │─────▶│ Semantic Meaning │
+│ Standard Sizes   │      │ Consistent Style  │      │ Visual Hierarchy │
+│ Accessibility    │      │ Color Matching    │      │ Component Balance│
+└──────────────────┘      └──────────────────┘      └──────────────────┘
+```
+
+#### Icon Selection Strategy
+
+1. **Health Plans Cards**:
+
+   - Formal Sector: "building-office-2" icon (representing workplace)
+   - Informal Sector: "shopping-bag" icon (representing commerce)
+   - BHCPF: "heart" icon (representing healthcare)
+   - Equity Program: "user-group" icon (representing community)
+
+2. **Statistics Cards**:
+
+   - Enrolled Citizens: "users" icon
+   - Healthcare Providers: "building-office" icon
+   - Accredited HMOs: "briefcase" icon
+   - LGAs Covered: "map" icon
+
+3. **Implementation Approach**:
+   - Size: 40px × 40px (w-10 h-10) for card icons, 48px × 48px (w-12 h-12) for statistics
+   - Color: Primary brand color for card icons, white for statistics section
+   - Position: Above title for cards, above number for statistics
+   - Responsive behavior: Properly scaled across different device sizes
+
+### Dynamic News Section Architecture
+
+```
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│  HomeController  │      │   CacheService   │      │   Home View      │
+├──────────────────┤      ├──────────────────┤      ├──────────────────┤
+│ Fetch Recent News│◄────▶│ Cache Results    │─────▶│ Loop Through Data│
+│ Limit to 3 Items │      │ Invalidate on    │      │ Display Cards    │
+│ Sort by Date     │      │ News Updates     │      │ Link to Detail   │
+└──────────────────┘      └──────────────────┘      └──────────────────┘
+```
+
+#### Implementation Approach
+
+1. **Controller Structure**:
+
+   - Create new HomeController in `app/Http/Controllers`
+   - Inject CacheService
+   - Method to fetch 3 most recent published news articles
+   - Follow established pattern from NewsController
+   - Update routes to use controller instead of closure
+
+2. **Caching Strategy**:
+
+   - Cache key based on collection type ("home_recent_news")
+   - Cache duration: 1 hour (3600 seconds)
+   - Automatic invalidation when news is created/updated
+   - Fallback to database query if cache fails
+
+3. **View Updates**:
+   - Replace static news cards with Blade loop
+   - Handle edge cases (fewer than 3 news items)
+   - Maintain consistent card height regardless of content length
+   - Use actual news data (title, image, excerpt, date)
+
+### Image Standardization Strategy
+
+```
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│  Fixed Container │      │  Object-Fit CSS  │      │  Responsive      │
+├──────────────────┤      ├──────────────────┤      ├──────────────────┤
+│ Set Height/Width │─────▶│ Cover Property   │─────▶│ Maintain Aspect  │
+│ Match News Cards │      │ Center Position  │      │ Screen Size Adapt│
+│ Consistent Size  │      │ Overflow Hidden  │      │ Loading Behavior │
+└──────────────────┘      └──────────────────┘      └──────────────────┘
+```
+
+#### Implementation Details
+
+1. **Image Container**:
+
+   - Fixed dimensions matching news card images
+   - Overflow hidden to prevent image distortion
+   - Rounded corners consistent with other cards
+
+2. **Image Styling**:
+
+   - `object-fit: cover` to maintain aspect ratio
+   - `object-position: center` to center the subject
+   - Width and height set to 100% to fill container
+   - Responsive behavior across device sizes
+
+3. **Application Areas**:
+   - Leadership cards on about page
+   - News cards on home and news pages
+   - Other card images requiring consistency
+
+### Button Color Standardization
+
+```
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│   Brand Colors   │      │   Button States  │      │   Accessibility  │
+├──────────────────┤      ├──────────────────┤      ├──────────────────┤
+│ Primary: #10B981 │─────▶│ Default State    │─────▶│ Contrast Ratios  │
+│ Hover: #059669   │      │ Hover State      │      │ Focus States     │
+│ Text: #FFFFFF    │      │ Active/Focus     │      │ Visible Feedback │
+└──────────────────┘      └──────────────────┘      └──────────────────┘
+```
+
+#### CSS Classes Structure
+
+1. **Primary Button**:
+
+   - Base: `bg-plaschema text-white`
+   - Hover: `hover:bg-plaschema-dark`
+   - Transition: `transition-colors duration-200`
+
+2. **Implementation Areas**:
+   - Health plans page buttons
+   - Other primary action buttons throughout the site
+   - Consistent application across all interactive elements
+
+### Search Button Height Adjustment
+
+Target: Match height with adjacent input field, maintaining proper alignment.
+
+Implementation:
+
+1. Remove fixed height if present
+2. Align with flexbox using `items-center`
+3. Match padding with input field
+4. Maintain consistent border-radius and styling

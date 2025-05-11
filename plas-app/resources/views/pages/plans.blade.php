@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 
-                <x-button href="#" class="w-full justify-center">Enroll Now</x-button>
+                <x-button href="#" class="w-full justify-center bg-plaschema hover:bg-plaschema-dark text-white">Enroll Now</x-button>
             </x-card>
 
             <x-card 
@@ -74,7 +74,7 @@
                     </div>
                 </div>
                 
-                <x-button href="#" class="w-full justify-center">Enroll Now</x-button>
+                <x-button href="#" class="w-full justify-center bg-plaschema hover:bg-plaschema-dark text-white">Enroll Now</x-button>
             </x-card>
 
             <x-card 
@@ -103,7 +103,7 @@
                     </div>
                 </div>
                 
-                <x-button href="#" variant="secondary" class="w-full justify-center">Check Eligibility</x-button>
+                <x-button href="#" class="w-full justify-center bg-plaschema hover:bg-plaschema-dark text-white">Check Eligibility</x-button>
             </x-card>
 
             <x-card 
@@ -132,7 +132,7 @@
                     </div>
                 </div>
                 
-                <x-button href="#" variant="secondary" class="w-full justify-center">Check Eligibility</x-button>
+                <x-button href="#" class="w-full justify-center bg-plaschema hover:bg-plaschema-dark text-white">Check Eligibility</x-button>
             </x-card>
         </div>
     </x-section>
@@ -266,7 +266,7 @@
             </div>
             
             <div class="mt-8 text-center">
-                <x-button href="{{ route('faq') }}" variant="outline" class="px-6 py-3">View All FAQs</x-button>
+                <x-button href="{{ route('faq') }}" class="px-6 py-3 bg-plaschema hover:bg-plaschema-dark text-white">View All FAQs</x-button>
             </div>
         </div>
     </x-section>
@@ -277,8 +277,8 @@
             <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Enroll?</h2>
             <p class="text-xl mb-8 max-w-3xl mx-auto">Take the first step towards quality healthcare coverage for you and your family. Contact us or visit any PLASCHEMA office to enroll today.</p>
             <div class="flex justify-center space-x-4">
-                <x-button href="{{ route('contact') }}" class="text-lg px-6 py-3">Contact Us</x-button>
-                <x-button href="#" variant="outline" class="text-lg px-6 py-3">Find Office Locations</x-button>
+                <x-button href="{{ route('contact') }}" class="text-lg px-6 py-3 bg-white hover:bg-gray-100 text-plaschema-dark">Contact Us</x-button>
+                <x-button href="#" class="text-lg px-6 py-3 border border-white hover:bg-white/10 text-white">Find Office Locations</x-button>
             </div>
         </div>
     </section>
