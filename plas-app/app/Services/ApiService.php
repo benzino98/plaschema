@@ -65,6 +65,9 @@ class ApiService
                     'total_informal_count' => $data['data']['total_informal_count'] ?? 0,
                     'bhcpf_count' => $data['data']['bhcpf_count'] ?? 0,
                     'equity_count' => $data['data']['equity_count'] ?? 0,
+                    'spouse_count' => $data['data']['spouse_count'] ?? 0,
+                    'children_count' => $data['data']['children_count'] ?? 0,
+                    'principals_count' => $data['data']['principals_count'] ?? 0,
                     'last_updated' => now()->toDateTimeString(),
                 ];
                 
@@ -86,11 +89,14 @@ class ApiService
         
         // API failed, use fallback demo data
         $fallbackData = [
-            'total_count' => 12500,
-            'formal_count' => 5200,
-            'total_informal_count' => 4800,
-            'bhcpf_count' => 1700,
-            'equity_count' => 800,
+            'total_count' => 219415,
+            'formal_count' => 129949,
+            'total_informal_count' => 5274,
+            'bhcpf_count' => 66194,
+            'equity_count' => 17998,
+            'spouse_count' => 14586,
+            'children_count' => 49769,
+            'principals_count' => 65594,
             'last_updated' => now()->toDateTimeString(),
             'is_fallback' => true,
         ];
@@ -123,6 +129,9 @@ class ApiService
                     'total_informal_count' => $data['data']['total_informal_count'] ?? 0,
                     'bhcpf_count' => $data['data']['bhcpf_count'] ?? 0,
                     'equity_count' => $data['data']['equity_count'] ?? 0,
+                    'spouse_count' => $data['data']['spouse_count'] ?? 0,
+                    'children_count' => $data['data']['children_count'] ?? 0,
+                    'principals_count' => $data['data']['principals_count'] ?? 0,
                     'last_updated' => now()->toDateTimeString(),
                 ];
                 

@@ -76,64 +76,106 @@
 
     <!-- Statistics Section -->
     <x-section 
-        background="bg-plaschema-dark text-white" 
-        title="Our Impact"
+        background="bg-plaschema-DEFAULT text-white" 
+        title="Enrollment Statistics"
         subtitle="Making healthcare accessible to thousands of citizens across Plateau State."
     >
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 text-center">
-            <div class="bg-black/30 rounded-lg p-6 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-center">
+            <div class="bg-black/30 rounded-lg p-4 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
                 <!-- Users Icon -->
-                <div class="flex justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2" id="stat-enrolled">{{ isset($statistics['total_count']) ? number_format($statistics['total_count']) : '0' }}</div>
-                <div class="text-xl">Total Enrollments</div>
+                <div class="text-3xl md:text-4xl font-bold text-white mb-1" id="stat-enrolled">{{ isset($statistics['total_count']) ? number_format($statistics['total_count']) : '0' }}</div>
+                <div class="text-lg">Total Enrollments</div>
             </div>
 
-            <div class="bg-black/30 rounded-lg p-6 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
+            <div class="bg-black/30 rounded-lg p-4 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
                 <!-- Building Office Icon -->
-                <div class="flex justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2" id="stat-formal">{{ isset($statistics['formal_count']) ? number_format($statistics['formal_count']) : '0' }}</div>
-                <div class="text-xl">Formal Enrollments</div>
+                <div class="text-3xl md:text-4xl font-bold text-white mb-1" id="stat-formal">{{ isset($statistics['formal_count']) ? number_format($statistics['formal_count']) : '0' }}</div>
+                <div class="text-lg">Formal Enrollments</div>
             </div>
 
-            <div class="bg-black/30 rounded-lg p-6 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
+            <div class="bg-black/30 rounded-lg p-4 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
                 <!-- Shopping Bag Icon -->
-                <div class="flex justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2" id="stat-informal">{{ isset($statistics['total_informal_count']) ? number_format($statistics['total_informal_count']) : '0' }}</div>
-                <div class="text-xl">Informal Enrollments</div>
+                <div class="text-3xl md:text-4xl font-bold text-white mb-1" id="stat-informal">{{ isset($statistics['total_informal_count']) ? number_format($statistics['total_informal_count']) : '0' }}</div>
+                <div class="text-lg">Informal Enrollments</div>
             </div>
 
-            <div class="bg-black/30 rounded-lg p-6 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
+            <div class="bg-black/30 rounded-lg p-4 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
                 <!-- Heart Icon -->
-                <div class="flex justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2" id="stat-bhcpf">{{ isset($statistics['bhcpf_count']) ? number_format($statistics['bhcpf_count']) : '0' }}</div>
-                <div class="text-xl">BHCPF Enrollments</div>
+                <div class="text-3xl md:text-4xl font-bold text-white mb-1" id="stat-bhcpf">{{ isset($statistics['bhcpf_count']) ? number_format($statistics['bhcpf_count']) : '0' }}</div>
+                <div class="text-lg">BHCPF Enrollments</div>
             </div>
 
-            <div class="bg-black/30 rounded-lg p-6 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
+            <div class="bg-black/30 rounded-lg p-4 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
                 <!-- User Group Icon -->
-                <div class="flex justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
-                <div class="text-4xl md:text-5xl font-bold text-white mb-2" id="stat-equity">{{ isset($statistics['equity_count']) ? number_format($statistics['equity_count']) : '0' }}</div>
-                <div class="text-xl">Equity Enrollments</div>
+                <div class="text-3xl md:text-4xl font-bold text-white mb-1" id="stat-equity">{{ isset($statistics['equity_count']) ? number_format($statistics['equity_count']) : '0' }}</div>
+                <div class="text-lg">Equity Enrollments</div>
+            </div>
+            
+            <!-- New card for Principals -->
+            <div class="bg-black/30 rounded-lg p-4 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
+                <!-- User Icon -->
+                <div class="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <div class="text-3xl md:text-4xl font-bold text-white mb-1" id="stat-principals">{{ isset($statistics['principals_count']) ? number_format($statistics['principals_count']) : '0' }}</div>
+                <div class="text-lg">Principal Enrollments</div>
+            </div>
+            
+            <!-- New card for Spouses -->
+            <div class="bg-black/30 rounded-lg p-4 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
+                <!-- Two People Icon -->
+              
+                 <div class="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
+
+
+                <div class="text-3xl md:text-4xl font-bold text-white mb-1" id="stat-spouses">{{ isset($statistics['spouse_count']) ? number_format($statistics['spouse_count']) : '0' }}</div>
+                <div class="text-lg">Spouse Enrollments</div>
+            </div>
+            
+            <!-- New card for Children -->
+            <div class="bg-black/30 rounded-lg p-4 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
+                <!-- Child Icon -->
+               
+                 <div class="flex justify-center mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+
+
+                <div class="text-3xl md:text-4xl font-bold text-white mb-1" id="stat-children">{{ isset($statistics['children_count']) ? number_format($statistics['children_count']) : '0' }}</div>
+                <div class="text-lg">Child Enrollments</div>
             </div>
         </div>
         
@@ -194,6 +236,9 @@
                         animateStatUpdate('stat-informal', data.data.total_informal_count);
                         animateStatUpdate('stat-bhcpf', data.data.bhcpf_count);
                         animateStatUpdate('stat-equity', data.data.equity_count);
+                        animateStatUpdate('stat-principals', data.data.principals_count);
+                        animateStatUpdate('stat-spouses', data.data.spouse_count);
+                        animateStatUpdate('stat-children', data.data.children_count);
                         
                         // Update last updated timestamp
                         
@@ -232,7 +277,8 @@
     // Initial counter animation for statistics when they come into view
     document.addEventListener('DOMContentLoaded', function() {
         const statElements = [
-            'stat-enrolled', 'stat-formal', 'stat-informal', 'stat-bhcpf', 'stat-equity'
+            'stat-enrolled', 'stat-formal', 'stat-informal', 'stat-bhcpf', 'stat-equity',
+            'stat-principals', 'stat-spouses', 'stat-children'
         ];
         
         const observer = new IntersectionObserver((entries) => {
