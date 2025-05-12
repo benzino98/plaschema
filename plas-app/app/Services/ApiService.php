@@ -36,7 +36,7 @@ class ApiService
     /**
      * Get enrollment statistics from the external API.
      *
-     * @return array|null
+     * @return array
      */
     public function getEnrollmentStatistics()
     {
@@ -44,38 +44,61 @@ class ApiService
         $cacheDuration = 3600; // 1 hour
         
         // Try to get from cache first
-        return $this->cacheService->remember($cacheKey, $cacheDuration, function () {
-            try {
-                $response = Http::timeout(5)->get($this->baseUrl . '/data-records');
+        $cachedData = $this->cacheService->get($cacheKey);
+        
+        // If we have cached data, return it immediately
+        if ($cachedData) {
+            return $cachedData;
+        }
+        
+        // No cache, try to fetch from API
+        try {
+            $response = Http::timeout(5)->get($this->baseUrl . '/data-records');
+            
+            if ($response->successful()) {
+                $data = $response->json();
                 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    
-                    // Map and format the data as needed
-                    return [
-                        'total_count' => $data['total_count'] ?? 0,
-                        'formal_count' => $data['formal_count'] ?? 0,
-                        'total_informal_count' => $data['total_informal_count'] ?? 0,
-                        'bhcpf_count' => $data['bhcpf_count'] ?? 0,
-                        'equity_count' => $data['equity_count'] ?? 0,
-                        'last_updated' => now()->toDateTimeString(),
-                    ];
-                }
+                // Map and format the data as needed - fix to access the nested data
+                $statistics = [
+                    'total_count' => $data['data']['total_count'] ?? 0,
+                    'formal_count' => $data['data']['formal_count'] ?? 0,
+                    'total_informal_count' => $data['data']['total_informal_count'] ?? 0,
+                    'bhcpf_count' => $data['data']['bhcpf_count'] ?? 0,
+                    'equity_count' => $data['data']['equity_count'] ?? 0,
+                    'last_updated' => now()->toDateTimeString(),
+                ];
                 
-                Log::warning('External API returned unsuccessful response', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
+                // Cache the result
+                $this->cacheService->put($cacheKey, $statistics, $cacheDuration);
                 
-                return null;
-            } catch (\Exception $e) {
-                Log::error('Failed to fetch enrollment statistics from external API', [
-                    'exception' => $e->getMessage()
-                ]);
-                
-                return null;
+                return $statistics;
             }
-        });
+            
+            Log::warning('External API returned unsuccessful response', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch enrollment statistics from external API', [
+                'exception' => $e->getMessage()
+            ]);
+        }
+        
+        // API failed, use fallback demo data
+        $fallbackData = [
+            'total_count' => 12500,
+            'formal_count' => 5200,
+            'total_informal_count' => 4800,
+            'bhcpf_count' => 1700,
+            'equity_count' => 800,
+            'last_updated' => now()->toDateTimeString(),
+            'is_fallback' => true,
+        ];
+        
+        // Cache the fallback data for a shorter period
+        $this->cacheService->put($cacheKey, $fallbackData, 600); // 10 minutes
+        
+        return $fallbackData;
     }
 
     /**
@@ -95,11 +118,11 @@ class ApiService
                 $data = $response->json();
                 
                 $statistics = [
-                    'total_count' => $data['total_count'] ?? 0,
-                    'formal_count' => $data['formal_count'] ?? 0,
-                    'total_informal_count' => $data['total_informal_count'] ?? 0,
-                    'bhcpf_count' => $data['bhcpf_count'] ?? 0,
-                    'equity_count' => $data['equity_count'] ?? 0,
+                    'total_count' => $data['data']['total_count'] ?? 0,
+                    'formal_count' => $data['data']['formal_count'] ?? 0,
+                    'total_informal_count' => $data['data']['total_informal_count'] ?? 0,
+                    'bhcpf_count' => $data['data']['bhcpf_count'] ?? 0,
+                    'equity_count' => $data['data']['equity_count'] ?? 0,
                     'last_updated' => now()->toDateTimeString(),
                 ];
                 

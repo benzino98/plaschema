@@ -80,7 +80,7 @@
         title="Our Impact"
         subtitle="Making healthcare accessible to thousands of citizens across Plateau State."
     >
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 text-center">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 text-center">
             <div class="bg-black/30 rounded-lg p-6 shadow-lg border border-white/20 hover:bg-black/40 transition-colors fade-in">
                 <!-- Users Icon -->
                 <div class="flex justify-center mb-4">
@@ -137,13 +137,7 @@
             </div>
         </div>
         
-        <div class="text-center mt-4 text-sm text-white/70">
-            <p id="last-updated">
-                @if(isset($statistics['last_updated']))
-                    Last updated: {{ \Carbon\Carbon::parse($statistics['last_updated'])->format('M d, Y H:i:s') }}
-                @endif
-            </p>
-        </div>
+       
     </x-section>
 
     <!-- Latest News Section -->
@@ -202,16 +196,7 @@
                         animateStatUpdate('stat-equity', data.data.equity_count);
                         
                         // Update last updated timestamp
-                        const lastUpdated = new Date(data.data.last_updated);
-                        document.getElementById('last-updated').textContent = 'Last updated: ' + 
-                            lastUpdated.toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric', 
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit'
-                            });
+                        
                     }
                 })
                 .catch(error => console.error('Error refreshing statistics:', error));
