@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\News;
+use App\Services\ApiService;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
 
@@ -19,14 +20,21 @@ class HomeController extends Controller
     protected $cacheService;
     
     /**
+     * The API service instance
+     */
+    protected $apiService;
+    
+    /**
      * Create a new controller instance.
      * 
      * @param CacheService $cacheService
+     * @param ApiService $apiService
      * @return void
      */
-    public function __construct(CacheService $cacheService)
+    public function __construct(CacheService $cacheService, ApiService $apiService)
     {
         $this->cacheService = $cacheService;
+        $this->apiService = $apiService;
     }
 
     /**
@@ -48,8 +56,34 @@ class HomeController extends Controller
             }
         );
 
+        // Get enrollment statistics from external API
+        $statistics = $this->apiService->getEnrollmentStatistics();
+
         return view('pages.home', [
             'latestNews' => $latestNews,
+            'statistics' => $statistics,
         ]);
+    }
+    
+    /**
+     * Refresh enrollment statistics from the API.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refreshStatistics()
+    {
+        $statistics = $this->apiService->refreshEnrollmentStatistics();
+        
+        if ($statistics) {
+            return response()->json([
+                'success' => true,
+                'data' => $statistics
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Unable to refresh statistics'
+        ], 500);
     }
 } 

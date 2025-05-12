@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 // Home Route
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/refresh-statistics', [HomeController::class, 'refreshStatistics'])->name('refresh-statistics');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
