@@ -17,6 +17,9 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -29,7 +32,7 @@
             <div id="sidebar" class="bg-gray-900 text-white w-64 flex-shrink-0 fixed h-screen overflow-y-auto">
                 <div class="p-4 border-b border-gray-800">
                     <div class="flex items-center space-x-2">
-                        <img src="{{ asset('images/plaschema-logo-white.png') }}" alt="PLASCHEMA Logo" class="h-8 w-auto">
+                        <img src="{{ asset('images/PLASCHEMA-LOGO.png') }}" alt="PLASCHEMA Logo" class="h-8 w-auto">
                         <span class="text-xl font-bold">Admin</span>
                     </div>
                 </div>

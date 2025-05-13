@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center">
                     <a href="{{ route('home') }}" class="block h-12">
-                        <img class="h-full w-auto" src="{{ asset('images/plaschema-logo.png') }}" alt="PLASCHEMA">
+                        <img class="h-full w-auto" src="{{ asset('images/PLASCHEMA-LOGO.png') }}" alt="PLASCHEMA">
                     </a>
                 </div>
                 

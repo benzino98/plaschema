@@ -177,4 +177,57 @@ class CacheService
         $this->put($key, $collection, $duration);
         return $collection;
     }
+
+    /**
+     * Remove cache items by pattern
+     *
+     * @param string $pattern
+     * @return bool
+     */
+    public function deleteByPattern(string $pattern): bool
+    {
+        $prefixedPattern = $this->prefix . $pattern;
+        
+        // For database cache, we can't get all keys easily, so let's handle key patterns differently
+        if (str_contains($pattern, '*')) {
+            // Extract the base key without the wildcard
+            $baseKey = str_replace('*', '', $prefixedPattern);
+            
+            // For database driver, we'll clear individual known keys that match our pattern
+            // Let's clear some common keys based on ResourceService usage
+            if (str_contains($pattern, 'resources_')) {
+                // Clear various resource collection caches
+                Cache::forget($this->prefix . 'resources_featured_5');
+                Cache::forget($this->prefix . 'resources_featured_limit_5');
+                Cache::forget($this->prefix . 'resources_top_downloaded_10');
+                
+                // Clear paginated resources caches - multiple pages
+                for ($i = 1; $i <= 10; $i++) {
+                    Cache::forget($this->prefix . "resources_public_page{$i}");
+                    Cache::forget($this->prefix . "resources_collection_page{$i}");
+                }
+            }
+        } else {
+            // If it's a specific key (no wildcard), just forget it directly
+            Cache::forget($prefixedPattern);
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Check if a key matches a wildcard pattern
+     *
+     * @param string $key
+     * @param string $pattern
+     * @return bool
+     */
+    protected function patternMatches(string $key, string $pattern): bool
+    {
+        // Convert wildcard pattern to regex
+        $regex = str_replace('*', '.*', $pattern);
+        $regex = '/^' . $regex . '$/';
+        
+        return (bool) preg_match($regex, $key);
+    }
 } 

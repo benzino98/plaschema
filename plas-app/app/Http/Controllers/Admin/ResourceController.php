@@ -82,7 +82,10 @@ class ResourceController extends Controller
     public function store(ResourceRequest $request)
     {
         try {
-            $resource = $this->resourceService->create($request->validated());
+            $resource = $this->resourceService->create(
+                $request->validated(),
+                $request->file('file')
+            );
             
             $this->activityLogService->logByEntityInfo(
                 'created',
@@ -136,7 +139,11 @@ class ResourceController extends Controller
     public function update(ResourceRequest $request, Resource $resource)
     {
         try {
-            $this->resourceService->update($resource, $request->validated());
+            $this->resourceService->update(
+                $resource->id,
+                $request->validated(),
+                $request->hasFile('file') ? $request->file('file') : null
+            );
             
             $this->activityLogService->logByEntityInfo(
                 'updated',
@@ -167,7 +174,7 @@ class ResourceController extends Controller
             $title = $resource->title;
             $id = $resource->id;
             
-            $this->resourceService->delete($resource);
+            $this->resourceService->delete($id);
             
             $this->activityLogService->logByEntityInfo(
                 'deleted',

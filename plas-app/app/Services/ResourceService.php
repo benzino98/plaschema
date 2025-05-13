@@ -751,6 +751,17 @@ class ResourceService
     }
 
     /**
+     * Get the download count for a resource.
+     *
+     * @param Resource $resource
+     * @return int
+     */
+    public function getDownloadCount(Resource $resource)
+    {
+        return $resource->download_count;
+    }
+
+    /**
      * Get top downloaded resources.
      *
      * @param int $limit

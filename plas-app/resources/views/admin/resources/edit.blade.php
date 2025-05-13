@@ -120,7 +120,7 @@
 </div>
 
 <!-- Delete Form -->
-<form id="delete-form" action="{{ route('admin.resources.destroy', $resource) }}" method="POST" class="hidden">
+<form id="delete-form" action="{{ route('admin.resources.destroy', $resource->id) }}" method="POST" class="hidden">
     @csrf
     @method('DELETE')
 </form>
