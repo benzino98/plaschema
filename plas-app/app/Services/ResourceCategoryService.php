@@ -241,6 +241,20 @@ class ResourceCategoryService
     }
 
     /**
+     * Get all active resource categories.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllActive()
+    {
+        $cacheKey = 'resource_categories_all_active';
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () {
+            return $this->categoryRepository->getActive();
+        });
+    }
+
+    /**
      * Clear resource category cache.
      *
      * @param int|null $categoryId

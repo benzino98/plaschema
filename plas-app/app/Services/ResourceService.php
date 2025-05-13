@@ -531,4 +531,138 @@ class ResourceService
         // Clear collection caches
         $this->cacheService->deleteByPattern('resources_*');
     }
+
+    /**
+     * Get public resources with pagination and filtering.
+     *
+     * @param string|null $search
+     * @param int|null $categoryId
+     * @param bool|null $featured
+     * @param int $perPage
+     * @param string $orderBy
+     * @param string $direction
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getPublicResourcesPaginated(
+        ?string $search = null,
+        ?int $categoryId = null,
+        ?bool $featured = null,
+        int $perPage = 15,
+        string $orderBy = 'created_at',
+        string $direction = 'desc'
+    ) {
+        $cacheKey = "resources_public_" . 
+            ($search ? md5($search) . "_" : "") . 
+            ($categoryId ? "cat{$categoryId}_" : "") . 
+            ($featured ? "featured_" : "") . 
+            "{$perPage}_{$orderBy}_{$direction}_" . 
+            request()->get('page', 1);
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () use (
+            $search, $categoryId, $featured, $perPage, $orderBy, $direction
+        ) {
+            $filters = [
+                'published' => true,
+                'search' => $search,
+                'category_id' => $categoryId,
+                'featured' => $featured,
+                'order_by' => $orderBy,
+                'direction' => $direction
+            ];
+            
+            return $this->resourceRepository->getPaginated($perPage, $filters);
+        });
+    }
+
+    /**
+     * Get featured resources.
+     *
+     * @param int $limit
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getFeaturedResources(int $limit = 5)
+    {
+        $cacheKey = "resources_featured_limit_{$limit}";
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () use ($limit) {
+            return $this->resourceRepository->getByFilters([
+                'published' => true,
+                'featured' => true,
+                'limit' => $limit,
+                'order_by' => 'created_at',
+                'direction' => 'desc'
+            ]);
+        });
+    }
+
+    /**
+     * Get resources related to the given resource.
+     *
+     * @param Resource $resource
+     * @param int $limit
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getRelatedResources($resource, int $limit = 3)
+    {
+        $cacheKey = "resources_related_{$resource->id}_{$limit}";
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () use ($resource, $limit) {
+            return $this->resourceRepository->getRelated($resource->id, $resource->category_id, $limit);
+        });
+    }
+
+    /**
+     * Get resources by category with pagination.
+     *
+     * @param int $categoryId
+     * @param int $perPage
+     * @param string $orderBy
+     * @param string $direction
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getResourcesByCategory(
+        int $categoryId,
+        int $perPage = 15,
+        string $orderBy = 'created_at',
+        string $direction = 'desc'
+    ) {
+        $cacheKey = "resources_by_category_{$categoryId}_{$perPage}_{$orderBy}_{$direction}_" . 
+            request()->get('page', 1);
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () use (
+            $categoryId, $perPage, $orderBy, $direction
+        ) {
+            $filters = [
+                'published' => true,
+                'category_id' => $categoryId,
+                'order_by' => $orderBy,
+                'direction' => $direction
+            ];
+            
+            return $this->resourceRepository->getPaginated($perPage, $filters);
+        });
+    }
+
+    /**
+     * Download a resource file.
+     *
+     * @param Resource $resource
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function downloadResource($resource)
+    {
+        // Increment download count
+        $this->incrementDownloadCount($resource->id);
+        
+        // Log activity
+        $this->activityLogService->log(
+            'downloaded',
+            'resource',
+            $resource->id,
+            "Downloaded resource: {$resource->title}"
+        );
+        
+        // Generate download response
+        return Storage::download($resource->file_path, $resource->file_name);
+    }
 } 

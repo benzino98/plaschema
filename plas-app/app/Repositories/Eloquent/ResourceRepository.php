@@ -268,11 +268,47 @@ class ResourceRepository implements ResourceRepositoryInterface
         }
 
         if (isset($filters['order_by'])) {
-            $query->orderBy($filters['order_by'], $filters['order_direction'] ?? 'asc');
+            $query->orderBy($filters['order_by'], $filters['order_direction'] ?? $filters['direction'] ?? 'asc');
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
         return $query;
+    }
+
+    /**
+     * Get resources related to a specific resource.
+     *
+     * @param int $resourceId
+     * @param int $categoryId
+     * @param int $limit
+     * @return Collection
+     */
+    public function getRelated(int $resourceId, int $categoryId, int $limit = 3): Collection
+    {
+        return $this->model->published()
+            ->where('id', '!=', $resourceId)
+            ->where('category_id', $categoryId)
+            ->with('category')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+    
+    /**
+     * Get resources by filters.
+     *
+     * @param array $filters
+     * @return Collection
+     */
+    public function getByFilters(array $filters = []): Collection
+    {
+        $query = $this->buildQueryFromFilters($filters);
+        
+        if (isset($filters['limit'])) {
+            $query->limit($filters['limit']);
+        }
+        
+        return $query->get();
     }
 } 

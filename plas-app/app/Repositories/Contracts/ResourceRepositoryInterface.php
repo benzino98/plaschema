@@ -130,4 +130,22 @@ interface ResourceRepositoryInterface
      * @return Collection
      */
     public function getMostDownloaded(int $limit = 5): Collection;
+    
+    /**
+     * Get resources related to a specific resource.
+     *
+     * @param int $resourceId
+     * @param int $categoryId
+     * @param int $limit
+     * @return Collection
+     */
+    public function getRelated(int $resourceId, int $categoryId, int $limit = 3): Collection;
+    
+    /**
+     * Get resources by filters.
+     *
+     * @param array $filters
+     * @return Collection
+     */
+    public function getByFilters(array $filters = []): Collection;
 } 
