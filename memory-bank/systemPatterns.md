@@ -300,7 +300,89 @@ PLASCHEMA follows a modified MVC (Model-View-Controller) architecture with addit
                           └──────────────────┘
 ```
 
-### Admin Module Structure
+### Resource Feature Architecture
+
+The resource feature follows the established architecture patterns with some specific considerations for file handling and download tracking:
+
+```
+┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
+│  ResourceController │────▶│   ResourceService   │────▶│ ResourceRepository  │
+└─────────────────────┘     └─────────────────────┘     └─────────────────────┘
+                                      │                           │
+                                      ▼                           ▼
+                            ┌─────────────────────┐     ┌─────────────────────┐
+                            │    File Storage     │     │    Resource Model   │
+                            └─────────────────────┘     └─────────────────────┘
+                                                                  │
+                                                                  ▼
+                                                        ┌─────────────────────┐
+                                                        │ ResourceCategory    │
+                                                        └─────────────────────┘
+```
+
+#### Key Components
+
+1. **ResourceController**:
+
+   - Handles HTTP requests for resource management
+   - Implements CRUD operations via the ResourceService
+   - Processes file uploads and validation
+   - Manages download requests and tracking
+
+2. **ResourceService**:
+
+   - Encapsulates business logic for resource management
+   - Handles file storage and retrieval
+   - Processes text extraction for searchable content
+   - Manages download tracking and analytics
+   - Implements caching for resource listings
+
+3. **ResourceRepository**:
+
+   - Abstracts database operations from business logic
+   - Handles complex queries for resources
+   - Provides methods for filtering and searching
+   - Manages download count updates
+
+4. **File Storage**:
+
+   - Uses Laravel's filesystem abstraction
+   - Implements organized directory structure
+   - Handles mime type validation and security checks
+   - Supports multiple file formats (PDF, Excel, Word)
+
+5. **Models**:
+   - Resource: Represents downloadable files with metadata
+   - ResourceCategory: Organizes resources into categories
+
+#### Resource Download Flow
+
+```
+┌──────────┐     ┌──────────────────┐     ┌──────────────────┐
+│   User   │────▶│ DownloadController│────▶│  ResourceService │
+└──────────┘     └──────────────────┘     └──────────────────┘
+                          │                         │
+                          ▼                         ▼
+                  ┌──────────────────┐     ┌──────────────────┐
+                  │     Response     │     │ ResourceRepository│
+                  └──────────────────┘     └──────────────────┘
+                                                    │
+                                                    ▼
+                                           ┌──────────────────┐
+                                           │  Update Download │
+                                           │      Count       │
+                                           └──────────────────┘
+```
+
+This architecture ensures:
+
+1. Clean separation of concerns
+2. Reusable components
+3. Efficient file handling
+4. Proper tracking of downloads
+5. Optimized performance through caching
+
+## Admin Module Structure
 
 ```
 ┌─────────────────────┐     ┌─────────────────────┐
