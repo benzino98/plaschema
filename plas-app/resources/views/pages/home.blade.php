@@ -347,7 +347,7 @@
                     entry.target.textContent = '0';
                     
                     // Animate to the target value
-                    animateCounter(statId, targetValue);
+                            animateCounter(statId, targetValue);
                 }
             });
         }, { threshold: 0.1 });

@@ -7,6 +7,7 @@
 /* Custom Navigation Animation Styles */
 @layer base {
     :root {
+        --color-plaschema: #10b981;
         --color-plaschema-rgb: 16, 185, 129;
     }
 }
@@ -41,4 +42,28 @@
     .nav-item-animation:hover {
         transform: translateY(-2px);
     }
+}
+
+/* Remove focus outlines for mouse users, but keep them for keyboard navigation */
+a,
+button,
+input,
+select,
+textarea,
+[tabindex]:not([tabindex="-1"]) {
+    @apply outline-none !important;
+}
+
+/* Add a subtle focus state for keyboard navigation */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+    @apply ring-2 ring-plaschema/40 ring-offset-0;
+}
+
+.nav-animation {
+    animation: smoothScroll 0.45s ease-in-out;
 }

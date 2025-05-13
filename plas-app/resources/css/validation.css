@@ -103,10 +103,9 @@
     }
 }
 
-/* Accessibility enhancements */
+/* Accessibility enhancements - REMOVED BLUE FOCUS STYLES */
 :focus {
-    outline: 2px solid #3b82f6 !important;
-    outline-offset: 2px !important;
+    outline: none !important;
 }
 
 /* Improved focus visibility for input fields */
@@ -114,14 +113,14 @@ input:focus,
 select:focus,
 textarea:focus,
 button:focus {
-    outline: 2px solid #3b82f6 !important;
-    outline-offset: 2px !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+    outline: none !important;
+    outline-offset: 0 !important;
+    box-shadow: none !important;
 }
 
 /* Skip to main content link */
 .skip-to-content {
-    background: #3b82f6;
+    background: #10b981; /* Changed to PLASCHEMA green */
     color: white;
     font-weight: 700;
     left: 50%;
@@ -134,6 +133,8 @@ button:focus {
 
 .skip-to-content:focus {
     transform: translateY(0%) translateX(-50%);
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important; /* PLASCHEMA green shadow */
 }
 
 /* Improved color contrast for better readability */
@@ -142,7 +143,7 @@ button:focus {
 }
 
 .plaschema-contrast-link {
-    color: #1d4ed8 !important; /* Darker link color for better contrast */
+    color: #10b981 !important; /* Changed to PLASCHEMA green */
 }
 
 /* Enhanced form elements for better accessibility */
@@ -158,11 +159,11 @@ textarea {
     opacity: 1 !important;
 }
 
-/* Improved button focus styles */
+/* Improved button focus styles - REMOVED BLUE FOCUS */
 .btn:focus,
 button:focus {
-    outline: 2px solid #3b82f6 !important;
-    outline-offset: 2px !important;
+    outline: none !important;
+    outline-offset: 0 !important;
 }
 
 /* Make sure error messages are properly associated with form fields */
