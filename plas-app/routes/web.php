@@ -7,6 +7,7 @@ use App\Http\Controllers\FaqController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\HealthcareProviderController as AdminProviderController;
 use App\Http\Controllers\Admin\FaqController as AdminFaqController;
@@ -16,6 +17,8 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\TranslationController;
+use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
+use App\Http\Controllers\Admin\ResourceCategoryController as AdminResourceCategoryController;
 use Illuminate\Support\Facades\Route;
 
 // Home Route
@@ -61,6 +64,12 @@ Route::get('/about', function () {
 Route::get('/plans', function () {
     return view('pages.plans');
 })->name('plans');
+
+// Resource Routes
+Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');
+Route::get('/resources/category/{slug}', [ResourceController::class, 'category'])->name('resources.category');
+Route::get('/resources/{slug}', [ResourceController::class, 'show'])->name('resources.show');
+Route::get('/resources/{slug}/download', [ResourceController::class, 'download'])->name('resources.download');
 
 // Admin Routes
 Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewer'])->name('admin.')->group(function () {
@@ -122,6 +131,17 @@ Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewe
         Route::post('translations/import', [TranslationController::class, 'import'])->name('translations.import');
         Route::post('translations/export', [TranslationController::class, 'export'])->name('translations.export');
     });
+
+    // Resource Management
+    Route::resource('resources', AdminResourceController::class);
+    Route::get('resources/activity/logs', [AdminResourceController::class, 'activity'])->name('resources.activity');
+    Route::post('resources/bulk-action', [AdminResourceController::class, 'bulkAction'])->name('resources.bulk-action');
+    Route::get('resources/stats/downloads', [AdminResourceController::class, 'downloadStats'])->name('resources.stats.downloads');
+    
+    // Resource Category Management
+    Route::resource('resource-categories', AdminResourceCategoryController::class);
+    Route::get('resource-categories/activity/logs', [AdminResourceCategoryController::class, 'activity'])->name('resource-categories.activity');
+    Route::post('resource-categories/bulk-action', [AdminResourceCategoryController::class, 'bulkAction'])->name('resource-categories.bulk-action');
 });
 
 require __DIR__.'/auth.php';

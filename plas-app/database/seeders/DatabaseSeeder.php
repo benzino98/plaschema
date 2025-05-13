@@ -39,5 +39,8 @@ class DatabaseSeeder extends Seeder
         
         // Seed message categories
         $this->call(MessageCategoriesSeeder::class);
+        
+        // Seed resources and resource categories
+        $this->call(ResourceSeeder::class);
     }
 }
