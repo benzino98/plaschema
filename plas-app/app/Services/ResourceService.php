@@ -428,9 +428,9 @@ class ResourceService
             Log::error('Error extracting content from file: ' . $e->getMessage());
         }
         
-        // Limit content length to avoid database issues (e.g., 16MB for MySQL)
+        // Limit content length to avoid database issues (e.g., 16MB for MySQL MEDIUMTEXT)
         if ($content) {
-            $content = Str::limit($content, 65535); // TEXT column limit
+            $content = Str::limit($content, 16777215); // MEDIUMTEXT column limit
         }
         
         return $content;
