@@ -10,6 +10,7 @@ use App\Services\ResourceCategoryService;
 use App\Services\ResourceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\ActivityLog;
 
 class ResourceController extends Controller
 {
@@ -50,7 +51,8 @@ class ResourceController extends Controller
                 $request->get('sort_direction', 'desc')
             );
 
-            $categories = $this->resourceCategoryService->getAllForSelect();
+            $categoriesCollection = $this->resourceCategoryService->getAllForSelect();
+            $categories = $categoriesCollection->pluck('name', 'id')->toArray();
             
             return view('admin.resources.index', compact('resources', 'categories'));
         } catch (\Exception $e) {
@@ -66,7 +68,8 @@ class ResourceController extends Controller
      */
     public function create()
     {
-        $categories = $this->resourceCategoryService->getAllForSelect();
+        $categoriesCollection = $this->resourceCategoryService->getAllForSelect();
+        $categories = $categoriesCollection->pluck('name', 'id')->toArray();
         return view('admin.resources.create', compact('categories'));
     }
 
@@ -81,7 +84,7 @@ class ResourceController extends Controller
         try {
             $resource = $this->resourceService->create($request->validated());
             
-            $this->activityLogService->log(
+            $this->activityLogService->logByEntityInfo(
                 'created',
                 'resource',
                 $resource->id,
@@ -118,7 +121,8 @@ class ResourceController extends Controller
      */
     public function edit(Resource $resource)
     {
-        $categories = $this->resourceCategoryService->getAllForSelect();
+        $categoriesCollection = $this->resourceCategoryService->getAllForSelect();
+        $categories = $categoriesCollection->pluck('name', 'id')->toArray();
         return view('admin.resources.edit', compact('resource', 'categories'));
     }
 
@@ -134,7 +138,7 @@ class ResourceController extends Controller
         try {
             $this->resourceService->update($resource, $request->validated());
             
-            $this->activityLogService->log(
+            $this->activityLogService->logByEntityInfo(
                 'updated',
                 'resource',
                 $resource->id,
@@ -165,7 +169,7 @@ class ResourceController extends Controller
             
             $this->resourceService->delete($resource);
             
-            $this->activityLogService->log(
+            $this->activityLogService->logByEntityInfo(
                 'deleted',
                 'resource',
                 $id,
@@ -184,11 +188,31 @@ class ResourceController extends Controller
     /**
      * Display activity logs for resources.
      *
+     * @param Request $request
      * @return \Illuminate\View\View
      */
-    public function activity()
+    public function activity(Request $request)
     {
-        $logs = $this->activityLogService->getLogsForEntity('resource', 15);
+        $query = ActivityLog::where('entity_type', 'resource')
+            ->orderBy('created_at', 'desc')
+            ->with('user');
+            
+        // Apply action filter
+        if ($request->filled('action')) {
+            $query->where('action', $request->input('action'));
+        }
+        
+        // Apply date filters
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->input('from_date'));
+        }
+        
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->input('to_date'));
+        }
+        
+        $logs = $query->paginate(15);
+        
         return view('admin.resources.activity', compact('logs'));
     }
 
@@ -225,7 +249,7 @@ class ResourceController extends Controller
                     return redirect()->back()->with('error', 'Invalid action selected.');
             }
 
-            $this->activityLogService->log(
+            $this->activityLogService->logByEntityInfo(
                 'bulk-' . $action,
                 'resource',
                 implode(',', $ids),
@@ -256,8 +280,12 @@ class ResourceController extends Controller
             
             $stats = $this->resourceService->getDownloadStats($period, $resourceId, $categoryId);
             $topResources = $this->resourceService->getTopDownloaded(10);
-            $resources = $this->resourceService->getAllForSelect();
-            $categories = $this->resourceCategoryService->getAllForSelect();
+            
+            $resourcesCollection = $this->resourceService->getAllForSelect();
+            $resources = $resourcesCollection->pluck('title', 'id')->toArray();
+            
+            $categoriesCollection = $this->resourceCategoryService->getAllForSelect();
+            $categories = $categoriesCollection->pluck('name', 'id')->toArray();
             
             return view('admin.resources.stats', compact(
                 'stats', 

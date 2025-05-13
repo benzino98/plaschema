@@ -160,4 +160,71 @@ class ActivityLogService
             ->with('user')
             ->paginate($perPage);
     }
+
+    /**
+     * Get logs for a specific entity.
+     *
+     * @param string $entityType The entity type (e.g., 'resource', 'user')
+     * @param int $entityId The ID of the entity
+     * @param int $perPage Number of logs per page
+     * @return LengthAwarePaginator
+     */
+    public function getLogsForEntity(string $entityType, int $entityId, int $perPage = 20): LengthAwarePaginator
+    {
+        return ActivityLog::where('entity_type', $entityType)
+            ->where('entity_id', $entityId)
+            ->orderBy('created_at', 'desc')
+            ->with('user')
+            ->paginate($perPage);
+    }
+    
+    /**
+     * Simplified log method that accepts entity type and ID directly.
+     * Used by controllers when the model is not available.
+     *
+     * @param string $action The action performed
+     * @param string $entityType The entity type (e.g., 'resource', 'user')
+     * @param int|string $entityId The ID of the entity
+     * @param string|null $description Description of the activity
+     * @return ActivityLog
+     */
+    public function logByEntityInfo(
+        string $action, 
+        string $entityType, 
+        $entityId, 
+        ?string $description = null
+    ): ActivityLog {
+        // Make sure we have a user ID even if not authenticated (use 0 for system)
+        $userId = Auth::id() ?: 0;
+        
+        $log = new ActivityLog([
+            'user_id' => $userId,
+            'entity_type' => $entityType,
+            'entity_id' => $entityId,
+            'action' => $action,
+            'description' => $description,
+            'ip_address' => Request::ip(),
+            'user_agent' => Request::userAgent(),
+        ]);
+        
+        try {
+            $log->save();
+            Log::info('Activity log saved', [
+                'log_id' => $log->id,
+                'action' => $action,
+                'entity' => "{$entityType} #{$entityId}",
+                'user_id' => $userId,
+                'description' => $description
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to save activity log', [
+                'exception' => $e->getMessage(),
+                'action' => $action,
+                'entity' => "{$entityType} #{$entityId}",
+                'user_id' => $userId
+            ]);
+        }
+        
+        return $log;
+    }
 } 

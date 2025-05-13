@@ -142,7 +142,7 @@ class ResourceService
         $resource = $this->resourceRepository->create($resourceData);
         
         // Log activity
-        $this->activityLogService->log(
+        $this->activityLogService->logByEntityInfo(
             'created',
             'resource',
             $resource->id,
@@ -203,7 +203,7 @@ class ResourceService
         $resource = $this->resourceRepository->update($id, $resourceData);
         
         // Log activity
-        $this->activityLogService->log(
+        $this->activityLogService->logByEntityInfo(
             'updated',
             'resource',
             $resource->id,
@@ -238,7 +238,7 @@ class ResourceService
         
         if ($result) {
             // Log activity
-            $this->activityLogService->log(
+            $this->activityLogService->logByEntityInfo(
                 'deleted',
                 'resource',
                 $id,
@@ -655,14 +655,267 @@ class ResourceService
         $this->incrementDownloadCount($resource->id);
         
         // Log activity
-        $this->activityLogService->log(
+        $this->activityLogService->logByEntityInfo(
             'downloaded',
             'resource',
             $resource->id,
-            "Downloaded resource: {$resource->title}"
+            "Resource downloaded: {$resource->title}"
         );
         
         // Generate download response
         return Storage::download($resource->file_path, $resource->file_name);
+    }
+
+    /**
+     * Get paginated resources with search, filtering and sorting for admin.
+     *
+     * @param  string|null  $search  Search term
+     * @param  int|null  $categoryId  Filter by category
+     * @param  bool|null  $featured  Filter by featured status
+     * @param  int  $perPage  Number of items per page
+     * @param  string  $sortBy  Field to sort by
+     * @param  string  $sortDirection  Sort direction (asc/desc)
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getAllPaginated(
+        ?string $search = null,
+        ?int $categoryId = null,
+        ?bool $featured = null,
+        int $perPage = 15,
+        string $sortBy = 'created_at',
+        string $sortDirection = 'desc'
+    ) {
+        $query = Resource::query()->with('category');
+        
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('file_name', 'like', "%{$search}%")
+                  ->orWhere('searchable_content', 'like', "%{$search}%");
+            });
+        }
+        
+        // Apply category filter
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
+        }
+        
+        // Apply featured filter
+        if ($featured !== null) {
+            $query->where('is_featured', $featured);
+        }
+        
+        // Apply sorting
+        $query->orderBy($sortBy, $sortDirection);
+        
+        // Get paginated results
+        return $query->paginate($perPage)->withQueryString();
+    }
+
+    /**
+     * Get all resources formatted for select dropdown.
+     *
+     * @param bool $activeOnly Whether to return only active resources
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllForSelect(bool $activeOnly = true)
+    {
+        $cacheKey = 'resources_for_select_' . ($activeOnly ? 'active' : 'all');
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () use ($activeOnly) {
+            // Get base query
+            $query = Resource::query();
+            
+            // Filter by active status if required
+            if ($activeOnly) {
+                $query->where('is_active', true);
+            }
+            
+            // Order by title
+            $query->orderBy('title');
+            
+            // Get all resources
+            $resources = $query->get();
+            
+            // Format for select dropdown
+            return $resources->map(function($resource) {
+                return [
+                    'id' => $resource->id,
+                    'title' => $resource->title,
+                    'category_id' => $resource->category_id
+                ];
+            });
+        });
+    }
+
+    /**
+     * Get top downloaded resources.
+     *
+     * @param int $limit
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getTopDownloaded(int $limit = 10)
+    {
+        $cacheKey = "resources_top_downloaded_{$limit}";
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () use ($limit) {
+            return Resource::orderBy('download_count', 'desc')
+                ->with('category')
+                ->limit($limit)
+                ->get();
+        });
+    }
+
+    /**
+     * Get download statistics for resources.
+     *
+     * @param string $period 'daily', 'weekly', 'monthly', or 'yearly'
+     * @param int|null $resourceId Filter by resource ID
+     * @param int|null $categoryId Filter by category ID
+     * @return array
+     */
+    public function getDownloadStats(string $period = 'monthly', ?int $resourceId = null, ?int $categoryId = null)
+    {
+        $cacheKey = "resources_download_stats_{$period}_" . 
+            ($resourceId ? "resource_{$resourceId}_" : "") . 
+            ($categoryId ? "category_{$categoryId}" : "");
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () use ($period, $resourceId, $categoryId) {
+            // Start with a base query
+            $query = Resource::query();
+            
+            // Apply filters
+            if ($resourceId) {
+                $query->where('id', $resourceId);
+            }
+            
+            if ($categoryId) {
+                $query->where('category_id', $categoryId);
+            }
+            
+            // For demonstration, let's return some sample statistics
+            // In a real application, you would calculate these from download records
+            
+            $stats = [
+                'labels' => [],
+                'data' => [],
+                'total' => 0
+            ];
+            
+            // Get the resources matching the criteria
+            $resources = $query->get();
+            
+            // Generate period labels
+            switch ($period) {
+                case 'daily':
+                    // Last 7 days
+                    for ($i = 6; $i >= 0; $i--) {
+                        $date = now()->subDays($i);
+                        $stats['labels'][] = $date->format('M d');
+                        $stats['data'][] = 0;
+                    }
+                    break;
+                case 'weekly':
+                    // Last 8 weeks
+                    for ($i = 7; $i >= 0; $i--) {
+                        $date = now()->subWeeks($i);
+                        $stats['labels'][] = 'Week ' . $date->format('W');
+                        $stats['data'][] = 0;
+                    }
+                    break;
+                case 'monthly':
+                    // Last 12 months
+                    for ($i = 11; $i >= 0; $i--) {
+                        $date = now()->subMonths($i);
+                        $stats['labels'][] = $date->format('M Y');
+                        $stats['data'][] = 0;
+                    }
+                    break;
+                case 'yearly':
+                    // Last 5 years
+                    for ($i = 4; $i >= 0; $i--) {
+                        $date = now()->subYears($i);
+                        $stats['labels'][] = $date->format('Y');
+                        $stats['data'][] = 0;
+                    }
+                    break;
+            }
+            
+            // Calculate total downloads
+            $stats['total'] = $resources->sum('download_count');
+            
+            // In a real implementation, you would fill the data array with actual download counts
+            // This is just a placeholder that fills the data with random values
+            $stats['data'] = array_map(function() {
+                return rand(5, 100);
+            }, $stats['data']);
+            
+            return $stats;
+        });
+    }
+
+    /**
+     * Bulk delete multiple resources.
+     *
+     * @param array $ids Resource IDs to delete
+     * @return int Number of resources deleted
+     */
+    public function bulkDelete(array $ids)
+    {
+        $count = 0;
+        
+        foreach ($ids as $id) {
+            try {
+                $resource = $this->getById($id);
+                if ($resource && $this->delete($resource)) {
+                    $count++;
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to delete resource #{$id}: " . $e->getMessage());
+            }
+        }
+        
+        return $count;
+    }
+    
+    /**
+     * Bulk update featured status for multiple resources.
+     *
+     * @param array $ids Resource IDs to update
+     * @param bool $featured Whether to set as featured or not
+     * @return int Number of resources updated
+     */
+    public function bulkFeature(array $ids, bool $featured = true)
+    {
+        $count = 0;
+        
+        foreach ($ids as $id) {
+            try {
+                $resource = $this->getById($id);
+                if ($resource) {
+                    $resource->is_featured = $featured;
+                    $resource->save();
+                    
+                    // Log activity
+                    $this->activityLogService->logByEntityInfo(
+                        $featured ? 'featured' : 'unfeatured',
+                        'resource',
+                        $id,
+                        $featured ? "Featured resource: {$resource->title}" : "Unfeatured resource: {$resource->title}"
+                    );
+                    
+                    // Clear cache
+                    $this->clearResourceCache($id);
+                    
+                    $count++;
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to update featured status for resource #{$id}: " . $e->getMessage());
+            }
+        }
+        
+        return $count;
     }
 } 

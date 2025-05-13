@@ -255,6 +255,88 @@ class ResourceCategoryService
     }
 
     /**
+     * Get paginated resource categories with search, filtering and sorting for admin.
+     *
+     * @param  string|null  $search  Search term
+     * @param  int|null  $parentId  Filter by parent category
+     * @param  bool|null  $active  Filter by active status
+     * @param  int  $perPage  Number of items per page
+     * @param  string  $sortBy  Field to sort by
+     * @param  string  $sortDirection  Sort direction (asc/desc)
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getAllPaginated(
+        ?string $search = null,
+        ?int $parentId = null,
+        ?bool $active = null,
+        int $perPage = 15,
+        string $sortBy = 'created_at',
+        string $sortDirection = 'desc'
+    ) {
+        $query = ResourceCategory::query()->withCount('resources');
+        
+        // Apply search filter
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+        
+        // Apply parent filter
+        if ($parentId !== null) {
+            $query->where('parent_id', $parentId);
+        }
+        
+        // Apply active filter
+        if ($active !== null) {
+            $query->where('is_active', $active);
+        }
+        
+        // Apply sorting
+        $query->orderBy($sortBy, $sortDirection);
+        
+        // Get paginated results
+        return $query->paginate($perPage)->withQueryString();
+    }
+
+    /**
+     * Get all categories formatted for select dropdown.
+     *
+     * @param bool $activeOnly Whether to return only active categories
+     * @return \Illuminate\Support\Collection
+     */
+    public function getAllForSelect(bool $activeOnly = true)
+    {
+        $cacheKey = 'resource_categories_for_select_' . ($activeOnly ? 'active' : 'all');
+        
+        return $this->cacheService->remember($cacheKey, 3600, function () use ($activeOnly) {
+            // Get base query
+            $query = ResourceCategory::query();
+            
+            // Filter by active status if required
+            if ($activeOnly) {
+                $query->where('is_active', true);
+            }
+            
+            // Order by name
+            $query->orderBy('name');
+            
+            // Get all categories
+            $categories = $query->get();
+            
+            // Format for select dropdown
+            return $categories->map(function($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'parent_id' => $category->parent_id
+                ];
+            });
+        });
+    }
+
+    /**
      * Clear resource category cache.
      *
      * @param int|null $categoryId

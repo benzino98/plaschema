@@ -64,18 +64,18 @@
         @if($featuredResources && $featuredResources->count() > 0)
             <div class="mb-12">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Featured Resources</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($featuredResources as $resource)
-                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:translate-y-[-4px]">
-                            <div class="p-5">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:translate-y-[-4px] flex flex-col h-full">
+                            <div class="p-5 flex flex-col flex-grow">
                                 <div class="flex items-center mb-3">
                                     <span class="flex-shrink-0 bg-plaschema-light p-2 rounded-md text-plaschema-dark">
                                         {!! getResourceIcon($resource->file_extension, $resource->category ? $resource->category->name : null) !!}
                                     </span>
                                     <h3 class="ml-3 text-lg font-semibold text-gray-900 truncate">{{ $resource->title }}</h3>
                                 </div>
-                                <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ $resource->description }}</p>
-                                <div class="flex flex-wrap justify-between items-center">
+                                <p class="text-gray-600 text-sm line-clamp-2 mb-4 flex-grow">{{ $resource->description }}</p>
+                                <div class="flex flex-wrap justify-between items-center mt-auto">
                                     <span class="text-xs text-gray-500 mb-2 md:mb-0">
                                         {{ $resource->formatted_file_size }} • {{ strtoupper($resource->file_extension) }}
                                     </span>
@@ -117,18 +117,18 @@
             </div>
 
             @if($resources->count() > 0)
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     @foreach($resources as $resource)
-                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:translate-y-[-4px]">
-                            <div class="p-5">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:translate-y-[-4px] flex flex-col h-full">
+                            <div class="p-5 flex flex-col flex-grow">
                                 <div class="flex items-center mb-3">
                                     <span class="flex-shrink-0 bg-plaschema-light p-2 rounded-md text-plaschema-dark">
                                         {!! getResourceIcon($resource->file_extension, $resource->category ? $resource->category->name : null) !!}
                                     </span>
                                     <h3 class="ml-3 text-lg font-semibold text-gray-900 truncate">{{ $resource->title }}</h3>
                                 </div>
-                                <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ $resource->description }}</p>
-                                <div class="flex flex-wrap justify-between items-center">
+                                <p class="text-gray-600 text-sm line-clamp-2 mb-4 flex-grow">{{ $resource->description }}</p>
+                                <div class="flex flex-wrap justify-between items-center mt-auto">
                                     <span class="text-xs text-gray-500 mb-2 md:mb-0">
                                         {{ $resource->formatted_file_size }} • {{ strtoupper($resource->file_extension) }}
                                     </span>
