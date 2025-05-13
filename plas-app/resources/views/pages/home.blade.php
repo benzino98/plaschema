@@ -220,6 +220,30 @@
 
 @push('scripts')
 <script>
+    // Global variable to store our statistics
+    let cachedStatistics = {
+        'total_count': {{ isset($statistics['total_count']) ? $statistics['total_count'] : 0 }},
+        'formal_count': {{ isset($statistics['formal_count']) ? $statistics['formal_count'] : 0 }},
+        'total_informal_count': {{ isset($statistics['total_informal_count']) ? $statistics['total_informal_count'] : 0 }},
+        'bhcpf_count': {{ isset($statistics['bhcpf_count']) ? $statistics['bhcpf_count'] : 0 }},
+        'equity_count': {{ isset($statistics['equity_count']) ? $statistics['equity_count'] : 0 }},
+        'principals_count': {{ isset($statistics['principals_count']) ? $statistics['principals_count'] : 0 }},
+        'spouse_count': {{ isset($statistics['spouse_count']) ? $statistics['spouse_count'] : 0 }},
+        'children_count': {{ isset($statistics['children_count']) ? $statistics['children_count'] : 0 }}
+    };
+
+    // Track which stats have been animated
+    let animatedStats = {
+        'stat-enrolled': false,
+        'stat-formal': false,
+        'stat-informal': false,
+        'stat-bhcpf': false,
+        'stat-equity': false,
+        'stat-principals': false,
+        'stat-spouses': false,
+        'stat-children': false
+    };
+
     // Enrollment statistics background refresh
     document.addEventListener('DOMContentLoaded', function() {
         // Set up background refresh every 5 minutes (adjust as needed)
@@ -230,6 +254,18 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.data) {
+                        // Update our cached values
+                        cachedStatistics = {
+                            'total_count': data.data.total_count,
+                            'formal_count': data.data.formal_count,
+                            'total_informal_count': data.data.total_informal_count,
+                            'bhcpf_count': data.data.bhcpf_count,
+                            'equity_count': data.data.equity_count,
+                            'principals_count': data.data.principals_count,
+                            'spouse_count': data.data.spouse_count,
+                            'children_count': data.data.children_count
+                        };
+                        
                         // Update the statistics with smooth counting animation
                         animateStatUpdate('stat-enrolled', data.data.total_count);
                         animateStatUpdate('stat-formal', data.data.formal_count);
@@ -239,9 +275,6 @@
                         animateStatUpdate('stat-principals', data.data.principals_count);
                         animateStatUpdate('stat-spouses', data.data.spouse_count);
                         animateStatUpdate('stat-children', data.data.children_count);
-                        
-                        // Update last updated timestamp
-                        
                     }
                 })
                 .catch(error => console.error('Error refreshing statistics:', error));
@@ -272,59 +305,82 @@
                 el.textContent = currentCount.toLocaleString();
             }, frameDuration);
         }
+        
+        // Initial counter animation for statistics when they come into view
+        setupStatisticsAnimation();
     });
     
-    // Initial counter animation for statistics when they come into view
-    document.addEventListener('DOMContentLoaded', function() {
+    // Function to set up the animation for statistics
+    function setupStatisticsAnimation() {
         const statElements = [
             'stat-enrolled', 'stat-formal', 'stat-informal', 'stat-bhcpf', 'stat-equity',
             'stat-principals', 'stat-spouses', 'stat-children'
         ];
         
+        // Create a mapping of stat IDs to their respective cached values
+        const statValueMap = {
+            'stat-enrolled': 'total_count',
+            'stat-formal': 'formal_count',
+            'stat-informal': 'total_informal_count',
+            'stat-bhcpf': 'bhcpf_count',
+            'stat-equity': 'equity_count',
+            'stat-principals': 'principals_count',
+            'stat-spouses': 'spouse_count',
+            'stat-children': 'children_count'
+        };
+        
+        // Create one observer for all the statistics, triggering animations as they come into view
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    statElements.forEach(statId => {
-                        if (entry.target.contains(document.getElementById(statId))) {
-                            const el = document.getElementById(statId);
-                            const targetValue = parseInt(el.textContent.replace(/,/g, ''));
-                            
-                            // Reset to zero before animating
-                            el.textContent = '0';
-                            
-                            // Then animate to the actual value
-                            animateCounter(statId, targetValue);
-                        }
-                    });
+                const statId = entry.target.id;
+                
+                // Only animate if this specific stat hasn't been animated yet and is in view
+                if (entry.isIntersecting && !animatedStats[statId]) {
+                    // Mark this stat as animated
+                    animatedStats[statId] = true;
+                    
+                    // Get the appropriate value from cached statistics
+                    const cacheKey = statValueMap[statId];
+                    const targetValue = cachedStatistics[cacheKey];
+                    
+                    // Start from zero
+                    entry.target.textContent = '0';
+                    
+                    // Animate to the target value
+                    animateCounter(statId, targetValue);
                 }
             });
         }, { threshold: 0.1 });
         
-        document.querySelectorAll('.fade-in').forEach(el => {
-            for (const statId of statElements) {
-                if (el.contains(document.getElementById(statId))) {
-                    observer.observe(el);
-                    break;
-                }
+        // Observe each statistic element individually
+        statElements.forEach(statId => {
+            const element = document.getElementById(statId);
+            if (element) {
+                observer.observe(element);
             }
         });
         
         function animateCounter(id, target) {
             const el = document.getElementById(id);
+            if (!el) return;
+            
             const duration = 2000; // ms
             const frameDuration = 1000/60; // 60fps
             const totalFrames = Math.round(duration / frameDuration);
             let frame = 0;
+            
             const counter = setInterval(() => {
                 frame++;
                 const progress = frame / totalFrames;
                 const currentCount = Math.round(progress * target);
+                
                 if (frame === totalFrames) {
                     clearInterval(counter);
                 }
+                
                 el.textContent = currentCount.toLocaleString();
             }, frameDuration);
         }
-    });
+    }
 </script>
 @endpush 
