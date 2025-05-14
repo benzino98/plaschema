@@ -43,9 +43,9 @@
                 <h3 class="text-lg font-semibold mb-4">Resources</h3>
                 <ul class="space-y-2">
                     <li><a href="{{ route('news') }}" class="text-white hover:text-gray-200">News & Updates</a></li>
-                    <li><a href="#" class="text-white hover:text-gray-200">Downloads</a></li>
-                    <li><a href="#" class="text-white hover:text-gray-200">Enrollee Resources</a></li>
-                    <li><a href="#" class="text-white hover:text-gray-200">Provider Resources</a></li>
+                    <li><a href="{{ route('resources.index') }}" class="text-white hover:text-gray-200">Downloads</a></li>
+                    <li><a href="{{ route('resources.index') }}" class="text-white hover:text-gray-200">Enrollee Resources</a></li>
+                    <li><a href="{{ route('resources.index') }}" class="text-white hover:text-gray-200">Provider Resources</a></li>
                 </ul>
             </div>
 

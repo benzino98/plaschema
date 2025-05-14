@@ -305,7 +305,7 @@ class ResourceService
         $this->incrementDownloadCount($id);
         
         // Generate download response
-        return Storage::download($resource->file_path, $resource->file_name);
+        return Storage::disk('public')->download($resource->file_path, $resource->file_name);
     }
 
     /**
@@ -395,8 +395,8 @@ class ResourceService
      */
     protected function deleteFile(string $filePath)
     {
-        if (Storage::exists($filePath)) {
-            return Storage::delete($filePath);
+        if (Storage::disk('public')->exists($filePath)) {
+            return Storage::disk('public')->delete($filePath);
         }
         
         return false;
@@ -663,7 +663,7 @@ class ResourceService
         );
         
         // Generate download response
-        return Storage::download($resource->file_path, $resource->file_name);
+        return Storage::disk('public')->download($resource->file_path, $resource->file_name);
     }
 
     /**
