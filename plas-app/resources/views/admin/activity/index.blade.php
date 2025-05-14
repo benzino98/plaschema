@@ -104,7 +104,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <a href="{{ route('admin.activity.show', $log) }}" class="text-indigo-600 hover:text-indigo-900">
-                                        View Details
+                                        <i class="fas fa-eye" title="View Details"></i>
                                     </a>
                                 </td>
                             </tr>

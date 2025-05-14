@@ -41,8 +41,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('admin.users.roles.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900">
-                                        Manage Roles
+                                    <a href="{{ route('admin.users.roles.edit', $user) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                        <i class="fas fa-user-tag" title="Manage Roles"></i>
+                                    </a>
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="text-blue-600 hover:text-blue-900 mr-3">
+                                        <i class="fas fa-edit" title="Edit User"></i>
+                                    </a>
+                                    <a href="{{ route('admin.users.activity', $user) }}" class="text-green-600 hover:text-green-900 mr-3">
+                                        <i class="fas fa-history" title="View Activity"></i>
                                     </a>
                                 </td>
                             </tr>

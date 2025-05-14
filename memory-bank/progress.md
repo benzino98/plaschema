@@ -33,16 +33,17 @@ This document tracks what has been completed and what still needs to be done.
   - Search functionality - COMPLETED (100%)
   - Resource system - COMPLETED (90%)
 
-### Additional Features (99% Complete)
+### Additional Features (95% Complete)
 
 - **Bulk Operations**:
 
   - Bulk action architecture - COMPLETED (100%)
-  - News bulk operations - COMPLETED (100%)
-  - FAQs bulk operations - COMPLETED (100%)
-  - Provider bulk operations - COMPLETED (100%)
+  - News bulk operations - IN PROGRESS (50%)
+  - FAQs bulk operations - IN PROGRESS (50%)
+  - Provider bulk operations - IN PROGRESS (50%)
   - User bulk operations - COMPLETED (100%)
-  - Resource bulk operations - COMPLETED (100%)
+  - Resource bulk operations - IN PROGRESS (50%)
+  - Resource category bulk operations - IN PROGRESS (50%)
 
 - **Activity Logging**:
 
@@ -165,6 +166,33 @@ This document tracks what has been completed and what still needs to be done.
   - Production deployment - PLANNED (0%)
 
 ## Current Work
+
+### Bulk Action Functionality Fix (0% Complete)
+
+#### Plan
+
+- **Phase 1: Fix Routes and Form Configurations**:
+
+  - Verify and correct all bulk action route definitions in web.php
+  - Ensure all form action URLs match their corresponding route names
+  - Standardize form IDs across all modules
+
+- **Phase 2: Fix JavaScript Select All Functionality**:
+
+  - Standardize checkbox class names across all modules
+  - Implement consistent JavaScript for select all functionality
+  - Fix the issue where select all checkbox doesn't affect individual checkboxes
+
+- **Phase 3: Fix Controller Methods**:
+
+  - Verify all bulk action controller methods exist and have correct signatures
+  - Ensure proper validation and error handling
+  - Standardize parameter handling across controllers
+
+- **Phase 4: Testing and Verification**:
+  - Test each module's bulk actions independently
+  - Verify Select All functionality works across all modules
+  - Ensure proper success/error messages are displayed
 
 ### Resource Feature Implementation (90% Complete)
 
@@ -290,17 +318,20 @@ This document tracks what has been completed and what still needs to be done.
 
 ### Immediate (Next 2 Weeks)
 
-1. Resource Feature Implementation
+1. Fix Bulk Action Functionality (HIGH PRIORITY)
 
-   - Create admin controllers for resource and category management
-   - Implement form requests for validation
-   - Build admin views for resource CRUD operations
-   - Create public controllers for browsing and downloading resources
-   - Implement public views for resource listings and details
-   - Add routes with proper middleware
-   - Set up storage configuration for production environment
+   - Fix routes and form configurations
+   - Fix JavaScript Select All functionality
+   - Fix controller methods
+   - Test and verify all fixes
 
-2. API Integration for Enrollment Statistics
+2. Resource Feature Implementation (MEDIUM PRIORITY)
+
+   - Implement advanced search for resources
+   - Create featured resources functionality
+   - Add download statistics dashboard
+
+3. API Integration for Enrollment Statistics (HIGH PRIORITY)
    - Create ApiService for external API requests
    - Integrate with CacheService for efficient caching
    - Update HomeController to fetch enrollment data

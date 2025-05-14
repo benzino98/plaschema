@@ -111,12 +111,16 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route('admin.translations.edit', $translation->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                    <a href="{{ route('admin.translations.edit', $translation->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                        <i class="fas fa-edit" title="Edit Translation"></i>
+                                    </a>
                                     
                                     <form action="{{ route('admin.translations.destroy', $translation->id) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this translation?')">Delete</button>
+                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this translation?')">
+                                            <i class="fas fa-trash" title="Delete Translation"></i>
+                                        </button>
                                     </form>
                                 </td>
                             </tr>

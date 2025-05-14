@@ -41,13 +41,19 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end space-x-2">
-                                        <a href="{{ route('admin.roles.show', $role) }}" class="text-blue-600 hover:text-blue-900">View</a>
-                                        <a href="{{ route('admin.roles.edit', $role) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        <a href="{{ route('admin.roles.show', $role) }}" class="text-blue-600 hover:text-blue-900 mr-3">
+                                            <i class="fas fa-eye" title="View Role"></i>
+                                        </a>
+                                        <a href="{{ route('admin.roles.edit', $role) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                            <i class="fas fa-edit" title="Edit Role"></i>
+                                        </a>
                                         @if($role->users_count == 0)
                                             <form action="{{ route('admin.roles.destroy', $role) }}" method="POST" class="inline-block">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this role?')">Delete</button>
+                                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this role?')">
+                                                    <i class="fas fa-trash" title="Delete Role"></i>
+                                                </button>
                                             </form>
                                         @endif
                                     </div>
