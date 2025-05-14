@@ -167,6 +167,46 @@ This document tracks what has been completed and what still needs to be done.
 
 ## Current Work
 
+### Admin Dashboard Redesign (0% Complete)
+
+#### Plan
+
+- **Phase 1: Dashboard Analysis & Information Architecture (0%)**:
+
+  - Organize all system models into logical groups
+  - Identify key metrics for each model
+  - Map administrator workflows to prioritize dashboard components
+
+- **Phase 2: UI Design & Component Structure (0%)**:
+
+  - Design a flexible grid-based layout with card components
+  - Create modular card components with consistent styling
+  - Enhance navigation for better access and visual cues
+
+- **Phase 3: Data Visualization & Real-time Updates (0%)**:
+
+  - Implement charts and graphs for key metrics
+  - Set up real-time data fetching with caching for statistics
+  - Create a live-updating activity feed
+
+- **Phase 4: Quick-Access Features & Action Cards (0%)**:
+
+  - Design action buttons/forms for frequent tasks
+  - Implement a notification component
+  - Add personalization options for dashboard customization
+
+- **Phase 5: Implementation & Integration (0%)**:
+
+  - Enhance controller to serve all required data
+  - Create the new dashboard Blade template
+  - Add interactivity with Alpine.js
+  - Apply animation effects from existing framework
+
+- **Phase 6: Testing & Optimization (0%)**:
+  - Test across various desktop and laptop sizes
+  - Optimize data loading and rendering
+  - Ensure dashboard meets accessibility standards
+
 ### Bulk Action Functionality Fix (0% Complete)
 
 #### Plan

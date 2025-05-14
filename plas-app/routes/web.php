@@ -73,9 +73,7 @@ Route::get('/resources/{slug}/download', [ResourceController::class, 'download']
 
 // Admin Routes
 Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewer'])->name('admin.')->group(function () {
-    Route::get('/', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
     // News Management
     Route::resource('news', AdminNewsController::class);

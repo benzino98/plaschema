@@ -194,5 +194,27 @@
             </div>
         </div>
     </div>
+    
+    <!-- Scripts -->
+    <script src="{{ asset('js/alpine.js') }}"></script>
+    <script>
+        // Sidebar toggle functionality
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            const mainContent = document.querySelector('.ml-64');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                mainContent.classList.remove('ml-0');
+                mainContent.classList.add('ml-64');
+            } else {
+                sidebar.classList.add('hidden');
+                mainContent.classList.remove('ml-64');
+                mainContent.classList.add('ml-0');
+            }
+        });
+    </script>
+    
+    @stack('scripts')
 </body>
 </html> 
