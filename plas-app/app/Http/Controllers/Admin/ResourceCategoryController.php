@@ -38,7 +38,9 @@ class ResourceCategoryController extends Controller
         try {
             $categories = $this->resourceCategoryService->getAllPaginated(
                 $request->get('search'),
-                $request->get('per_page', 15),
+                null,
+                null,
+                (int) $request->get('per_page', 15),
                 $request->get('sort_by', 'created_at'),
                 $request->get('sort_direction', 'desc')
             );
@@ -128,7 +130,7 @@ class ResourceCategoryController extends Controller
     public function update(ResourceCategoryRequest $request, ResourceCategory $resourceCategory)
     {
         try {
-            $this->resourceCategoryService->update($resourceCategory, $request->validated());
+            $this->resourceCategoryService->update($resourceCategory->id, $request->validated());
             
             $this->activityLogService->log(
                 'updated',
@@ -159,7 +161,7 @@ class ResourceCategoryController extends Controller
             $name = $resourceCategory->name;
             $id = $resourceCategory->id;
             
-            $this->resourceCategoryService->delete($resourceCategory);
+            $this->resourceCategoryService->delete($id);
             
             $this->activityLogService->log(
                 'deleted',
