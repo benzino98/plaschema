@@ -175,6 +175,16 @@
 <script>
     // Make sure DOM is fully loaded before attaching event listeners
     document.addEventListener('DOMContentLoaded', function() {
+        // Fix for individual delete forms
+        document.querySelectorAll('form[action*="/admin/news/"][method="POST"]').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                e.stopPropagation(); // Prevent event bubbling up to parent forms
+                
+                // Confirm is already handled by the onsubmit attribute
+                // No need to add another confirmation dialog
+            });
+        });
+    
         // Select All functionality
         const selectAllCheckbox = document.getElementById('select-all');
         if (selectAllCheckbox) {

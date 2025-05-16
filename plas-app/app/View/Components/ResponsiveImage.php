@@ -21,6 +21,27 @@ class ResponsiveImage extends Component
     public $additionalAttributes;
 
     /**
+     * Helper method to format image path correctly
+     * 
+     * @param string|null $path
+     * @return string|null
+     */
+    protected function formatImagePath(?string $path): ?string
+    {
+        if (!$path) {
+            return null;
+        }
+        
+        // If it's already a full URL, return as is
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+        
+        // Return the plain path without adding 'storage/' prefix
+        return $path;
+    }
+
+    /**
      * Create a new component instance.
      * 
      * @param string|null $pathSmall Path to small version of image
@@ -42,10 +63,10 @@ class ResponsiveImage extends Component
         string $loading = 'lazy',
         array $additionalAttributes = []
     ) {
-        $this->pathSmall = $pathSmall ? asset('storage/' . $pathSmall) : null;
-        $this->pathMedium = $pathMedium ? asset('storage/' . $pathMedium) : null;
-        $this->pathLarge = $pathLarge ? asset('storage/' . $pathLarge) : null;
-        $this->pathOriginal = $pathOriginal ? asset('storage/' . $pathOriginal) : null;
+        $this->pathSmall = $this->formatImagePath($pathSmall);
+        $this->pathMedium = $this->formatImagePath($pathMedium);
+        $this->pathLarge = $this->formatImagePath($pathLarge);
+        $this->pathOriginal = $this->formatImagePath($pathOriginal);
         $this->alt = $alt;
         $this->class = $class;
         $this->loading = $loading;

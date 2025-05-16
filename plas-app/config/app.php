@@ -140,6 +140,7 @@ return [
          */
         Barryvdh\DomPDF\ServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
+        Intervention\Image\ImageServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -168,5 +169,6 @@ return [
         'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'Str' => Illuminate\Support\Str::class,
+        'Image' => Intervention\Image\Facades\Image::class,
     ],
 ];

@@ -7,7 +7,9 @@ use App\Http\Requests\Admin\NewsRequest;
 use App\Models\News;
 use App\Services\ImageService;
 use App\Services\ActivityLogService;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class NewsController extends Controller
@@ -23,12 +25,22 @@ class NewsController extends Controller
     protected $activityLogService;
 
     /**
+     * The cache service instance.
+     */
+    protected $cacheService;
+
+    /**
      * Create a new controller instance.
      */
-    public function __construct(ImageService $imageService, ActivityLogService $activityLogService)
+    public function __construct(
+        ImageService $imageService, 
+        ActivityLogService $activityLogService,
+        CacheService $cacheService
+    )
     {
         $this->imageService = $imageService;
         $this->activityLogService = $activityLogService;
+        $this->cacheService = $cacheService;
         
         // Add permission middleware
         $this->middleware('permission:view-news')->only(['index', 'show']);
@@ -200,6 +212,16 @@ class NewsController extends Controller
             $this->activityLogService->logDeleted($news);
             
             $news->delete();
+            
+            // Clear news-related caches
+            try {
+                $this->cacheService->forget('home_latest_news');
+                $this->cacheService->clearTag('news');
+                $this->cacheService->deleteByPattern('news_*');
+            } catch (\Exception $e) {
+                // Log cache error but don't fail the request
+                Log::warning('Cache clearing error: ' . $e->getMessage());
+            }
             
             return redirect()->route('admin.news.index')
                 ->with('success', 'News article deleted successfully.');

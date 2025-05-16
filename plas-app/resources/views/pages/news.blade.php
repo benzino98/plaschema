@@ -55,12 +55,14 @@
                 @foreach($featuredNews as $item)
                     <x-card 
                         title="{{ $item->title }}" 
-                        image="{{ $item->image_path ? asset('storage/' . $item->image_path) : asset('images/news-placeholder.jpg') }}"
-                        imageSmall="{{ $item->image_path_small ? asset('storage/' . $item->image_path_small) : null }}"
-                        imageMedium="{{ $item->image_path_medium ? asset('storage/' . $item->image_path_medium) : null }}"
-                        imageLarge="{{ $item->image_path_large ? asset('storage/' . $item->image_path_large) : null }}"
+                        image="{{ $item->image_path }}"
+                        imageSmall="{{ $item->image_path_small }}"
+                        imageMedium="{{ $item->image_path_medium }}"
+                        imageLarge="{{ $item->image_path_large }}"
                         animation="slide-up"
                         url="{{ route('news.show', $item->slug) }}"
+                        aspectRatio="16/9"
+                        objectPosition="center 25%"
                     >
                         <p class="text-gray-600 mb-4">{{ $item->excerpt }}</p>
                         <div class="flex justify-between items-center">
@@ -86,12 +88,14 @@
                 @foreach($latestNews as $item)
                     <x-card 
                         title="{{ $item->title }}" 
-                        image="{{ $item->image_path ? asset('storage/' . $item->image_path) : asset('images/news-placeholder.jpg') }}"
-                        imageSmall="{{ $item->image_path_small ? asset('storage/' . $item->image_path_small) : null }}"
-                        imageMedium="{{ $item->image_path_medium ? asset('storage/' . $item->image_path_medium) : null }}"
-                        imageLarge="{{ $item->image_path_large ? asset('storage/' . $item->image_path_large) : null }}"
+                        image="{{ $item->image_path ?: asset('images/news-placeholder.jpg') }}"
+                        imageSmall="{{ $item->image_path_small }}"
+                        imageMedium="{{ $item->image_path_medium }}"
+                        imageLarge="{{ $item->image_path_large }}"
                         animation="slide-up"
                         url="{{ route('news.show', $item->slug) }}"
+                        aspectRatio="16/9"
+                        objectPosition="center 25%"
                     >
                         <p class="text-gray-600 mb-4">{{ $item->excerpt }}</p>
                         <div class="flex justify-between items-center">

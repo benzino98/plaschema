@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -90,7 +92,35 @@ class CacheService
      */
     public function clearByTags($tags): bool
     {
-        return Cache::tags($tags)->flush();
+        try {
+            return Cache::tags($tags)->flush();
+        } catch (\Exception $e) {
+            // If tagging is not supported, try to clear known patterns instead
+            if (is_array($tags)) {
+                foreach ($tags as $tag) {
+                    $this->deleteByPattern($tag . '*');
+                }
+            } else {
+                $this->deleteByPattern($tags . '*');
+            }
+            return true;
+        }
+    }
+
+    /**
+     * Clear cached items by a single tag
+     * 
+     * @param string $tag
+     * @return bool
+     */
+    public function clearTag(string $tag): bool
+    {
+        try {
+            return Cache::tags($tag)->flush();
+        } catch (\Exception $e) {
+            // If tagging is not supported, try to clear known patterns instead
+            return $this->deleteByPattern($tag . '_*');
+        }
     }
 
     /**
@@ -193,8 +223,9 @@ class CacheService
             // Extract the base key without the wildcard
             $baseKey = str_replace('*', '', $prefixedPattern);
             
-            // For database driver, we'll clear individual known keys that match our pattern
-            // Let's clear some common keys based on ResourceService usage
+            // Handle specific patterns for common entities
+            
+            // Resources patterns
             if (str_contains($pattern, 'resources_')) {
                 // Clear various resource collection caches
                 Cache::forget($this->prefix . 'resources_featured_5');
@@ -205,6 +236,38 @@ class CacheService
                 for ($i = 1; $i <= 10; $i++) {
                     Cache::forget($this->prefix . "resources_public_page{$i}");
                     Cache::forget($this->prefix . "resources_collection_page{$i}");
+                }
+            }
+            
+            // News patterns
+            if (str_contains($pattern, 'news_') || str_starts_with($pattern, 'news*')) {
+                // Clear news article caches
+                Cache::forget($this->prefix . 'home_latest_news');
+                Cache::forget($this->prefix . 'featured_news');
+                
+                // Clear pagination cache - multiple pages
+                for ($i = 1; $i <= 10; $i++) {
+                    Cache::forget($this->prefix . "news_collection_page{$i}");
+                }
+                
+                // If we have access to the database, we can search for keys containing the pattern
+                try {
+                    $db = DB::connection(config('cache.stores.database.connection'));
+                    $keyColumn = 'key';
+                    $table = config('cache.stores.database.table', 'cache');
+                    
+                    // Find cache keys matching the pattern
+                    $keys = $db->table($table)
+                        ->where($keyColumn, 'like', $baseKey . '%')
+                        ->pluck($keyColumn);
+                    
+                    // Delete matched keys
+                    foreach ($keys as $key) {
+                        Cache::forget($key);
+                    }
+                } catch (\Exception $e) {
+                    // If database query fails, continue with other methods
+                    Log::warning('Failed to search for cache keys: ' . $e->getMessage());
                 }
             }
         } else {
