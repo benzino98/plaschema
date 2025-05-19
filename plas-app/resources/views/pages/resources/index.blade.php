@@ -66,19 +66,6 @@
         @if($featuredResources && $featuredResources->count() > 0)
             <div class="mb-12">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Featured Resources</h2>
-                @if(config('app.debug'))
-                <!-- Debug Info -->
-                <div class="bg-yellow-100 p-4 mb-4 rounded text-xs">
-                    <h3 class="font-bold">Debug Info (Admin Only):</h3>
-                    <p>Resources count: {{ $featuredResources->count() }}</p>
-                    <ul class="ml-4 list-disc">
-                    @foreach($featuredResources as $resource)
-                        <li>ID: {{ $resource->id }} | Title: {{ $resource->title }} | Featured: {{ $resource->is_featured ? 'Yes' : 'No' }}</li>
-                    @endforeach
-                    </ul>
-                </div>
-                <!-- End Debug Info -->
-                @endif
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($featuredResources as $resource)
                         @if($resource->title && $resource->description)

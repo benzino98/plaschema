@@ -533,7 +533,49 @@ class ResourceService
     }
 
     /**
-     * Get public resources with pagination and filtering.
+     * Get public resources with pagination.
+     *
+     * @param string|null $search
+     * @param int|null $categoryId
+     * @param bool|null $featured
+     * @param int $perPage
+     * @param string $orderBy
+     * @param string $direction
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function getPublicResources(
+        ?string $search = null,
+        ?int $categoryId = null,
+        bool $featured = false,
+        int $perPage = 15,
+        string $orderBy = 'created_at',
+        string $direction = 'desc'
+    ) {
+        $cacheKey = "resources_public_" . 
+            ($search ? md5($search) . "_" : "") . 
+            ($categoryId ? "cat{$categoryId}_" : "") . 
+            ($featured ? "featured_" : "") . 
+            "{$perPage}_{$orderBy}_{$direction}_" . 
+            request()->get('page', 1);
+        
+        return $this->cacheService->remember($cacheKey, 120, function () use (
+            $search, $categoryId, $featured, $perPage, $orderBy, $direction
+        ) {
+            $filters = [
+                'published' => true,
+                'search' => $search,
+                'category_id' => $categoryId,
+                'featured' => $featured,
+                'order_by' => $orderBy,
+                'direction' => $direction
+            ];
+            
+            return $this->resourceRepository->getPaginated($perPage, $filters);
+        });
+    }
+
+    /**
+     * Get public resources with pagination.
      *
      * @param string|null $search
      * @param int|null $categoryId
@@ -558,7 +600,7 @@ class ResourceService
             "{$perPage}_{$orderBy}_{$direction}_" . 
             request()->get('page', 1);
         
-        return $this->cacheService->remember($cacheKey, 3600, function () use (
+        return $this->cacheService->remember($cacheKey, 120, function () use (
             $search, $categoryId, $featured, $perPage, $orderBy, $direction
         ) {
             $filters = [
@@ -584,7 +626,7 @@ class ResourceService
     {
         $cacheKey = "resources_featured_limit_{$limit}";
         
-        return $this->cacheService->remember($cacheKey, 3600, function () use ($limit) {
+        return $this->cacheService->remember($cacheKey, 60, function () use ($limit) {
             return $this->resourceRepository->getByFilters([
                 'published' => true,
                 'is_featured' => true,
@@ -606,7 +648,7 @@ class ResourceService
     {
         $cacheKey = "resources_related_{$resource->id}_{$limit}";
         
-        return $this->cacheService->remember($cacheKey, 3600, function () use ($resource, $limit) {
+        return $this->cacheService->remember($cacheKey, 300, function () use ($resource, $limit) {
             return $this->resourceRepository->getRelated($resource->id, $resource->category_id, $limit);
         });
     }
@@ -629,7 +671,7 @@ class ResourceService
         $cacheKey = "resources_by_category_{$categoryId}_{$perPage}_{$orderBy}_{$direction}_" . 
             request()->get('page', 1);
         
-        return $this->cacheService->remember($cacheKey, 3600, function () use (
+        return $this->cacheService->remember($cacheKey, 300, function () use (
             $categoryId, $perPage, $orderBy, $direction
         ) {
             $filters = [

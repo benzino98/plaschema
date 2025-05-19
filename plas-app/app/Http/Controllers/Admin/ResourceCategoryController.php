@@ -59,7 +59,8 @@ class ResourceCategoryController extends Controller
      */
     public function create()
     {
-        $parentCategories = $this->resourceCategoryService->getAllForSelect();
+        $categories = $this->resourceCategoryService->getAllForSelect();
+        $parentCategories = $categories->pluck('name', 'id')->toArray();
         return view('admin.resources.categories.create', compact('parentCategories'));
     }
 
@@ -113,7 +114,8 @@ class ResourceCategoryController extends Controller
      */
     public function edit(ResourceCategory $resourceCategory)
     {
-        $parentCategories = $this->resourceCategoryService->getAllForSelect($resourceCategory->id);
+        $categories = $this->resourceCategoryService->getAllForSelect();
+        $parentCategories = $categories->pluck('name', 'id')->toArray();
         return view('admin.resources.categories.edit', [
             'category' => $resourceCategory,
             'parentCategories' => $parentCategories

@@ -16,7 +16,7 @@ class CacheService
      * 
      * @var int
      */
-    protected $defaultDuration = 3600; // 1 hour
+    protected $defaultDuration = 300; // 5 minutes (reduced from 1 hour)
 
     /**
      * Cache key prefix for better organization
