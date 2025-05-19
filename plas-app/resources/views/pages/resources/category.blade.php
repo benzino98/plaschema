@@ -74,20 +74,20 @@
             @if($resources->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     @foreach($resources as $resource)
-                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:translate-y-[-4px]">
-                            <div class="p-5">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:translate-y-[-4px] flex flex-col h-full">
+                            <div class="p-5 flex flex-col flex-grow">
                                 <div class="flex items-center mb-3">
                                     <span class="flex-shrink-0 bg-plaschema-light p-2 rounded-md text-plaschema-dark">
                                         {!! getResourceIcon($resource->file_extension, $resource->category ? $resource->category->name : null) !!}
                                     </span>
                                     <h3 class="ml-3 text-lg font-semibold text-gray-900 truncate">{{ $resource->title }}</h3>
                                 </div>
-                                <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ $resource->description }}</p>
-                                <div class="flex flex-wrap justify-between items-center">
-                                    <span class="text-xs text-gray-500 mb-2 md:mb-0">
+                                <p class="text-gray-600 text-sm line-clamp-2 mb-4 flex-grow">{{ $resource->description }}</p>
+                                <div class="flex flex-wrap justify-between items-center mt-auto">
+                                    <span class="text-xs text-gray-500 inline-block mb-2 md:mb-0">
                                         {{ $resource->formatted_file_size }} • {{ strtoupper($resource->file_extension) }}
                                     </span>
-                                    <div class="flex space-x-2">
+                                    <div class="flex space-x-2 mt-2 md:mt-0">
                                         <a href="{{ route('resources.show', $resource->slug) }}" class="inline-flex items-center px-3 py-1 border border-gray-600 text-gray-600 rounded-md hover:bg-gray-600 hover:text-white transition">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>

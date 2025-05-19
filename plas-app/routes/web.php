@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\TranslationController;
 use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\ResourceCategoryController as AdminResourceCategoryController;
+use App\Http\Controllers\PlansController;
 use Illuminate\Support\Facades\Route;
 
 // Home Route
@@ -61,9 +62,7 @@ Route::get('/about', function () {
 })->name('about');
 
 // Plans Route
-Route::get('/plans', function () {
-    return view('pages.plans');
-})->name('plans');
+Route::get('/plans', [PlansController::class, 'index'])->name('plans');
 
 // Resource Routes
 Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');

@@ -38,6 +38,12 @@
     </div>
     @endif
 
+    <!-- Health Plan Info Message -->
+    <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-6" role="alert">
+        <span class="font-bold">Health Plan Page Display:</span>
+        <span class="block sm:inline">Only the first 3 FAQs with "Healthcare Plans" category and "Show on Health Plan Page" enabled will be displayed on the Health Plan page.</span>
+    </div>
+
     <!-- Search and Filter Form -->
     <div class="bg-white p-4 rounded-lg shadow mb-6">
         <form action="{{ route('admin.faqs.index') }}" method="GET" class="space-y-4">
@@ -72,12 +78,26 @@
                     </select>
                 </div>
                 
+                <!-- Health Plan Filter -->
+                <div>
+                    <label for="health_plan" class="block text-sm font-medium text-gray-700 mb-1">Health Plan Display</label>
+                    <select 
+                        name="health_plan" 
+                        id="health_plan" 
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                    >
+                        <option value="">All FAQs</option>
+                        <option value="1" {{ request('health_plan') == '1' ? 'selected' : '' }}>On Health Plan Page</option>
+                        <option value="0" {{ request('health_plan') == '0' ? 'selected' : '' }}>Not On Health Plan Page</option>
+                    </select>
+                </div>
+                
                 <!-- Buttons -->
                 <div class="flex items-end space-x-2">
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                         Apply Filters
                     </button>
-                    @if(request('search') || request('category'))
+                    @if(request('search') || request('category') || request('health_plan'))
                         <a href="{{ route('admin.faqs.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
                             Clear Filters
                         </a>
@@ -101,6 +121,8 @@
                         <option value="">-- Select Action --</option>
                         <option value="delete">Delete</option>
                         <option value="change-category">Change Category</option>
+                        <option value="show-on-plans-page">Show on Health Plan Page</option>
+                        <option value="hide-from-plans-page">Hide from Health Plan Page</option>
                     </select>
                     
                     <div id="category-select-container" class="hidden">
@@ -140,6 +162,9 @@
                             Status
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Health Plan
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
                         </th>
                     </tr>
@@ -166,6 +191,11 @@
                                 {{ $faq->is_active ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $faq->show_on_plans_page ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ $faq->show_on_plans_page ? 'Displayed' : 'Not Displayed' }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
                                 <a href="{{ route('admin.faqs.edit', $faq->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">
@@ -183,8 +213,8 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
-                            @if(request('search') || request('category'))
+                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">
+                            @if(request('search') || request('category') || request('health_plan'))
                                 No FAQs found matching your criteria. <a href="{{ route('admin.faqs.index') }}" class="text-blue-600 hover:underline">Clear filters</a>.
                             @else
                                 No FAQs found. <a href="{{ route('admin.faqs.create') }}" class="text-blue-600 hover:underline">Create one now</a>.
@@ -353,6 +383,12 @@
                 const categoryName = document.querySelector('select[name="category"]').value || document.getElementById('new-category-input').value.trim();
                 message = `Are you sure you want to change the category of ${selectedCount} selected FAQ(s) to "${categoryName}"?`;
                 break;
+            case 'show-on-plans-page':
+                message = `Are you sure you want to mark ${selectedCount} selected FAQ(s) to appear on the Health Plan page?`;
+                break;
+            case 'hide-from-plans-page':
+                message = `Are you sure you want to hide ${selectedCount} selected FAQ(s) from the Health Plan page?`;
+                break;
             default:
                 message = `Are you sure you want to perform this action on ${selectedCount} selected FAQ(s)?`;
         }
@@ -361,4 +397,3 @@
     }
 </script>
 @endpush
-@endsection 

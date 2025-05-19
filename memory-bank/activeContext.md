@@ -858,3 +858,61 @@ The implementation will follow these phases:
 - Phase 7: Caching strategy implementation
 
 This implementation will adhere to the project's established patterns, particularly the service-based architecture and caching strategy. We'll also ensure proper security measures for file uploads and downloads.
+
+### Dynamic Health Plan FAQs Implementation Plan
+
+We have developed a detailed plan to implement a dynamic FAQ section on the health plan page, connecting it to the main FAQ database instead of using static content. This will ensure consistency between the FAQs displayed on the health plan page and the main FAQ system.
+
+The implementation plan consists of the following phases:
+
+1. **Phase 1: Database Update**
+
+   - Create a migration to add a `show_on_plans_page` boolean field to the `faqs` table
+   - This field will allow administrators to explicitly mark FAQs for display on the plans page
+
+2. **Phase 2: Model Update**
+
+   - Update the FAQ Model to include the new field in `$fillable` and `$casts` arrays
+   - Create a new scope `scopeForPlansPage` to query FAQs marked for plans page
+   - Ensure existing scopes (active, ordered, category) continue to work with the new field
+
+3. **Phase 3: Controller Implementation**
+
+   - Create a dedicated `PlansController` (already completed)
+   - Implement proper caching with CacheService
+   - Use both category filtering ('Healthcare Plans') and the new flag to select relevant FAQs
+   - Limit to 3 FAQs as specified in requirements
+
+4. **Phase 4: Route Update**
+
+   - Update the routes in `web.php` to use the new PlansController instead of the closure
+   - Maintain the existing route name and URL for backward compatibility
+
+5. **Phase 5: Admin Interface Update**
+
+   - Add a checkbox field to the admin FAQ form for "Show on Plans Page"
+   - Include appropriate labels and help text
+   - Update validation rules to include the new field
+
+6. **Phase 6: View Update**
+
+   - Modify the plans view template to display dynamic FAQs from the controller
+   - Maintain the existing styling (non-expandable items)
+   - Include fallback content for when fewer than 3 FAQs are available
+   - Keep the "View All FAQs" button functionality
+
+7. **Phase 7: Testing**
+   - Test admin interface for marking FAQs for the plans page
+   - Verify the plans page correctly displays the marked FAQs
+   - Ensure count is limited to 3
+   - Verify caching functionality is working properly
+   - Test error handling and fallback content
+
+The implementation follows the project's established architecture patterns:
+
+- Using controllers to handle requests
+- Using the CacheService for optimized performance
+- Following the MVC pattern
+- Maintaining consistency with the rest of the codebase
+
+This enhancement will reduce content duplication, ensure consistency across the site, and make the health plan FAQs easier to maintain through the admin interface.

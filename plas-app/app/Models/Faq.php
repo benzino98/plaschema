@@ -20,6 +20,7 @@ class Faq extends Model
         'category',
         'order',
         'is_active',
+        'show_on_plans_page',
     ];
 
     /**
@@ -30,6 +31,7 @@ class Faq extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'order' => 'integer',
+        'show_on_plans_page' => 'boolean',
     ];
 
     /**
@@ -64,5 +66,16 @@ class Faq extends Model
     public function scopeCategory($query, $category)
     {
         return $query->where('category', $category);
+    }
+
+    /**
+     * Scope a query to only include FAQs marked for display on plans page.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeForPlansPage($query)
+    {
+        return $query->where('show_on_plans_page', true);
     }
 }

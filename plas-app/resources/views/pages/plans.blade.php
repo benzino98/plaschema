@@ -249,20 +249,27 @@
     >
         <div class="max-w-3xl mx-auto">
             <div class="space-y-6">
-                <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
-                    <h3 class="text-xl font-bold mb-4">How do I enroll in a PLASCHEMA health plan?</h3>
-                    <p class="text-gray-600">You can enroll by visiting any PLASCHEMA office, filling out an enrollment form, providing the required documentation, and making the appropriate premium payment based on your selected plan.</p>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
-                    <h3 class="text-xl font-bold mb-4">Can I enroll my family members?</h3>
-                    <p class="text-gray-600">You can enroll your family by visiting any PLASCHEMA office or enrollment center with your family details and making the required family premium payment.</p>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
-                    <h3 class="text-xl font-bold mb-4">Am I eligible for the BHCPF or Equity Program?</h3>
-                    <p class="text-gray-600">Eligibility for these programs is determined through community-based targeting. You can visit your local government healthcare office or contact PLASCHEMA directly to check your eligibility.</p>
-                </div>
+                @forelse($plansFaqs as $faq)
+                    <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
+                        <h3 class="text-xl font-bold mb-4">{{ $faq->question }}</h3>
+                        <p class="text-gray-600">{!! nl2br(e($faq->answer)) !!}</p>
+                    </div>
+                @empty
+                    <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
+                        <h3 class="text-xl font-bold mb-4">How do I enroll in a PLASCHEMA health plan?</h3>
+                        <p class="text-gray-600">You can enroll by visiting any PLASCHEMA office, filling out an enrollment form, providing the required documentation, and making the appropriate premium payment based on your selected plan.</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
+                        <h3 class="text-xl font-bold mb-4">Can I enroll my family members?</h3>
+                        <p class="text-gray-600">You can enroll your family by visiting any PLASCHEMA office or enrollment center with your family details and making the required family premium payment.</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
+                        <h3 class="text-xl font-bold mb-4">Am I eligible for the BHCPF or Equity Program?</h3>
+                        <p class="text-gray-600">Eligibility for these programs is determined through community-based targeting. You can visit your local government healthcare office or contact PLASCHEMA directly to check your eligibility.</p>
+                    </div>
+                @endforelse
             </div>
             
             <div class="mt-8 text-center">

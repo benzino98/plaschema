@@ -28,6 +28,7 @@ class FaqRequest extends FormRequest
             'category' => 'nullable|max:100',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'nullable|boolean',
+            'show_on_plans_page' => 'nullable|boolean',
         ];
     }
 
@@ -36,9 +37,10 @@ class FaqRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // Convert checkbox to boolean
+        // Convert checkboxes to boolean
         $this->merge([
             'is_active' => $this->has('is_active'),
+            'show_on_plans_page' => $this->has('show_on_plans_page'),
         ]);
         
         // Convert empty order to 0

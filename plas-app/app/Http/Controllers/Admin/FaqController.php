@@ -41,6 +41,12 @@ class FaqController extends Controller
             $query->where('category', $request->category);
         }
         
+        // Filter by health plan display status if provided
+        if ($request->has('health_plan') && $request->health_plan !== '') {
+            $showOnPlansPage = $request->health_plan == '1';
+            $query->where('show_on_plans_page', $showOnPlansPage);
+        }
+        
         // Add search functionality
         if ($request->has('search') && $request->search) {
             $searchTerm = $request->search;
@@ -168,7 +174,7 @@ class FaqController extends Controller
     {
         // Validate the request
         $validated = $request->validate([
-            'action' => 'required|string|in:delete,change-category',
+            'action' => 'required|string|in:delete,change-category,show-on-plans-page,hide-from-plans-page',
             'ids' => 'required|array',
             'ids.*' => 'required|integer|exists:faqs,id',
             'category' => 'nullable|required_if:action,change-category|string|max:255',
@@ -209,6 +215,30 @@ class FaqController extends Controller
                         $this->activityLogService->logUpdated($faq, $originalValues, ['bulk_action' => true]);
                     }
                     $message = count($faqs) . ' FAQ(s) moved to category "' . $validated['category'] . '" successfully.';
+                    break;
+                    
+                case 'show-on-plans-page':
+                    foreach ($faqs as $faq) {
+                        $originalValues = $faq->getAttributes();
+                        $faq->show_on_plans_page = true;
+                        $faq->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($faq, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($faqs) . ' FAQ(s) marked to show on Health Plan page successfully.';
+                    break;
+                    
+                case 'hide-from-plans-page':
+                    foreach ($faqs as $faq) {
+                        $originalValues = $faq->getAttributes();
+                        $faq->show_on_plans_page = false;
+                        $faq->save();
+                        
+                        // Log the activity
+                        $this->activityLogService->logUpdated($faq, $originalValues, ['bulk_action' => true]);
+                    }
+                    $message = count($faqs) . ' FAQ(s) hidden from Health Plan page successfully.';
                     break;
                     
                 default:

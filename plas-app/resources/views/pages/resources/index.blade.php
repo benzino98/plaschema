@@ -50,12 +50,14 @@
                         </svg>
                         Search
                     </button>
+                    @if(request('search') || request('category'))
                     <a href="{{ route('resources.index') }}" class="ml-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
                         <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                         Clear
-                    </button>
+                    </a>
+                    @endif
                 </div>
             </form>
         </div>
@@ -64,8 +66,22 @@
         @if($featuredResources && $featuredResources->count() > 0)
             <div class="mb-12">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Featured Resources</h2>
+                @if(config('app.debug'))
+                <!-- Debug Info -->
+                <div class="bg-yellow-100 p-4 mb-4 rounded text-xs">
+                    <h3 class="font-bold">Debug Info (Admin Only):</h3>
+                    <p>Resources count: {{ $featuredResources->count() }}</p>
+                    <ul class="ml-4 list-disc">
+                    @foreach($featuredResources as $resource)
+                        <li>ID: {{ $resource->id }} | Title: {{ $resource->title }} | Featured: {{ $resource->is_featured ? 'Yes' : 'No' }}</li>
+                    @endforeach
+                    </ul>
+                </div>
+                <!-- End Debug Info -->
+                @endif
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($featuredResources as $resource)
+                        @if($resource->title && $resource->description)
                         <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:translate-y-[-4px] flex flex-col h-full">
                             <div class="p-5 flex flex-col flex-grow">
                                 <div class="flex items-center mb-3">
@@ -76,10 +92,10 @@
                                 </div>
                                 <p class="text-gray-600 text-sm line-clamp-2 mb-4 flex-grow">{{ $resource->description }}</p>
                                 <div class="flex flex-wrap justify-between items-center mt-auto">
-                                    <span class="text-xs text-gray-500 mb-2 md:mb-0">
+                                    <span class="text-xs text-gray-500 inline-block mb-2 md:mb-0">
                                         {{ $resource->formatted_file_size }} • {{ strtoupper($resource->file_extension) }}
                                     </span>
-                                    <div class="flex space-x-2">
+                                    <div class="flex space-x-2 mt-2 md:mt-0">
                                         <a href="{{ route('resources.show', $resource->slug) }}" class="inline-flex items-center px-3 py-1 border border-gray-600 text-gray-600 rounded-md hover:bg-gray-600 hover:text-white transition">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -96,6 +112,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     @endforeach
                 </div>
             </div>
@@ -119,6 +136,7 @@
             @if($resources->count() > 0)
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     @foreach($resources as $resource)
+                        @if($resource->title && $resource->description)
                         <div class="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ease-in-out hover:shadow-lg hover:translate-y-[-4px] flex flex-col h-full">
                             <div class="p-5 flex flex-col flex-grow">
                                 <div class="flex items-center mb-3">
@@ -129,10 +147,10 @@
                                 </div>
                                 <p class="text-gray-600 text-sm line-clamp-2 mb-4 flex-grow">{{ $resource->description }}</p>
                                 <div class="flex flex-wrap justify-between items-center mt-auto">
-                                    <span class="text-xs text-gray-500 mb-2 md:mb-0">
+                                    <span class="text-xs text-gray-500 inline-block mb-2 md:mb-0">
                                         {{ $resource->formatted_file_size }} • {{ strtoupper($resource->file_extension) }}
                                     </span>
-                                    <div class="flex space-x-2">
+                                    <div class="flex space-x-2 mt-2 md:mt-0">
                                         <a href="{{ route('resources.show', $resource->slug) }}" class="inline-flex items-center px-3 py-1 border border-gray-600 text-gray-600 rounded-md hover:bg-gray-600 hover:text-white transition">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -149,6 +167,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     @endforeach
                 </div>
 
@@ -208,7 +227,7 @@ function getResourceIcon($extension, $categoryName = null) {
     }
     
     // If no category match, use file extension
-    $extension = strtolower($extension);
+    $extension = strtolower($extension ?? '');
     switch($extension) {
         case 'pdf':
             return '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

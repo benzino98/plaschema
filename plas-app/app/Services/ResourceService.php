@@ -587,7 +587,7 @@ class ResourceService
         return $this->cacheService->remember($cacheKey, 3600, function () use ($limit) {
             return $this->resourceRepository->getByFilters([
                 'published' => true,
-                'featured' => true,
+                'is_featured' => true,
                 'limit' => $limit,
                 'order_by' => 'created_at',
                 'direction' => 'desc'

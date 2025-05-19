@@ -68,6 +68,14 @@
                 </label>
             </div>
 
+            <div class="mb-6">
+                <label class="flex items-center">
+                    <input type="checkbox" name="show_on_plans_page" value="1" {{ old('show_on_plans_page') == '1' ? 'checked' : '' }} class="form-checkbox h-5 w-5 text-blue-600">
+                    <span class="ml-2 text-gray-700">Show on Health Plans Page</span>
+                </label>
+                <p class="text-gray-500 text-xs mt-1 ml-7">Display this FAQ on the Health Plans page (maximum 3 will be shown)</p>
+            </div>
+
             <div class="flex items-center justify-between">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Create FAQ

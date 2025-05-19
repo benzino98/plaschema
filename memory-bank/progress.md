@@ -366,6 +366,46 @@ This document tracks what has been completed and what still needs to be done.
 - Built LanguageSwitcher component
 - Added routes and permissions
 
+### Dynamic Health Plan FAQs Implementation (COMPLETED)
+
+#### Plan
+
+- **Phase 1: Database Update (100%)**:
+
+  - Create migration for `show_on_plans_page` field - COMPLETED
+  - Run migration - COMPLETED
+
+- **Phase 2: Model Update (100%)**:
+
+  - Update Faq model with new field - COMPLETED
+  - Add scopeForPlansPage method - COMPLETED
+
+- **Phase 3: Controller Implementation (100%)**:
+
+  - Create PlansController - COMPLETED
+  - Implement caching and filtering in controller - COMPLETED
+  - Update query to use new field - COMPLETED
+
+- **Phase 4: Route Update (100%)**:
+
+  - Update web.php routes - COMPLETED
+
+- **Phase 5: Admin Interface Update (100%)**:
+
+  - Add field to admin FAQ form - COMPLETED
+  - Update validation rules - COMPLETED
+
+- **Phase 6: View Update (100%)**:
+
+  - Modify plans.blade.php to use dynamic FAQs - COMPLETED
+  - Implement fallback content - COMPLETED
+
+- **Phase 7: Testing (100%)**:
+  - Test admin interface - COMPLETED
+  - Test frontend rendering - COMPLETED
+  - Test caching - COMPLETED
+  - Create test data - COMPLETED
+
 ## Next Steps
 
 ### Immediate (Next 2 Weeks)
