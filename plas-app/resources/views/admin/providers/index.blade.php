@@ -93,7 +93,7 @@
         <div class="bg-white rounded-lg shadow overflow-x-auto">
             <div class="p-4 border-b flex items-center justify-between">
                 <div class="flex items-center">
-                    <input type="checkbox" id="select-all" class="mr-2 h-5 w-5 text-blue-600">
+                    <input type="checkbox" id="select-all" class="mr-2 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                     <label for="select-all" class="text-sm font-medium text-gray-700">Select All</label>
                 </div>
                 <div class="flex items-center">
@@ -113,7 +113,7 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
                             Select
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -136,8 +136,8 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($providers as $provider)
                     <tr>
-                        <td class="px-6 py-4">
-                            <input type="checkbox" name="ids[]" value="{{ $provider->id }}" class="item-checkbox h-5 w-5 text-blue-600">
+                        <td class="px-4 py-4">
+                            <input type="checkbox" name="ids[]" value="{{ $provider->id }}" class="mr-1 item-checkbox rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
                         </td>
                         <td class="px-6 py-4">
                             <div class="font-medium text-gray-900">{{ $provider->name }}</div>
@@ -284,6 +284,33 @@
         
         return confirm(message);
     }
+
+    // Add event listener to the bulk action form submit
+    document.getElementById('bulk-action-form').addEventListener('submit', function(event) {
+        // Prevent form from submitting if no checkboxes are selected
+        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+        if (checkedBoxes.length === 0) {
+            event.preventDefault();
+            alert('Please select at least one provider.');
+            return false;
+        }
+        
+        // Make sure the form submission includes all checked boxes
+        // This resolves an issue where the form might be submitted without the proper IDs
+        checkedBoxes.forEach(function(checkbox) {
+            // Ensure the checkbox value is included in the form submission
+            if (!checkbox.getAttribute('name') || checkbox.getAttribute('name') !== 'ids[]') {
+                // If the checkbox doesn't have the proper name attribute, add a hidden input
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'ids[]';
+                hiddenInput.value = checkbox.value;
+                event.target.appendChild(hiddenInput);
+            }
+        });
+        
+        return true;
+    });
 </script>
 @endpush
 @endsection 

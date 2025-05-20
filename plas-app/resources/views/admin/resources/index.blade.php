@@ -191,6 +191,20 @@
                 return false;
             }
             
+            // Make sure the form submission includes all checked boxes
+            // This resolves an issue where the form might be submitted without the proper IDs
+            checkedBoxes.forEach(function(checkbox) {
+                // Ensure the checkbox value is included in the form submission
+                if (!checkbox.getAttribute('name') || checkbox.getAttribute('name') !== 'ids[]') {
+                    // If the checkbox doesn't have the proper name attribute, add a hidden input
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'ids[]';
+                    hiddenInput.value = checkbox.value;
+                    event.target.appendChild(hiddenInput);
+                }
+            });
+            
             return true;
         });
     });
