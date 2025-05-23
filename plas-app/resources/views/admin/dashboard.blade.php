@@ -178,6 +178,9 @@
                                 <span class="font-medium">{{ $activity->user ? $activity->user->name : 'System' }}</span> 
                                 {{ $activity->action }} 
                                 <span class="font-medium">{{ $activity->entity_type }}</span>
+                                @if($activity->entity_type == 'Report')
+                                    <span class="text-gray-600">{{ $activity->description }}</span>
+                                @endif
                             </p>
                             <p class="text-xs text-gray-500">{{ $activity->created_at->diffForHumans() }}</p>
                         </div>

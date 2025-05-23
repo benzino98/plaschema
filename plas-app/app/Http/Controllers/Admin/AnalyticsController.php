@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\AnalyticsService;
+use App\Services\ActivityLogService;
+use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use PDF;
@@ -13,10 +15,12 @@ use App\Exports\AnalyticsExport;
 class AnalyticsController extends Controller
 {
     protected $analyticsService;
+    protected $activityLogService;
 
-    public function __construct(AnalyticsService $analyticsService)
+    public function __construct(AnalyticsService $analyticsService, ActivityLogService $activityLogService)
     {
         $this->analyticsService = $analyticsService;
+        $this->activityLogService = $activityLogService;
     }
 
     /**
@@ -64,9 +68,29 @@ class AnalyticsController extends Controller
         
         $reportData = $this->analyticsService->generateReport(
             $type, 
-            $startDate, 
-            $endDate,
-            $userId
+            [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'user_id' => $userId
+            ]
+        );
+
+        // Create a temporary Report object for activity logging
+        $report = new Report([
+            'type' => $type,
+            'format' => $format,
+            'start_date' => $startDate,
+            'end_date' => $endDate
+        ]);
+        
+        // Force an ID to make it work with activity logging
+        $report->id = time();
+        
+        // Log the report generation activity
+        $this->activityLogService->log(
+            'generated',
+            $report,
+            "Generated {$type} report in {$format} format for period {$startDate} to {$endDate}"
         );
         
         // Return based on requested format
@@ -80,7 +104,9 @@ class AnalyticsController extends Controller
             // Return PDF download
             $pdf = PDF::loadView('admin.analytics.pdf_report', [
                 'data' => $reportData,
-                'type' => $type
+                'type' => $type,
+                'title' => $this->getReportTitle($type),
+                'period' => $startDate . ' to ' . $endDate
             ]);
             
             return $pdf->download('plaschema-' . $type . '-report.pdf');
@@ -91,6 +117,21 @@ class AnalyticsController extends Controller
                 'plaschema-' . $type . '-report.xlsx'
             );
         }
+    }
+
+    /**
+     * Get report title based on report type
+     */
+    private function getReportTitle($type)
+    {
+        $titles = [
+            'summary' => 'Plaschema Summary Report',
+            'providers' => 'Healthcare Providers Report',
+            'messages' => 'Contact Messages Report',
+            'activity' => 'User Activity Report'
+        ];
+        
+        return $titles[$type] ?? 'Plaschema Analytics Report';
     }
 
     /**

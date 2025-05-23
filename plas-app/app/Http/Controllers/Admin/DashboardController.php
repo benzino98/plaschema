@@ -41,8 +41,11 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Cache dashboard data for 15 minutes to optimize performance
-        $dashboardData = $this->cacheService->remember('admin.dashboard.data', 15 * 60, function () {
+        // Clear the dashboard cache to ensure we see the latest activity logs
+        $this->cacheService->forget('admin.dashboard.data');
+        
+        // Cache dashboard data for 5 minutes to optimize performance but still see recent changes
+        $dashboardData = $this->cacheService->remember('admin.dashboard.data', 5 * 60, function () {
             return [
                 // Group 1: Content Management Metrics
                 'content' => [
@@ -83,6 +86,7 @@ class DashboardController extends Controller
                 'activity' => [
                     'total' => ActivityLog::count(),
                     'today' => ActivityLog::whereDate('created_at', Carbon::today())->count(),
+                    // Always fetch the most recent activity logs directly without caching
                     'recent' => ActivityLog::with('user')->orderBy('created_at', 'desc')->limit(10)->get(),
                     'by_action' => $this->getActivityByAction(),
                 ],
