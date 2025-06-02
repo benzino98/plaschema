@@ -37,8 +37,8 @@
     >
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow slide-up">
-                <div class="overflow-hidden h-64 rounded-t-lg">
-                    <img src="{{ asset('images/team/leader-1.jpg') }}" alt="Dr. John Doe" class="w-full h-full object-cover object-center" loading="lazy">
+                <div class="overflow-hidden h-56 rounded-t-lg">
+                    <img src="{{ asset('images/team/leader-1.jpg') }}" alt="Dr. John Doe" class="w-full h-full object-cover object-[center_top_-20px]" style="object-position: center 15%;" loading="lazy">
                 </div>
                 <div class="p-6">
                     <h3 class="text-xl font-bold mb-1">Dr. John Doe</h3>
@@ -48,8 +48,8 @@
             </div>
 
             <div class="card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow slide-up">
-                <div class="overflow-hidden h-64 rounded-t-lg">
-                    <img src="{{ asset('images/team/leader-2.jpg') }}" alt="Mrs. Jane Smith" class="w-full h-full object-cover object-center" loading="lazy">
+                <div class="overflow-hidden h-56 rounded-t-lg">
+                    <img src="{{ asset('images/team/leader-2.jpg') }}" alt="Mrs. Jane Smith" class="w-full h-full object-cover" style="object-position: center 30%;" loading="lazy">
                 </div>
                 <div class="p-6">
                     <h3 class="text-xl font-bold mb-1">Mrs. Jane Smith</h3>
@@ -59,8 +59,8 @@
             </div>
 
             <div class="card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow slide-up">
-                <div class="overflow-hidden h-64 rounded-t-lg">
-                    <img src="{{ asset('images/team/leader-3.jpg') }}" alt="Mr. James Johnson" class="w-full h-full object-cover object-center" loading="lazy">
+                <div class="overflow-hidden h-56 rounded-t-lg">
+                    <img src="{{ asset('images/team/leader-3.jpg') }}" alt="Mr. James Johnson" class="w-full h-full object-cover" style="object-position: center 25%;" loading="lazy">
                 </div>
                 <div class="p-6">
                     <h3 class="text-xl font-bold mb-1">Mr. James Johnson</h3>
@@ -70,8 +70,8 @@
             </div>
 
             <div class="card bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow slide-up">
-                <div class="overflow-hidden h-64 rounded-t-lg">
-                    <img src="{{ asset('images/team/leader-4.jpg') }}" alt="Mr. Robert Williams" class="w-full h-full object-cover object-center" loading="lazy">
+                <div class="overflow-hidden h-56 rounded-t-lg">
+                    <img src="{{ asset('images/team/leader-4.jpg') }}" alt="Mr. Robert Williams" class="w-full h-full object-cover" style="object-position: center 20%;" loading="lazy">
                 </div>
                 <div class="p-6">
                     <h3 class="text-xl font-bold mb-1">Mr. Robert Williams</h3>

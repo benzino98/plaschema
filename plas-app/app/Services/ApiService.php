@@ -29,7 +29,7 @@ class ApiService
      */
     public function __construct(CacheService $cacheService)
     {
-        $this->baseUrl = config('services.external_api.url', 'https://plaschema.app/api');
+        $this->baseUrl = config('services.external_api.url', 'https://enrollments.plaschema.app/api');
         $this->cacheService = $cacheService;
     }
 
@@ -41,7 +41,7 @@ class ApiService
     public function getEnrollmentStatistics()
     {
         $cacheKey = 'enrollment_statistics';
-        $cacheDuration = 3600; // 1 hour
+        $cacheDuration = 300; // 5 minutes
         
         // Try to get from cache first
         $cachedData = $this->cacheService->get($cacheKey);
@@ -102,7 +102,7 @@ class ApiService
         ];
         
         // Cache the fallback data for a shorter period
-        $this->cacheService->put($cacheKey, $fallbackData, 600); // 10 minutes
+        $this->cacheService->put($cacheKey, $fallbackData, 120); // 2 minutes
         
         return $fallbackData;
     }
@@ -136,7 +136,7 @@ class ApiService
                 ];
                 
                 // Update the cache with the new data
-                $this->cacheService->put($cacheKey, $statistics, 3600);
+                $this->cacheService->put($cacheKey, $statistics, 300);
                 
                 return $statistics;
             }
