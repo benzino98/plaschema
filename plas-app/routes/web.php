@@ -71,74 +71,80 @@ Route::get('/resources/{slug}', [ResourceController::class, 'show'])->name('reso
 Route::get('/resources/{slug}/download', [ResourceController::class, 'download'])->name('resources.download');
 
 // Admin Routes
-Route::prefix('admin')->middleware(['auth', 'role:admin,super-admin,editor,viewer'])->name('admin.')->group(function () {
-    Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', function () {
+        return redirect()->route('login');
+    })->name('login');
     
-    // News Management
-    Route::resource('news', AdminNewsController::class);
-    Route::get('news/activity/logs', [AdminNewsController::class, 'activity'])->name('news.activity');
-    Route::post('news/bulk-action', [AdminNewsController::class, 'bulkAction'])->name('news.bulk-action');
-    
-    // Healthcare Providers Management
-    Route::resource('providers', AdminProviderController::class);
-    Route::get('providers/activity/logs', [AdminProviderController::class, 'activity'])->name('providers.activity');
-    Route::post('providers/bulk-action', [AdminProviderController::class, 'bulkAction'])->name('providers.bulk-action');
-    
-    // FAQ Management
-    Route::resource('faqs', AdminFaqController::class);
-    Route::get('faqs/activity/logs', [AdminFaqController::class, 'activity'])->name('faqs.activity');
-    Route::post('faqs/bulk-action', [AdminFaqController::class, 'bulkAction'])->name('faqs.bulk-action');
-    
-    // Role Management - restrict to super admin
-    Route::resource('roles', RoleController::class)->middleware('role:super-admin');
-    Route::get('roles/activity/logs', [RoleController::class, 'activity'])->name('roles.activity')->middleware('role:super-admin');
-    
-    // User Role Management - restrict to super admin and admin
-    Route::middleware('role:super-admin,admin')->group(function() {
-        Route::get('users', [UserRoleController::class, 'index'])->name('users.index');
-        Route::get('users/{user}/roles', [UserRoleController::class, 'edit'])->name('users.roles.edit');
-        Route::put('users/{user}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
-        Route::get('users/activity/logs', [UserRoleController::class, 'activity'])->name('users.activity');
-    });
-    
-    // Activity Log
-    Route::get('activity', [ActivityLogController::class, 'index'])->name('activity.index');
-    Route::get('activity/{activityLog}', [ActivityLogController::class, 'show'])->name('activity.show');
+    Route::middleware(['auth', 'role:admin,super-admin,editor,viewer'])->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        
+        // News Management
+        Route::resource('news', AdminNewsController::class);
+        Route::get('news/activity/logs', [AdminNewsController::class, 'activity'])->name('news.activity');
+        Route::post('news/bulk-action', [AdminNewsController::class, 'bulkAction'])->name('news.bulk-action');
+        
+        // Healthcare Providers Management
+        Route::resource('providers', AdminProviderController::class);
+        Route::get('providers/activity/logs', [AdminProviderController::class, 'activity'])->name('providers.activity');
+        Route::post('providers/bulk-action', [AdminProviderController::class, 'bulkAction'])->name('providers.bulk-action');
+        
+        // FAQ Management
+        Route::resource('faqs', AdminFaqController::class);
+        Route::get('faqs/activity/logs', [AdminFaqController::class, 'activity'])->name('faqs.activity');
+        Route::post('faqs/bulk-action', [AdminFaqController::class, 'bulkAction'])->name('faqs.bulk-action');
+        
+        // Role Management - restrict to super admin
+        Route::resource('roles', RoleController::class)->middleware('role:super-admin');
+        Route::get('roles/activity/logs', [RoleController::class, 'activity'])->name('roles.activity')->middleware('role:super-admin');
+        
+        // User Role Management - restrict to super admin and admin
+        Route::middleware('role:super-admin,admin')->group(function() {
+            Route::get('users', [UserRoleController::class, 'index'])->name('users.index');
+            Route::get('users/{user}/roles', [UserRoleController::class, 'edit'])->name('users.roles.edit');
+            Route::put('users/{user}/roles', [UserRoleController::class, 'update'])->name('users.roles.update');
+            Route::get('users/activity/logs', [UserRoleController::class, 'activity'])->name('users.activity');
+        });
+        
+        // Activity Log
+        Route::get('activity', [ActivityLogController::class, 'index'])->name('activity.index');
+        Route::get('activity/{activityLog}', [ActivityLogController::class, 'show'])->name('activity.show');
 
-    // Contact Message Management - restricted to super admin
-    Route::middleware('role:super-admin')->group(function() {
-        Route::get('messages', [ContactMessageController::class, 'index'])->name('messages.index');
-        Route::get('messages/{message}', [ContactMessageController::class, 'show'])->name('messages.show');
-        Route::put('messages/{message}/status', [ContactMessageController::class, 'updateStatus'])->name('messages.status.update');
-        Route::put('messages/{message}/respond', [ContactMessageController::class, 'markResponded'])->name('messages.respond');
-        Route::put('messages/{message}/archive', [ContactMessageController::class, 'archive'])->name('messages.archive');
-        Route::get('messages/activity/logs', [ContactMessageController::class, 'activity'])->name('messages.activity');
-    });
-    
-    // Analytics Dashboard - restricted to super admin and admin, not using permission middleware
-    Route::middleware('role:super-admin,admin')->group(function() {
-        Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics')->withoutMiddleware('CheckPermission');
-        Route::get('analytics/reports', [AnalyticsController::class, 'showReportForm'])->name('analytics.reports')->withoutMiddleware('CheckPermission');
-        Route::match(['get', 'post'], 'analytics/generate-report', [AnalyticsController::class, 'generateReport'])->name('analytics.generate-report')->withoutMiddleware('CheckPermission');
-    });
-    
-    // Translation Management - restricted to super admin 
-    Route::middleware('role:super-admin')->group(function() {
-        Route::resource('translations', TranslationController::class)->except(['show']);
-        Route::post('translations/import', [TranslationController::class, 'import'])->name('translations.import');
-        Route::post('translations/export', [TranslationController::class, 'export'])->name('translations.export');
-    });
+        // Contact Message Management - restricted to super admin
+        Route::middleware('role:super-admin')->group(function() {
+            Route::get('messages', [ContactMessageController::class, 'index'])->name('messages.index');
+            Route::get('messages/{message}', [ContactMessageController::class, 'show'])->name('messages.show');
+            Route::put('messages/{message}/status', [ContactMessageController::class, 'updateStatus'])->name('messages.status.update');
+            Route::put('messages/{message}/respond', [ContactMessageController::class, 'markResponded'])->name('messages.respond');
+            Route::put('messages/{message}/archive', [ContactMessageController::class, 'archive'])->name('messages.archive');
+            Route::get('messages/activity/logs', [ContactMessageController::class, 'activity'])->name('messages.activity');
+        });
+        
+        // Analytics Dashboard - restricted to super admin and admin, not using permission middleware
+        Route::middleware('role:super-admin,admin')->group(function() {
+            Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics')->withoutMiddleware('CheckPermission');
+            Route::get('analytics/reports', [AnalyticsController::class, 'showReportForm'])->name('analytics.reports')->withoutMiddleware('CheckPermission');
+            Route::match(['get', 'post'], 'analytics/generate-report', [AnalyticsController::class, 'generateReport'])->name('analytics.generate-report')->withoutMiddleware('CheckPermission');
+        });
+        
+        // Translation Management - restricted to super admin 
+        Route::middleware('role:super-admin')->group(function() {
+            Route::resource('translations', TranslationController::class)->except(['show']);
+            Route::post('translations/import', [TranslationController::class, 'import'])->name('translations.import');
+            Route::post('translations/export', [TranslationController::class, 'export'])->name('translations.export');
+        });
 
-    // Resource Management
-    Route::resource('resources', AdminResourceController::class);
-    Route::get('resources/activity/logs', [AdminResourceController::class, 'activity'])->name('resources.activity');
-    Route::post('resources/bulk-action', [AdminResourceController::class, 'bulkAction'])->name('resources.bulk-action');
-    Route::get('resources/stats/downloads', [AdminResourceController::class, 'downloadStats'])->name('resources.stats.downloads');
-    
-    // Resource Category Management
-    Route::resource('resource-categories', AdminResourceCategoryController::class);
-    Route::get('resource-categories/activity/logs', [AdminResourceCategoryController::class, 'activity'])->name('resource-categories.activity');
-    Route::post('resource-categories/bulk-action', [AdminResourceCategoryController::class, 'bulkAction'])->name('resource-categories.bulk-action');
+        // Resource Management
+        Route::resource('resources', AdminResourceController::class);
+        Route::get('resources/activity/logs', [AdminResourceController::class, 'activity'])->name('resources.activity');
+        Route::post('resources/bulk-action', [AdminResourceController::class, 'bulkAction'])->name('resources.bulk-action');
+        Route::get('resources/stats/downloads', [AdminResourceController::class, 'downloadStats'])->name('resources.stats.downloads');
+        
+        // Resource Category Management
+        Route::resource('resource-categories', AdminResourceCategoryController::class);
+        Route::get('resource-categories/activity/logs', [AdminResourceCategoryController::class, 'activity'])->name('resource-categories.activity');
+        Route::post('resource-categories/bulk-action', [AdminResourceCategoryController::class, 'bulkAction'])->name('resource-categories.bulk-action');
+    });
 });
 
 require __DIR__.'/auth.php';

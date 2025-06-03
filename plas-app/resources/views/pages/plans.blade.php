@@ -30,7 +30,7 @@
                     <div class="mt-6 space-y-3">
                         <h4 class="font-bold text-plaschema">Key Benefits:</h4>
                         <ul class="list-disc pl-5 space-y-2 text-gray-600">
-                            <li>Access to over 200 healthcare providers</li>
+                            <li>Access to over 400+ healthcare providers</li>
                             <li>Comprehensive outpatient services</li>
                             <li>Inpatient care coverage</li>
                             <li>Maternal and child health services</li>
@@ -41,11 +41,11 @@
                     
                     <div class="mt-6">
                         <p class="font-bold text-plaschema">Premium:</p>
-                        <p class="text-gray-600">3% of basic salary for employees, with employer contributing 9% (total 12%).</p>
+                        <p class="text-gray-600">1.75% of basic salary for employees, with employer contributing 3.25% (total 5%).</p>
                     </div>
                 </div>
                 
-                <x-button href="#" class="w-full justify-center bg-plaschema hover:bg-plaschema-dark text-white">Enroll Now</x-button>
+                <x-button href="https://plaschema.pl.gov.ng/contact" class="w-full justify-center bg-plaschema hover:bg-plaschema-dark text-white">Enroll Now</x-button>
             </x-card>
 
             <x-card 
@@ -59,22 +59,22 @@
                     <div class="mt-6 space-y-3">
                         <h4 class="font-bold text-plaschema">Key Benefits:</h4>
                         <ul class="list-disc pl-5 space-y-2 text-gray-600">
-                            <li>Access to healthcare providers across the state</li>
-                            <li>Basic outpatient services</li>
-                            <li>Limited inpatient care</li>
-                            <li>Maternal services</li>
-                            <li>Basic pharmaceutical services</li>
-                            <li>Essential diagnostic services</li>
+                            <li>Access 400+ healthcare providers across the state</li>
+                            <li>Comprehensive outpatient services</li>
+                            <li>Inpatient care coverage</li>
+                            <li>Maternal and child health services</li>
+                            <li>Pharmaceutical services</li>
+                            <li>Diagnostic services</li>
                         </ul>
                     </div>
                     
                     <div class="mt-6">
                         <p class="font-bold text-plaschema">Premium:</p>
-                        <p class="text-gray-600">Annual payment of ₦12,000 per individual or ₦30,000 for a family of 4.</p>
+                        <p class="text-gray-600">Annual payment of ₦12,000 per individual or ₦50,000 for a family of 6.</p>
                     </div>
                 </div>
                 
-                <x-button href="#" class="w-full justify-center bg-plaschema hover:bg-plaschema-dark text-white">Enroll Now</x-button>
+                <x-button href="https://enrollments.plaschema.app/pay/informal" class="w-full justify-center bg-plaschema hover:bg-plaschema-dark text-white">Enroll Now</x-button>
             </x-card>
 
             <x-card 
@@ -88,12 +88,12 @@
                     <div class="mt-6 space-y-3">
                         <h4 class="font-bold text-plaschema">Key Benefits:</h4>
                         <ul class="list-disc pl-5 space-y-2 text-gray-600">
-                            <li>Access to primary healthcare centers</li>
+                            <li>Access to designated primary healthcare centers across all 17 LGA's in the State</li>
                             <li>Basic outpatient services</li>
                             <li>Essential medicines</li>
                             <li>Maternal and child health services</li>
                             <li>Treatment for common illnesses</li>
-                            <li>Basic diagnostic services</li>
+                            <li>Referral services for complex cases</li>
                         </ul>
                     </div>
                     
@@ -117,7 +117,7 @@
                     <div class="mt-6 space-y-3">
                         <h4 class="font-bold text-plaschema">Key Benefits:</h4>
                         <ul class="list-disc pl-5 space-y-2 text-gray-600">
-                            <li>Access to designated healthcare facilities</li>
+                            <li>Access to over 400+ healthcare facilities across all 17 LGA's in the State</li>
                             <li>Basic healthcare services</li>
                             <li>Essential medicines</li>
                             <li>Maternal and child health services</li>
@@ -128,7 +128,7 @@
                     
                     <div class="mt-6">
                         <p class="font-bold text-plaschema">Eligibility:</p>
-                        <p class="text-gray-600">Targeted vulnerable groups such as pregnant women, children under 5, elderly, and persons with disabilities from poorest households.</p>
+                        <p class="text-gray-600">Targeted vulnerable groups such as pregnant women, children under 5, elderly above 65 years, and persons with disabilities from poorest households.</p>
                     </div>
                 </div>
                 
@@ -158,50 +158,50 @@
                     <tr class="border-b border-gray-200">
                         <td class="py-3 px-4 font-medium">Outpatient Services</td>
                         <td class="py-3 px-4 text-center">Comprehensive</td>
-                        <td class="py-3 px-4 text-center">Basic</td>
-                        <td class="py-3 px-4 text-center">Basic</td>
-                        <td class="py-3 px-4 text-center">Basic</td>
+                        <td class="py-3 px-4 text-center">Comprehensive</td>
+                        <td class="py-3 px-4 text-center">Limited</td>
+                        <td class="py-3 px-4 text-center">Limited</td>
                     </tr>
                     <tr class="border-b border-gray-200">
                         <td class="py-3 px-4 font-medium">Inpatient Care</td>
                         <td class="py-3 px-4 text-center">Full Coverage</td>
-                        <td class="py-3 px-4 text-center">Limited</td>
+                        <td class="py-3 px-4 text-center">Full Coverage</td>
                         <td class="py-3 px-4 text-center">Limited</td>
                         <td class="py-3 px-4 text-center">Limited</td>
                     </tr>
                     <tr class="border-b border-gray-200">
                         <td class="py-3 px-4 font-medium">Maternal Services</td>
                         <td class="py-3 px-4 text-center">Full Coverage</td>
-                        <td class="py-3 px-4 text-center">Basic</td>
-                        <td class="py-3 px-4 text-center">Basic</td>
+                        <td class="py-3 px-4 text-center">Full Coverage</td>
+                        <td class="py-3 px-4 text-center">Enhanced</td>
                         <td class="py-3 px-4 text-center">Enhanced</td>
                     </tr>
                     <tr class="border-b border-gray-200">
                         <td class="py-3 px-4 font-medium">Pharmaceutical Services</td>
                         <td class="py-3 px-4 text-center">Comprehensive</td>
-                        <td class="py-3 px-4 text-center">Basic</td>
+                        <td class="py-3 px-4 text-center">Comprehensive</td>
                         <td class="py-3 px-4 text-center">Essential Only</td>
                         <td class="py-3 px-4 text-center">Essential Only</td>
                     </tr>
                     <tr class="border-b border-gray-200">
                         <td class="py-3 px-4 font-medium">Diagnostic Services</td>
                         <td class="py-3 px-4 text-center">Comprehensive</td>
+                        <td class="py-3 px-4 text-center">Comprehensive</td>
                         <td class="py-3 px-4 text-center">Limited</td>
-                        <td class="py-3 px-4 text-center">Basic</td>
-                        <td class="py-3 px-4 text-center">Basic</td>
+                        <td class="py-3 px-4 text-center">Limited</td>
                     </tr>
                     <tr class="border-b border-gray-200">
                         <td class="py-3 px-4 font-medium">Provider Network</td>
-                        <td class="py-3 px-4 text-center">200+ facilities</td>
-                        <td class="py-3 px-4 text-center">150+ facilities</td>
-                        <td class="py-3 px-4 text-center">Primary facilities</td>
-                        <td class="py-3 px-4 text-center">Designated facilities</td>
+                        <td class="py-3 px-4 text-center">400+ facilities</td>
+                        <td class="py-3 px-4 text-center">400+ facilities</td>
+                        <td class="py-3 px-4 text-center">Designated Primary Healthcare facilities</td>
+                        <td class="py-3 px-4 text-center">400+ Healthcare facilities</td>
                     </tr>
                     <tr>
                         <td class="py-3 px-4 font-medium">Cost</td>
-                        <td class="py-3 px-4 text-center">12% of basic salary</td>
-                        <td class="py-3 px-4 text-center">₦12,000/individual</td>
-                        <td class="py-3 px-4 text-center">Subsidized</td>
+                        <td class="py-3 px-4 text-center">5% of basic salary</td>
+                        <td class="py-3 px-4 text-center">₦12,000/individual/₦50,000/family</td>
+                        <td class="py-3 px-4 text-center">Free</td>
                         <td class="py-3 px-4 text-center">Free</td>
                     </tr>
                 </tbody>

@@ -152,6 +152,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\CacheServiceProvider::class,
         App\Providers\RepositoryServiceProvider::class,
+        App\Providers\BladeServiceProvider::class,
     ])->toArray(),
 
     /*
