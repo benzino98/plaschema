@@ -41,7 +41,7 @@
                     <img src="{{ asset('images/team/leader-1.jpg') }}" alt="Dr. John Doe" class="w-full h-full object-cover object-[center_top_-20px]" style="object-position: center 15%;" loading="lazy">
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold mb-1">Dr. John Doe</h3>
+                    <h3 class="text-xl font-bold mb-1">Dr. Agabus Manasseh</h3>
                     <p class="text-gray-600 mb-4 italic">Director General</p>
                     <p class="text-gray-600">Leading PLASCHEMA's efforts to expand healthcare coverage across Plateau State.</p>
                 </div>
