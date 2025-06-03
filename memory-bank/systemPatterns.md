@@ -156,6 +156,39 @@ PLASCHEMA follows a modified MVC (Model-View-Controller) architecture with addit
 - **Examples**: Shadow levels for cards, buttons, navigation dropdowns
 - **Benefits**: Consistent visual hierarchy, improved depth perception
 
+### Batch Processing Pattern
+
+- **Implementation**: Structured data import with validation and error collection
+- **Examples**: `HealthcareProvidersImport`, future bulk upload features
+- **Benefits**: Efficient data processing, comprehensive error reporting, consistent validation
+
+#### Key Components
+
+1. **Import Class**:
+
+   - Implements Laravel Excel interfaces (`ToCollection`, `WithHeadingRow`, `WithValidation`)
+   - Handles validation using Laravel's validation rules
+   - Collects and categorizes errors for reporting
+
+2. **Template Generation**:
+
+   - Provides downloadable templates with proper column structure
+   - Includes example data and field requirements
+   - Uses Excel styling for clear user guidance
+
+3. **Error Reporting**:
+
+   - Structured collection of validation failures
+   - Row-specific error identification
+   - Exportable error reports for user correction
+
+4. **Duplicate Handling**:
+   - Implements configurable duplicate detection strategies
+   - Provides options for skipping or updating existing records
+   - Tracks statistics on processed, skipped, and failed records
+
+This pattern will be applied consistently across all batch import features in the system, ensuring a uniform approach to data validation, error handling, and user feedback across the application.
+
 ## UI Enhancement Patterns
 
 ### Animation System

@@ -71,32 +71,56 @@
             border-radius: 0.375rem;
             font-weight: 600;
             color: white;
-            background-color: #3b82f6;
+            background-color: #65a30d;
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         .admin-button:hover {
-            background-color: #2563eb;
+            background-color: #4d7c0f;
             transform: scale(1.02);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
         .admin-button:active {
-            background-color: #1d4ed8;
+            background-color: #365314;
             transform: scale(0.98);
+        }
+        
+        /* Background image with overlay */
+        .bg-image-overlay {
+            background-image: url('{{ asset('images/backgroung.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        
+        .bg-image-overlay::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: rgba(220, 252, 231, 0.85); /* green-50 with opacity */
+            z-index: 0;
+        }
+        
+        .relative-z-index {
+            position: relative;
+            z-index: 10;
         }
     </style>
 </head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-green-50 via-green-100 to-green-200">
-        <div class="animate-fadeIn">
+    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-image-overlay">
+        <div class="animate-fadeIn relative-z-index">
             <a href="/">
                 <img src="{{ asset('images/PLASCHEMA-LOGO.png') }}" alt="PLASCHEMA Logo" class="w-24 h-auto">
             </a>
         </div>
 
-        <div class="w-full sm:max-w-md mt-6 px-8 py-6 bg-white shadow-xl rounded-lg overflow-hidden animate-fadeIn animate-delay-100">
+        <div class="w-full sm:max-w-md mt-6 px-8 py-6 bg-white shadow-xl rounded-lg overflow-hidden animate-fadeIn animate-delay-100 relative-z-index">
             <h1 class="text-2xl font-bold text-center text-gray-800 mb-6 animate-fadeIn">Admin Login</h1>
             
             <!-- Session Status -->
@@ -189,7 +213,7 @@
             </form>
         </div>
         
-        <div class="mt-6 text-center text-sm text-gray-600 animate-fadeIn animate-delay-300">
+        <div class="mt-6 text-center text-sm text-gray-600 animate-fadeIn animate-delay-300 relative-z-index">
             &copy; {{ date('Y') }} {{ config('app.name', 'PLASCHEMA') }}. All Rights Reserved.
         </div>
     </div>

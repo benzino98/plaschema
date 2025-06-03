@@ -8,6 +8,10 @@ use App\Models\HealthcareProvider;
 use App\Services\ImageService;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
+use App\Exports\HealthcareProviderTemplateExport;
+use App\Exports\HealthcareProviderErrorsExport;
+use App\Imports\HealthcareProvidersImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HealthcareProviderController extends Controller
 {
@@ -353,5 +357,82 @@ class HealthcareProviderController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'There was a problem performing the bulk action: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Show the form for importing healthcare providers.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function importForm()
+    {
+        return view('admin.providers.import');
+    }
+
+    /**
+     * Process the import of healthcare providers.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
+        ]);
+        
+        try {
+            $import = new HealthcareProvidersImport($this->activityLogService);
+            $import->import($request->file('file'));
+            
+            $importedCount = $import->getImportedCount();
+            $skippedCount = $import->getSkippedCount();
+            $errors = $import->getErrors();
+            
+            // Store errors in session for potential download
+            if (!empty($errors)) {
+                session(['import_errors' => $errors]);
+                
+                return redirect()->route('admin.providers.import-form')
+                    ->with('warning', "Import completed with {$importedCount} providers imported, {$skippedCount} duplicates skipped, and " . count($errors) . " errors. Please download the error report for details.")
+                    ->with('import_errors_count', count($errors));
+            }
+            
+            return redirect()->route('admin.providers.index')
+                ->with('success', "Successfully imported {$importedCount} healthcare providers" . ($skippedCount > 0 ? " ({$skippedCount} duplicates skipped)" : ""));
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'There was a problem importing the healthcare providers: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate and download a template file for healthcare provider import.
+     *
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function downloadTemplate()
+    {
+        return Excel::download(new HealthcareProviderTemplateExport(), 'healthcare_providers_template.xlsx');
+    }
+
+    /**
+     * Download error report from last import attempt.
+     *
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function downloadErrorReport()
+    {
+        if (!session()->has('import_errors')) {
+            return redirect()->route('admin.providers.import-form')
+                ->with('error', 'No error report available.');
+        }
+        
+        $errors = session('import_errors');
+        
+        return Excel::download(
+            new HealthcareProviderErrorsExport($errors), 
+            'healthcare_providers_import_errors_' . date('Y-m-d_H-i-s') . '.xlsx'
+        );
     }
 }

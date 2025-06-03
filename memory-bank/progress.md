@@ -167,6 +167,35 @@ This document tracks what has been completed and what still needs to be done.
 
 ## Current Work
 
+### Healthcare Provider Batch Upload (0% Complete)
+
+#### Plan
+
+- **Phase 1: Core Batch Upload Functionality (0%)**:
+
+  - Create Import Class - PLANNED
+  - Implement error reporting system - PLANNED
+  - Create template generation - PLANNED
+  - Update Controller with import methods - PLANNED
+  - Create upload form view - PLANNED
+  - Add necessary routes - PLANNED
+
+- **Phase 2: Testing & Integration (0%)**:
+  - Test with various file formats - PLANNED
+  - Test validation error reporting - PLANNED
+  - Test duplicate detection - PLANNED
+  - Test edge cases - PLANNED
+  - Integrate UI elements - PLANNED
+
+#### Implementation Details
+
+- The import feature will use the Laravel Excel package
+- The batch upload will process both Excel and CSV files
+- Duplicate entries will be skipped (based on name/email)
+- Image uploads will be skipped in batch mode
+- Detailed error reports will be generated for failed imports
+- A downloadable template will be provided to guide users
+
 ### Admin Login Redesign (100% Complete)
 
 #### Plan

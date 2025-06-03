@@ -88,6 +88,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('providers', AdminProviderController::class);
         Route::get('providers/activity/logs', [AdminProviderController::class, 'activity'])->name('providers.activity');
         Route::post('providers/bulk-action', [AdminProviderController::class, 'bulkAction'])->name('providers.bulk-action');
+        // Healthcare Providers Import Routes
+        Route::get('providers/import', [AdminProviderController::class, 'importForm'])->name('providers.import-form');
+        Route::post('providers/import', [AdminProviderController::class, 'import'])->name('providers.import');
+        Route::get('providers/template', [AdminProviderController::class, 'downloadTemplate'])->name('providers.template');
+        Route::get('providers/error-report', [AdminProviderController::class, 'downloadErrorReport'])->name('providers.error-report');
         
         // FAQ Management
         Route::resource('faqs', AdminFaqController::class);
