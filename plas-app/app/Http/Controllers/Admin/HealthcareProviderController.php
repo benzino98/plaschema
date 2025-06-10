@@ -34,8 +34,8 @@ class HealthcareProviderController extends Controller
         $this->activityLogService = $activityLogService;
         
         // Add permission middleware
-        $this->middleware('permission:view-providers')->only(['index', 'show']);
-        $this->middleware('permission:create-providers')->only(['create', 'store']);
+        $this->middleware('permission:view-providers')->only(['index', 'show', 'importForm', 'downloadTemplate', 'downloadErrorReport']);
+        $this->middleware('permission:create-providers')->only(['create', 'store', 'import']);
         $this->middleware('permission:edit-providers')->only(['edit', 'update']);
         $this->middleware('permission:delete-providers')->only(['destroy', 'bulkAction']);
     }

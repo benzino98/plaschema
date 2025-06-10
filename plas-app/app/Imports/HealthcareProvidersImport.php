@@ -72,7 +72,7 @@ class HealthcareProvidersImport implements ToCollection, WithHeadingRow, WithVal
             ]);
             
             // Log activity
-            $this->activityLogService->logCreated($provider, ['import' => true]);
+            $this->activityLogService->logCreated($provider, "Imported via batch upload");
             
             $this->imported++;
         }
