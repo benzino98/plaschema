@@ -69,8 +69,10 @@ jobs:
         run: |
           # Make sure the public directory exists
           mkdir -p plas-app/public
-          # Copy the initialization file from our repository
-          cp plas-app/public/initialize_deployment.php plas-app/public/initialize_deployment.php
+          # Copy the initialization file from our repository if it doesn't already exist
+          if [ ! -f plas-app/public/initialize_deployment.php ]; then
+            cp plas-app/public/initialize_deployment.php plas-app/public/initialize_deployment.php
+          fi
           # Ensure it has the correct permissions
           chmod 644 plas-app/public/initialize_deployment.php
 
