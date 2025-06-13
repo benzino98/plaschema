@@ -13,7 +13,7 @@
 $allowed_ips = [
     // Add your IP address here for additional security
     // '123.456.789.0',
-    '147.124.195.111'
+    '98.97.79.67'
 ];
 
 // Comment out this section if you don't want IP restriction
