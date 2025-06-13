@@ -98,7 +98,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/laravel/
-          server-dir: ${{ secrets.FTP_LARAVEL_DIR }}
+          server-dir: /home/plaschem/laravel/
           exclude: |
             **/.git*
             **/.git*/**
@@ -115,9 +115,9 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/public_html/
-          server-dir: ${{ secrets.FTP_PUBLIC_DIR }}
+          server-dir: /home/plaschem/public_html/
 
       - name: Post-deployment notification
         run: |
           echo "Deployment completed!"
-          echo "IMPORTANT: Visit https://your-domain.com/initialize_deployment.php in your browser to complete the setup."
+          echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/initialize_deployment.php in your browser to complete the setup."

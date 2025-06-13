@@ -6,7 +6,7 @@
  * on shared hosting without SSH access.
  * 
  * IMPORTANT: Access this file once via browser after deployment, then it will self-delete.
- * URL: https://your-domain.com/initialize_deployment.php
+ * URL: https://plaschema.pl.gov.ng/initialize_deployment.php
  */
 
 // Basic security check - you can customize this with a secret token if needed
@@ -35,17 +35,18 @@ ob_start();
 
 // Determine the Laravel root directory (parent of public)
 // Default for standard Laravel structure
-$laravel_root = '../laravel';
+$laravel_root = '/home/plaschema/laravel';
 
 // Check if we're in a shared hosting environment with separated directories
 if (!file_exists($laravel_root)) {
     // Try common shared hosting paths
     $possible_paths = [
+        '../laravel',
         '../../laravel',
         '../../../laravel',
         '../../',
         '../',
-        '/home/plaschema/laravel',
+        '/home/plaschema',
     ];
     
     foreach ($possible_paths as $path) {
