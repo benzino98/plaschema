@@ -73,6 +73,8 @@ jobs:
           # Copy the Laravel application to a directory outside public_html
           mkdir -p deployment/laravel
           cp -r plas-app/* deployment/laravel/
+          # Remove public directory from laravel folder since we'll deploy it separately
+          rm -rf deployment/laravel/public
 
           # Create public_html directory
           mkdir -p deployment/public_html
@@ -105,7 +107,6 @@ jobs:
             **/node_modules/**
             **/tests/**
             **/.github/**
-            **/public/**
 
       # Deploy public files
       - name: Deploy public files

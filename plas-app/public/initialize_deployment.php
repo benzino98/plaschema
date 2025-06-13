@@ -33,20 +33,20 @@ set_time_limit(300);
 // Start output buffering for cleaner output
 ob_start();
 
-// Determine the Laravel root directory (parent of public)
-// Default for standard Laravel structure
-$laravel_root = '/home/plaschema/laravel';
+// Determine the Laravel root directory
+// Default for our deployment structure
+$laravel_root = '/home/plaschem/laravel';
 
 // Check if we're in a shared hosting environment with separated directories
-if (!file_exists($laravel_root)) {
+if (!file_exists($laravel_root . '/artisan')) {
     // Try common shared hosting paths
     $possible_paths = [
-        '../laravel',
         '../../laravel',
-        '../../../laravel',
-        '../../',
+        '../laravel',
+        '/home/plaschem/laravel',
         '../',
-        '/home/plaschema',
+        '../../',
+        '/home/plaschem',
     ];
     
     foreach ($possible_paths as $path) {
@@ -55,6 +55,20 @@ if (!file_exists($laravel_root)) {
             break;
         }
     }
+}
+
+// If we still can't find Laravel, show an error
+if (!file_exists($laravel_root . '/artisan')) {
+    echo "ERROR: Cannot find Laravel installation. Tried the following paths:<br>";
+    echo "<ul>";
+    echo "<li>/home/plaschem/laravel</li>";
+    foreach ($possible_paths as $path) {
+        echo "<li>" . htmlspecialchars($path) . "</li>";
+    }
+    echo "</ul>";
+    echo "Current directory: " . getcwd() . "<br>";
+    echo "Please check your deployment structure and try again.";
+    exit;
 }
 ?>
 <!DOCTYPE html>
