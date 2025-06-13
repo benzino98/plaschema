@@ -1,0 +1,95 @@
+name: Deploy to Shared Hosting (No SSH)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, intl, gd, xml, zip, dom, fileinfo, curl
+          coverage: none
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "plas-app/package-lock.json"
+
+      - name: Install Composer Dependencies
+        working-directory: ./plas-app
+        run: composer install --no-dev --prefer-dist --optimize-autoloader
+
+      - name: Install NPM Dependencies
+        working-directory: ./plas-app
+        run: npm ci
+
+      - name: Build Frontend Assets
+        working-directory: ./plas-app
+        run: npm run build
+
+      - name: Generate .env file
+        working-directory: ./plas-app
+        run: |
+          cp .env.example .env
+          sed -i 's/APP_ENV=.*/APP_ENV=production/' .env
+          sed -i 's/APP_DEBUG=.*/APP_DEBUG=false/' .env
+          php artisan key:generate
+
+      # Pre-generate cache files locally
+      - name: Pre-generate cache files
+        working-directory: ./plas-app
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      # Create necessary directories that might be missing
+      - name: Create necessary directories
+        working-directory: ./plas-app
+        run: |
+          mkdir -p storage/framework/cache
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/views
+          mkdir -p storage/logs
+          chmod -R 775 storage bootstrap/cache
+
+      # Ensure the initialization file exists
+      - name: Copy initialization file
+        run: |
+          # Make sure the public directory exists
+          mkdir -p plas-app/public
+          # Copy the initialization file from our repository
+          cp plas-app/public/initialize_deployment.php plas-app/public/initialize_deployment.php
+          # Ensure it has the correct permissions
+          chmod 644 plas-app/public/initialize_deployment.php
+
+      - name: Deploy to Shared Hosting
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./plas-app/
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/tests/**
+            **/.github/**
+
+      - name: Post-deployment notification
+        run: |
+          echo "Deployment completed!"
+          echo "IMPORTANT: Visit https://your-domain.com/initialize_deployment.php in your browser to complete the setup."

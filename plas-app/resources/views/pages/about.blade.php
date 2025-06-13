@@ -70,13 +70,13 @@
         </div>
 
         <!-- Directors -->
-        <h3 class="text-2xl font-bold text-gray-800 mb-8 text-center">Our Directors</h3>
+        <h3 class="text-2xl font-bold text-gray-800 mb-8 text-center">Directors</h3>
         <!-- First three directors in normal grid -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <!-- Director 1 -->
             <div class="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
                 <div class="aspect-[4/3] overflow-hidden relative">
-                    <img src="{{ asset('images/team/leader-2.jpg') }}" alt="Mrs. Jane Smith" 
+                    <img src="{{ asset('images/team/leader-2.jpg') }}" alt="Dr Kwande Solomon Dawal" 
                          class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                          loading="lazy">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
@@ -95,7 +95,7 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold mb-1 text-gray-800">Mrs. Jane Smith</h3>
+                    <h3 class="text-xl font-bold mb-1 text-gray-800">Dr Kwande Solomon Dawal</h3>
                     <p class="text-plaschema font-medium mb-3">Director of Operations</p>
                     <div class="h-0.5 w-12 bg-plaschema/30 mb-4"></div>
                     <p class="text-gray-600">Overseeing the day-to-day operations and service delivery of PLASCHEMA across all local government areas.</p>
@@ -105,7 +105,7 @@
             <!-- Director 2 -->
             <div class="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
                 <div class="aspect-[4/3] overflow-hidden relative">
-                    <img src="{{ asset('images/team/leader-3.jpg') }}" alt="Mr. James Johnson" 
+                    <img src="{{ asset('images/team/leader-3.jpg') }}" alt="Pharm. Danladi Wuyep" 
                          class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                          loading="lazy">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
@@ -124,7 +124,7 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold mb-1 text-gray-800">Mr. James Johnson</h3>
+                    <h3 class="text-xl font-bold mb-1 text-gray-800">Pharm. Danladi Wuyep</h3>
                     <p class="text-plaschema font-medium mb-3">Director of Health Services, Standards and Quality Control</p>
                     <div class="h-0.5 w-12 bg-plaschema/30 mb-4"></div>
                     <p class="text-gray-600">Ensuring that healthcare services meet the highest standards across all partner facilities.</p>
@@ -134,7 +134,7 @@
             <!-- Director 3 -->
             <div class="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
                 <div class="aspect-[4/3] overflow-hidden relative">
-                    <img src="{{ asset('images/team/leader-4.jpg') }}" alt="Mr. Robert Williams" 
+                    <img src="{{ asset('images/team/leader-4.jpg') }}" alt="Mrs Theresa Gwofen" 
                          class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                          loading="lazy">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
@@ -153,7 +153,7 @@
                     </div>
                 </div>
                 <div class="p-6">
-                    <h3 class="text-xl font-bold mb-1 text-gray-800">Mr. Robert Williams</h3>
+                    <h3 class="text-xl font-bold mb-1 text-gray-800">Mrs Theresa Gwofen</h3>
                     <p class="text-plaschema font-medium mb-3">Director of Marketing and Communications</p>
                     <div class="h-0.5 w-12 bg-plaschema/30 mb-4"></div>
                     <p class="text-gray-600">Leading outreach and awareness campaigns to increase enrollment across Plateau State.</p>
@@ -167,7 +167,7 @@
                 <!-- Director 4 -->
                 <div class="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
                     <div class="aspect-[4/3] overflow-hidden relative">
-                        <img src="{{ asset('images/team/leader-5.jpg') }}" alt="Dr. Sarah Johnson" 
+                        <img src="{{ asset('images/team/leader-5.jpg') }}" alt="Dr Nden Julfa" 
                              class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                              loading="lazy">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
@@ -186,7 +186,7 @@
                         </div>
                     </div>
                     <div class="p-6">
-                        <h3 class="text-xl font-bold mb-1 text-gray-800">Dr. Sarah Johnson</h3>
+                        <h3 class="text-xl font-bold mb-1 text-gray-800">Dr Nden Julfa</h3>
                         <p class="text-plaschema font-medium mb-3">Director of Planning, Research and Statistics</p>
                         <div class="h-0.5 w-12 bg-plaschema/30 mb-4"></div>
                         <p class="text-gray-600">Leading data collection and analysis to inform strategic decision-making and program development.</p>
@@ -196,7 +196,7 @@
                 <!-- Director 5 -->
                 <div class="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
                     <div class="aspect-[4/3] overflow-hidden relative">
-                        <img src="{{ asset('images/team/leader-6.jpg') }}" alt="Mr. Daniel Thompson" 
+                        <img src="{{ asset('images/team/leader-6.jpg') }}" alt="Mrs. Altine Gongden" 
                              class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700" 
                              loading="lazy">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end">
@@ -215,8 +215,8 @@
                         </div>
                     </div>
                     <div class="p-6">
-                        <h3 class="text-xl font-bold mb-1 text-gray-800">Mr. Daniel Thompson</h3>
-                        <p class="text-plaschema font-medium mb-3">Director of Finance and Administration</p>
+                        <h3 class="text-xl font-bold mb-1 text-gray-800">Mrs. Altine Gongden</h3>
+                        <p class="text-plaschema font-medium mb-3">Director of Finance</p>
                         <div class="h-0.5 w-12 bg-plaschema/30 mb-4"></div>
                         <p class="text-gray-600">Managing financial resources and administrative functions to ensure sustainability of PLASCHEMA's programs.</p>
                     </div>
