@@ -64,32 +64,58 @@ jobs:
           mkdir -p storage/logs
           chmod -R 775 storage bootstrap/cache
 
-      # Ensure the initialization file exists
-      - name: Copy initialization file
+      # Prepare deployment structure
+      - name: Prepare deployment structure
         run: |
-          # Make sure the public directory exists
-          mkdir -p plas-app/public
-          # Copy the initialization file from our repository if it doesn't already exist
-          if [ ! -f plas-app/public/initialize_deployment.php ]; then
-            cp plas-app/public/initialize_deployment.php plas-app/public/initialize_deployment.php
-          fi
-          # Ensure it has the correct permissions
-          chmod 644 plas-app/public/initialize_deployment.php
+          # Create a deployment directory
+          mkdir -p deployment
 
-      - name: Deploy to Shared Hosting
+          # Copy the Laravel application to a directory outside public_html
+          mkdir -p deployment/laravel
+          cp -r plas-app/* deployment/laravel/
+
+          # Create public_html directory
+          mkdir -p deployment/public_html
+
+          # Copy only the public directory contents to public_html
+          cp -r plas-app/public/* deployment/public_html/
+
+          # Update the index.php to point to the correct paths
+          sed -i "s|/../vendor/autoload.php|/../../laravel/vendor/autoload.php|g" deployment/public_html/index.php
+          sed -i "s|/../bootstrap/app.php|/../../laravel/bootstrap/app.php|g" deployment/public_html/index.php
+
+      # Copy initialization file to public_html
+      - name: Copy initialization file to public_html
+        run: |
+          cp plas-app/public/initialize_deployment.php deployment/public_html/
+          chmod 644 deployment/public_html/initialize_deployment.php
+
+      # Deploy Laravel core files
+      - name: Deploy Laravel core files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./plas-app/
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          local-dir: ./deployment/laravel/
+          server-dir: ${{ secrets.FTP_LARAVEL_DIR }}
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/tests/**
             **/.github/**
+            **/public/**
+
+      # Deploy public files
+      - name: Deploy public files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./deployment/public_html/
+          server-dir: ${{ secrets.FTP_PUBLIC_DIR }}
 
       - name: Post-deployment notification
         run: |

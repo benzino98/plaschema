@@ -9,6 +9,30 @@ To use this deployment workflow, you need:
 1. A GitHub account with permissions to the repository
 2. FTP/SFTP access to your shared hosting
 
+## Deployment Structure
+
+The deployment workflow follows Laravel's recommended security practice of keeping most of the application files outside the web-accessible directory:
+
+```
+/home/plaschema/          # Your hosting account root
+├── laravel/              # Laravel core files (outside web root)
+│   ├── app/
+│   ├── bootstrap/
+│   ├── config/
+│   ├── database/
+│   ├── resources/
+│   ├── routes/
+│   ├── storage/
+│   ├── vendor/
+│   └── ...
+└── public_html/          # Web-accessible directory
+    ├── index.php         # Modified to point to ../laravel
+    ├── css/
+    ├── js/
+    ├── initialize_deployment.php
+    └── ...
+```
+
 ## Deployment Options
 
 Two deployment workflows are provided:
@@ -32,7 +56,8 @@ The deployment workflow uses several GitHub secrets to securely store sensitive 
 - `FTP_SERVER`: Your FTP server hostname (e.g., `ftp.example.com`)
 - `FTP_USERNAME`: Your FTP username
 - `FTP_PASSWORD`: Your FTP password
-- `FTP_SERVER_DIR`: The directory path on the server where files should be deployed (e.g., `/public_html/` or `/`)
+- `FTP_LARAVEL_DIR`: The directory path for Laravel core files (e.g., `/laravel/` or `/home/plaschema/laravel/`)
+- `FTP_PUBLIC_DIR`: The directory path for public files (e.g., `/public_html/` or `/home/plaschema/public_html/`)
 
 ## Using the No-SSH Deployment Workflow
 
@@ -40,9 +65,10 @@ The No-SSH deployment workflow (`deploy-without-ssh.yml`) is designed specifical
 
 1. It builds your Laravel application on GitHub's servers
 2. It pre-generates cache files locally
-3. It creates the necessary directory structure
-4. It uploads everything to your shared hosting via FTP
-5. It includes a special initialization file that handles post-deployment tasks
+3. It creates a deployment structure with separated Laravel core files and public files
+4. It uploads the Laravel core files to a directory outside the web root
+5. It uploads the public files to your web-accessible directory
+6. It includes a special initialization file that handles post-deployment tasks
 
 ### Post-Deployment Steps
 
@@ -56,6 +82,17 @@ After the GitHub Action completes, you need to:
    - Clear and regenerate caches
    - Create symbolic links if supported
    - Delete itself after completion for security
+
+### Manually Triggering the Workflow
+
+To manually trigger the deployment workflow:
+
+1. Go to your GitHub repository
+2. Click on the "Actions" tab
+3. Select "Deploy to Shared Hosting (No SSH)" from the list of workflows
+4. Click the "Run workflow" button
+5. Select the branch you want to deploy (usually "main")
+6. Click the green "Run workflow" button
 
 ### Security Considerations
 
@@ -115,6 +152,7 @@ run: |
    - Check if your hosting provider supports the `exec()` function in PHP
    - If `exec()` is disabled, you may need to manually run migrations through your hosting control panel
    - Some hosting providers have restrictions on PHP execution time, which might cause timeouts
+5. **404 Not Found for initialize_deployment.php**: Make sure the file was deployed to the correct public directory
 
 ### Viewing Logs:
 

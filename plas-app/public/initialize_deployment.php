@@ -32,6 +32,29 @@ set_time_limit(300);
 
 // Start output buffering for cleaner output
 ob_start();
+
+// Determine the Laravel root directory (parent of public)
+// Default for standard Laravel structure
+$laravel_root = '../laravel';
+
+// Check if we're in a shared hosting environment with separated directories
+if (!file_exists($laravel_root)) {
+    // Try common shared hosting paths
+    $possible_paths = [
+        '../../laravel',
+        '../../../laravel',
+        '../../',
+        '../',
+        '/home/plaschema/laravel',
+    ];
+    
+    foreach ($possible_paths as $path) {
+        if (file_exists($path . '/artisan')) {
+            $laravel_root = $path;
+            break;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -116,8 +139,11 @@ ob_start();
             echo "<p>⚠️ Missing PHP extensions: " . implode(', ', $missing_extensions) . "</p>";
         }
         
+        // Check Laravel root directory
+        echo "<p>Laravel root directory: " . realpath($laravel_root) . "</p>";
+        
         // Check if .env file exists
-        if (file_exists('../.env')) {
+        if (file_exists($laravel_root . '/.env')) {
             echo "<p>✅ .env file exists</p>";
         } else {
             echo "<p>❌ .env file not found! Application may not function correctly.</p>";
@@ -141,14 +167,14 @@ ob_start();
         }
         
         $storage_dirs = [
-            '../storage',
-            '../storage/app',
-            '../storage/framework',
-            '../storage/framework/cache',
-            '../storage/framework/sessions',
-            '../storage/framework/views',
-            '../storage/logs',
-            '../bootstrap/cache'
+            $laravel_root . '/storage',
+            $laravel_root . '/storage/app',
+            $laravel_root . '/storage/framework',
+            $laravel_root . '/storage/framework/cache',
+            $laravel_root . '/storage/framework/sessions',
+            $laravel_root . '/storage/framework/views',
+            $laravel_root . '/storage/logs',
+            $laravel_root . '/bootstrap/cache'
         ];
         
         $permissions_issues = false;
@@ -168,7 +194,7 @@ ob_start();
             echo "<p>✅ All storage directories exist and are writable.</p>";
         } else {
             echo "<p>⚠️ Some directories have permission issues. You may need to fix these manually.</p>";
-            echo "<p>Typical fix: <code>chmod -R 775 storage bootstrap/cache</code></p>";
+            echo "<p>Typical fix: <code>chmod -R 775 " . $laravel_root . "/storage " . $laravel_root . "/bootstrap/cache</code></p>";
         }
         ?>
     </div>
@@ -177,7 +203,7 @@ ob_start();
         <h2>Database Migrations</h2>
         <?php
         // Check if artisan exists
-        if (!file_exists('../artisan')) {
+        if (!file_exists($laravel_root . '/artisan')) {
             echo "<p>❌ Artisan command not found!</p>";
         } else {
             echo "<p>Running migrations...</p>";
@@ -189,9 +215,10 @@ ob_start();
             // Check if exec is available
             if (function_exists('exec')) {
                 // Change to the Laravel root directory
-                chdir('..');
+                $current_dir = getcwd();
+                chdir($laravel_root);
                 exec('php artisan migrate --force 2>&1', $output, $return_var);
-                chdir('public');
+                chdir($current_dir);
                 
                 echo "<pre>" . implode("\n", $output) . "</pre>";
                 
@@ -202,7 +229,7 @@ ob_start();
                 }
             } else {
                 echo "<p>❌ The 'exec' function is disabled on this server. Cannot run migrations automatically.</p>";
-                echo "<p>You may need to run migrations manually via SSH or your hosting panel.</p>";
+                echo "<p>You may need to run migrations manually via your hosting panel.</p>";
             }
         }
         ?>
@@ -211,7 +238,7 @@ ob_start();
     <div class="card">
         <h2>Cache Management</h2>
         <?php
-        if (!file_exists('../artisan')) {
+        if (!file_exists($laravel_root . '/artisan')) {
             echo "<p>❌ Artisan command not found!</p>";
         } else {
             echo "<p>Clearing application cache...</p>";
@@ -223,7 +250,8 @@ ob_start();
             // Check if exec is available
             if (function_exists('exec')) {
                 // Change to the Laravel root directory
-                chdir('..');
+                $current_dir = getcwd();
+                chdir($laravel_root);
                 
                 // Clear various caches
                 $cache_commands = [
@@ -237,7 +265,7 @@ ob_start();
                     exec($command . ' 2>&1', $output, $return_var);
                 }
                 
-                chdir('public');
+                chdir($current_dir);
                 
                 echo "<pre>" . implode("\n", $output) . "</pre>";
                 
@@ -250,7 +278,7 @@ ob_start();
                 // Try to regenerate caches
                 echo "<p>Regenerating caches for production...</p>";
                 $output = [];
-                chdir('..');
+                chdir($laravel_root);
                 
                 $cache_commands = [
                     'php artisan config:cache',
@@ -262,7 +290,7 @@ ob_start();
                     exec($command . ' 2>&1', $output, $return_var);
                 }
                 
-                chdir('public');
+                chdir($current_dir);
                 
                 echo "<pre>" . implode("\n", $output) . "</pre>";
                 
@@ -288,9 +316,10 @@ ob_start();
             echo "<p>Creating storage symbolic link...</p>";
             
             if (function_exists('exec')) {
-                chdir('..');
+                $current_dir = getcwd();
+                chdir($laravel_root);
                 exec('php artisan storage:link 2>&1', $output, $return_var);
-                chdir('public');
+                chdir($current_dir);
                 
                 echo "<pre>" . implode("\n", $output) . "</pre>";
                 
@@ -298,7 +327,36 @@ ob_start();
                     echo "<p>✅ Storage symbolic link created successfully.</p>";
                 } else {
                     echo "<p>❌ Failed to create storage symbolic link.</p>";
-                    echo "<p>Your hosting provider may not support symbolic links. You may need to manually copy the files from storage/app/public to public/storage.</p>";
+                    echo "<p>Your hosting provider may not support symbolic links. You may need to manually copy the files from " . $laravel_root . "/storage/app/public to public/storage.</p>";
+                    
+                    // Try to create a directory and copy files as fallback
+                    echo "<p>Attempting to create storage directory and copy files as fallback...</p>";
+                    if (!file_exists('storage')) {
+                        mkdir('storage', 0755, true);
+                    }
+                    
+                    if (is_dir($laravel_root . '/storage/app/public')) {
+                        // Simple recursive copy function
+                        function copy_dir($src, $dst) {
+                            $dir = opendir($src);
+                            @mkdir($dst);
+                            while (($file = readdir($dir)) !== false) {
+                                if ($file != '.' && $file != '..') {
+                                    if (is_dir($src . '/' . $file)) {
+                                        copy_dir($src . '/' . $file, $dst . '/' . $file);
+                                    } else {
+                                        copy($src . '/' . $file, $dst . '/' . $file);
+                                    }
+                                }
+                            }
+                            closedir($dir);
+                        }
+                        
+                        copy_dir($laravel_root . '/storage/app/public', 'storage');
+                        echo "<p>✅ Files copied from storage/app/public to public/storage.</p>";
+                    } else {
+                        echo "<p>❌ Source directory " . $laravel_root . "/storage/app/public does not exist.</p>";
+                    }
                 }
             } else {
                 echo "<p>❌ The 'exec' function is disabled. Cannot create symbolic link automatically.</p>";
