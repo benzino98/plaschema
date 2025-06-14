@@ -17,15 +17,15 @@ $allowed_ips = [
 ];
 
 // Comment out this section if you don't want IP restriction
-if (!empty($allowed_ips) && !in_array($_SERVER['REMOTE_ADDR'], $allowed_ips)) {
-    if (isset($_GET['override']) && $_GET['override'] === 'true') {
-        // Allow override with query parameter
-        echo "<p>IP restriction overridden. Proceeding with initialization.</p>";
-    } else {
-        die("Access denied. Your IP ({$_SERVER['REMOTE_ADDR']}) is not allowed to access this file.<br>
-            If you are the administrator, you can override this by adding ?override=true to the URL.");
-    }
-}
+// if (!empty($allowed_ips) && !in_array($_SERVER['REMOTE_ADDR'], $allowed_ips)) {
+//     if (isset($_GET['override']) && $_GET['override'] === 'true') {
+//         // Allow override with query parameter
+//         echo "<p>IP restriction overridden. Proceeding with initialization.</p>";
+//     } else {
+//         die("Access denied. Your IP ({$_SERVER['REMOTE_ADDR']}) is not allowed to access this file.<br>
+//             If you are the administrator, you can override this by adding ?override=true to the URL.");
+//     }
+// }
 
 // Set maximum execution time to 5 minutes to allow for longer operations
 set_time_limit(300);
