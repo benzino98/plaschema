@@ -86,6 +86,10 @@ jobs:
           sed -i "s|/../vendor/autoload.php|/../../laravel/vendor/autoload.php|g" deployment/public_html/index.php
           sed -i "s|/../bootstrap/app.php|/../../laravel/bootstrap/app.php|g" deployment/public_html/index.php
 
+          # Display the structure for verification
+          echo "Deployment structure prepared:"
+          find deployment -type d | sort
+
       # Copy initialization file to public_html
       - name: Copy initialization file to public_html
         run: |
@@ -100,7 +104,8 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/laravel/
-          server-dir: ./laravel/
+          server-dir: /home/plaschem/laravel/
+          dangerous-clean-slate: true
           exclude: |
             **/.git*
             **/.git*/**
@@ -116,9 +121,12 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/public_html/
-          server-dir: /public_html/
+          server-dir: /home/plaschem/public_html/
+          dangerous-clean-slate: true
 
       - name: Post-deployment notification
         run: |
           echo "Deployment completed!"
           echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/initialize_deployment.php in your browser to complete the setup."
+          echo "Laravel core files deployed to: /home/plaschem/laravel/"
+          echo "Public files deployed to: /home/plaschem/public_html/"
