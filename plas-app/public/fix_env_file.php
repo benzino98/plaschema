@@ -25,11 +25,13 @@ set_time_limit(300);
 ob_start();
 
 // Define paths
-$laravel_root = '/home/plaschem/laravel';
+$laravel_root = dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel';
 $env_file = $laravel_root . '/.env';
 
 // Collect results
 $results = [];
+$results[] = "Server home directory: " . dirname($_SERVER['DOCUMENT_ROOT']);
+$results[] = "Laravel directory path: " . $laravel_root;
 
 // Check if we're running in the correct environment
 $results[] = "Current directory: " . getcwd();

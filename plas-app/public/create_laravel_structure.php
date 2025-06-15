@@ -26,8 +26,14 @@ set_time_limit(300);
 ob_start();
 
 // Define paths
-$laravel_root = '/home/plaschem/laravel';
-$public_html = '/home/plaschem/public_html';
+$laravel_root = dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel';
+$public_html = dirname($_SERVER['DOCUMENT_ROOT']) . '/public_html';
+
+// Add more detailed path information
+$results = [];
+$results[] = "Server home directory: " . dirname($_SERVER['DOCUMENT_ROOT']);
+$results[] = "Laravel directory path: " . $laravel_root;
+$results[] = "Public HTML directory: " . $public_html;
 
 // Function to create directory if it doesn't exist
 function create_directory($path) {
@@ -52,9 +58,6 @@ function check_writable($path) {
 }
 
 // Collect results
-$results = [];
-
-// Check if we're running in the correct environment
 $results[] = "Current directory: " . getcwd();
 $results[] = "Document root: " . $_SERVER['DOCUMENT_ROOT'];
 

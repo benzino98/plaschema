@@ -37,22 +37,22 @@ ob_start();
 $debug_info = [];
 $debug_info[] = "Current directory: " . getcwd();
 $debug_info[] = "Document root: " . $_SERVER['DOCUMENT_ROOT'];
+$debug_info[] = "Server home directory: " . dirname($_SERVER['DOCUMENT_ROOT']);
 
 // Determine the Laravel root directory
 // Default for our deployment structure
-$laravel_root = '/home/plaschem/laravel';
+$laravel_root = dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel';
 $debug_info[] = "Checking default path: $laravel_root";
 
 // Check if we're in a shared hosting environment with separated directories
 $possible_paths = [
-    '/home/plaschem/laravel',
+    dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel',
     '../../laravel',
     '../laravel',
-    '/home/plaschem',
+    dirname($_SERVER['DOCUMENT_ROOT']),
     '..',
     '../..',
     $_SERVER['DOCUMENT_ROOT'] . '/../laravel',
-    dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel',
 ];
 
 $found_laravel = false;

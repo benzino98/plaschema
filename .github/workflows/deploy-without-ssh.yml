@@ -145,6 +145,21 @@ jobs:
           cp plas-app/public/fix_env_file.php deployment/public_html/
           chmod 644 deployment/public_html/fix_env_file.php
 
+          # Create a directory structure helper file
+          mkdir -p deployment/structure_helper
+          echo "This file helps create the Laravel directory on the server. You can safely delete it." > deployment/structure_helper/README.txt
+
+      # Create Laravel directory on the server
+      - name: Create Laravel directory on server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./deployment/structure_helper/
+          server-dir: ./laravel/
+          dangerous-clean-slate: false
+
       # Deploy Laravel core files
       - name: Deploy Laravel core files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -153,7 +168,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/laravel/
-          server-dir: /home/plaschem/laravel/
+          server-dir: ./laravel/
           dangerous-clean-slate: false # Changed to false to preserve existing files if any
           exclude: |
             **/.git*
@@ -170,12 +185,12 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/public_html/
-          server-dir: /home/plaschem/public_html/
+          server-dir: ./public_html/
           dangerous-clean-slate: false # Changed to false to preserve existing files if any
 
       - name: Post-deployment notification
         run: |
           echo "Deployment completed!"
           echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/initialize_deployment.php in your browser to complete the setup."
-          echo "Laravel core files deployed to: /home/plaschem/laravel/"
-          echo "Public files deployed to: /home/plaschem/public_html/"
+          echo "Laravel core files deployed to: ./laravel/ (in your home directory)"
+          echo "Public files deployed to: ./public_html/ (in your home directory)"
