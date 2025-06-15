@@ -73,11 +73,11 @@ jobs:
           # Create a deployment directory
           mkdir -p deployment
 
-          # Copy the Laravel application to a directory outside public_html
-          mkdir -p deployment/laravel
-          cp -r plas-app/* deployment/laravel/
-          # Remove public directory from laravel folder since we'll deploy it separately
-          rm -rf deployment/laravel/public
+          # Copy the Laravel application to the root deployment directory
+          mkdir -p deployment/root
+          cp -r plas-app/* deployment/root/
+          # Remove public directory from root folder since we'll deploy it separately
+          rm -rf deployment/root/public
 
           # Create public_html directory
           mkdir -p deployment/public_html
@@ -85,51 +85,51 @@ jobs:
           # Copy only the public directory contents to public_html
           cp -r plas-app/public/* deployment/public_html/
 
-          # Update the index.php to point to the correct paths
-          sed -i "s|/../vendor/autoload.php|/../../laravel/vendor/autoload.php|g" deployment/public_html/index.php
-          sed -i "s|/../bootstrap/app.php|/../../laravel/bootstrap/app.php|g" deployment/public_html/index.php
+          # Update the index.php to point to the correct paths (root directory instead of laravel subdirectory)
+          sed -i "s|/../../laravel/vendor/autoload.php|/../vendor/autoload.php|g" deployment/public_html/index.php
+          sed -i "s|/../../laravel/bootstrap/app.php|/../bootstrap/app.php|g" deployment/public_html/index.php
 
           # Verify .env file exists and is readable
-          if [ -f "deployment/laravel/.env" ]; then
+          if [ -f "deployment/root/.env" ]; then
             echo ".env file exists and will be deployed"
-            chmod 644 deployment/laravel/.env
+            chmod 644 deployment/root/.env
             # Display the first few lines of the .env file (excluding sensitive data)
-            head -n 10 deployment/laravel/.env
+            head -n 10 deployment/root/.env
           else
-            echo "ERROR: .env file is missing in deployment/laravel/"
+            echo "ERROR: .env file is missing in deployment/root/"
             # Create a backup .env file if it's missing
             echo "Creating backup .env file..."
-            echo "APP_NAME=Plaschema" > deployment/laravel/.env
-            echo "APP_ENV=production" >> deployment/laravel/.env
-            echo "APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >> deployment/laravel/.env
-            echo "APP_DEBUG=false" >> deployment/laravel/.env
-            echo "APP_URL=https://plaschema.pl.gov.ng" >> deployment/laravel/.env
-            echo "" >> deployment/laravel/.env
-            echo "LOG_CHANNEL=stack" >> deployment/laravel/.env
-            echo "LOG_DEPRECATIONS_CHANNEL=null" >> deployment/laravel/.env
-            echo "LOG_LEVEL=debug" >> deployment/laravel/.env
-            echo "" >> deployment/laravel/.env
-            echo "DB_CONNECTION=mysql" >> deployment/laravel/.env
-            echo "DB_HOST=127.0.0.1" >> deployment/laravel/.env
-            echo "DB_PORT=3306" >> deployment/laravel/.env
-            echo "DB_DATABASE=plaschem_db" >> deployment/laravel/.env
-            echo "DB_USERNAME=plaschem_user" >> deployment/laravel/.env
-            echo "DB_PASSWORD=" >> deployment/laravel/.env
-            echo "" >> deployment/laravel/.env
-            echo "BROADCAST_DRIVER=log" >> deployment/laravel/.env
-            echo "CACHE_DRIVER=file" >> deployment/laravel/.env
-            echo "FILESYSTEM_DISK=local" >> deployment/laravel/.env
-            echo "QUEUE_CONNECTION=sync" >> deployment/laravel/.env
-            echo "SESSION_DRIVER=file" >> deployment/laravel/.env
-            echo "SESSION_LIFETIME=120" >> deployment/laravel/.env
-            chmod 644 deployment/laravel/.env
+            echo "APP_NAME=Plaschema" > deployment/root/.env
+            echo "APP_ENV=production" >> deployment/root/.env
+            echo "APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >> deployment/root/.env
+            echo "APP_DEBUG=false" >> deployment/root/.env
+            echo "APP_URL=https://plaschema.pl.gov.ng" >> deployment/root/.env
+            echo "" >> deployment/root/.env
+            echo "LOG_CHANNEL=stack" >> deployment/root/.env
+            echo "LOG_DEPRECATIONS_CHANNEL=null" >> deployment/root/.env
+            echo "LOG_LEVEL=debug" >> deployment/root/.env
+            echo "" >> deployment/root/.env
+            echo "DB_CONNECTION=mysql" >> deployment/root/.env
+            echo "DB_HOST=127.0.0.1" >> deployment/root/.env
+            echo "DB_PORT=3306" >> deployment/root/.env
+            echo "DB_DATABASE=plaschem_db" >> deployment/root/.env
+            echo "DB_USERNAME=plaschem_user" >> deployment/root/.env
+            echo "DB_PASSWORD=" >> deployment/root/.env
+            echo "" >> deployment/root/.env
+            echo "BROADCAST_DRIVER=log" >> deployment/root/.env
+            echo "CACHE_DRIVER=file" >> deployment/root/.env
+            echo "FILESYSTEM_DISK=local" >> deployment/root/.env
+            echo "QUEUE_CONNECTION=sync" >> deployment/root/.env
+            echo "SESSION_DRIVER=file" >> deployment/root/.env
+            echo "SESSION_LIFETIME=120" >> deployment/root/.env
+            chmod 644 deployment/root/.env
             echo "Backup .env file created."
           fi
 
           # Display the structure for verification
           echo "Deployment structure prepared:"
           find deployment -type d | sort
-          ls -la deployment/laravel/ | grep -E "\.env|artisan"
+          ls -la deployment/root/ | grep -E "\.env|artisan"
 
       # Copy initialization file to public_html
       - name: Copy initialization file to public_html
@@ -145,21 +145,6 @@ jobs:
           cp plas-app/public/fix_env_file.php deployment/public_html/
           chmod 644 deployment/public_html/fix_env_file.php
 
-          # Create a directory structure helper file
-          mkdir -p deployment/structure_helper
-          echo "This file helps create the Laravel directory on the server. You can safely delete it." > deployment/structure_helper/README.txt
-
-      # Create Laravel directory on the server
-      - name: Create Laravel directory on server
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./deployment/structure_helper/
-          server-dir: laravel/
-          dangerous-clean-slate: false
-
       # Deploy Laravel core files
       - name: Deploy Laravel core files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -167,8 +152,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./deployment/laravel/
-          server-dir: laravel/
+          local-dir: ./deployment/root/
+          server-dir: ./
           dangerous-clean-slate: false # Changed to false to preserve existing files if any
           exclude: |
             **/.git*
@@ -192,5 +177,5 @@ jobs:
         run: |
           echo "Deployment completed!"
           echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/initialize_deployment.php in your browser to complete the setup."
-          echo "Laravel core files deployed to: laravel/ (in your home directory)"
+          echo "Laravel core files deployed to: ./ (root directory)"
           echo "Public files deployed to: public_html/ (in your home directory)"

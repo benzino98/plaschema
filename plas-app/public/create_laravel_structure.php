@@ -3,7 +3,7 @@
  * Laravel Directory Structure Creator
  * 
  * This script creates the necessary directory structure for Laravel on shared hosting.
- * Use this if your deployment is failing because the Laravel directory doesn't exist.
+ * Use this if your deployment is failing because required Laravel directories don't exist.
  * 
  * SECURITY WARNING: Delete this file immediately after use!
  */
@@ -27,13 +27,13 @@ ob_start();
 
 // Define paths
 $home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
-$laravel_root = $home_dir . '/laravel';
+$laravel_root = $home_dir; // Laravel files will be in the root directory
 $public_html = $home_dir . '/public_html';
 
 // Add more detailed path information
 $results = [];
 $results[] = "Server home directory: " . $home_dir;
-$results[] = "Laravel directory path: " . $laravel_root;
+$results[] = "Laravel directory path (root): " . $laravel_root;
 $results[] = "Public HTML directory: " . $public_html;
 
 // Function to create directory if it doesn't exist

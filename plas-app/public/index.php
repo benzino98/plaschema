@@ -19,8 +19,8 @@
 |
 */
 
-// Modified for shared hosting - point to Laravel core files in the laravel directory (sibling to public_html)
-require __DIR__.'/../../laravel/vendor/autoload.php';
+// Modified for shared hosting - point to Laravel core files in the root directory (parent of public_html)
+require __DIR__.'/../vendor/autoload.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -34,8 +34,8 @@ require __DIR__.'/../../laravel/vendor/autoload.php';
 |
 */
 
-// Modified for shared hosting - point to Laravel core files in the laravel directory (sibling to public_html)
-$app = require_once __DIR__.'/../../laravel/bootstrap/app.php';
+// Modified for shared hosting - point to Laravel core files in the root directory (parent of public_html)
+$app = require_once __DIR__.'/../bootstrap/app.php';
 
 /*
 |--------------------------------------------------------------------------
