@@ -99,31 +99,29 @@ jobs:
             echo "ERROR: .env file is missing in deployment/laravel/"
             # Create a backup .env file if it's missing
             echo "Creating backup .env file..."
-            cat > deployment/laravel/.env << 'EOL'
-APP_NAME=Plaschema
-APP_ENV=production
-APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-APP_DEBUG=false
-APP_URL=https://plaschema.pl.gov.ng
-
-LOG_CHANNEL=stack
-LOG_DEPRECATIONS_CHANNEL=null
-LOG_LEVEL=debug
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=plaschem_db
-DB_USERNAME=plaschem_user
-DB_PASSWORD=nofqyP-pahgos-tossi0
-
-BROADCAST_DRIVER=log
-CACHE_DRIVER=file
-FILESYSTEM_DISK=local
-QUEUE_CONNECTION=sync
-SESSION_DRIVER=file
-SESSION_LIFETIME=120
-EOL
+            echo "APP_NAME=Plaschema" > deployment/laravel/.env
+            echo "APP_ENV=production" >> deployment/laravel/.env
+            echo "APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" >> deployment/laravel/.env
+            echo "APP_DEBUG=false" >> deployment/laravel/.env
+            echo "APP_URL=https://plaschema.pl.gov.ng" >> deployment/laravel/.env
+            echo "" >> deployment/laravel/.env
+            echo "LOG_CHANNEL=stack" >> deployment/laravel/.env
+            echo "LOG_DEPRECATIONS_CHANNEL=null" >> deployment/laravel/.env
+            echo "LOG_LEVEL=debug" >> deployment/laravel/.env
+            echo "" >> deployment/laravel/.env
+            echo "DB_CONNECTION=mysql" >> deployment/laravel/.env
+            echo "DB_HOST=127.0.0.1" >> deployment/laravel/.env
+            echo "DB_PORT=3306" >> deployment/laravel/.env
+            echo "DB_DATABASE=plaschem_db" >> deployment/laravel/.env
+            echo "DB_USERNAME=plaschem_user" >> deployment/laravel/.env
+            echo "DB_PASSWORD=" >> deployment/laravel/.env
+            echo "" >> deployment/laravel/.env
+            echo "BROADCAST_DRIVER=log" >> deployment/laravel/.env
+            echo "CACHE_DRIVER=file" >> deployment/laravel/.env
+            echo "FILESYSTEM_DISK=local" >> deployment/laravel/.env
+            echo "QUEUE_CONNECTION=sync" >> deployment/laravel/.env
+            echo "SESSION_DRIVER=file" >> deployment/laravel/.env
+            echo "SESSION_LIFETIME=120" >> deployment/laravel/.env
             chmod 644 deployment/laravel/.env
             echo "Backup .env file created."
           fi
@@ -138,11 +136,11 @@ EOL
         run: |
           cp plas-app/public/initialize_deployment.php deployment/public_html/
           chmod 644 deployment/public_html/initialize_deployment.php
-          
+
           # Also copy the structure creator script for first-time setup
           cp plas-app/public/create_laravel_structure.php deployment/public_html/
           chmod 644 deployment/public_html/create_laravel_structure.php
-          
+
           # Copy the .env file creator script
           cp plas-app/public/fix_env_file.php deployment/public_html/
           chmod 644 deployment/public_html/fix_env_file.php
@@ -156,7 +154,7 @@ EOL
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/laravel/
           server-dir: /home/plaschem/laravel/
-          dangerous-clean-slate: false  # Changed to false to preserve existing files if any
+          dangerous-clean-slate: false # Changed to false to preserve existing files if any
           exclude: |
             **/.git*
             **/.git*/**
@@ -173,7 +171,7 @@ EOL
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/public_html/
           server-dir: /home/plaschem/public_html/
-          dangerous-clean-slate: false  # Changed to false to preserve existing files if any
+          dangerous-clean-slate: false # Changed to false to preserve existing files if any
 
       - name: Post-deployment notification
         run: |
