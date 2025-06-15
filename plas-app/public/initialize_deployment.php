@@ -33,42 +33,69 @@ set_time_limit(300);
 // Start output buffering for cleaner output
 ob_start();
 
+// Debug information
+$debug_info = [];
+$debug_info[] = "Current directory: " . getcwd();
+$debug_info[] = "Document root: " . $_SERVER['DOCUMENT_ROOT'];
+
 // Determine the Laravel root directory
 // Default for our deployment structure
 $laravel_root = '/home/plaschem/laravel';
+$debug_info[] = "Checking default path: $laravel_root";
 
 // Check if we're in a shared hosting environment with separated directories
-if (!file_exists($laravel_root . '/artisan')) {
-    // Try common shared hosting paths
-    $possible_paths = [
-        '../../laravel',
-        '../laravel',
-        '/home/plaschem/laravel',
-        '../',
-        '../../',
-        '/home/plaschem',
-    ];
-    
-    foreach ($possible_paths as $path) {
-        if (file_exists($path . '/artisan')) {
-            $laravel_root = $path;
-            break;
-        }
+$possible_paths = [
+    '/home/plaschem/laravel',
+    '../../laravel',
+    '../laravel',
+    '/home/plaschem',
+    '..',
+    '../..',
+    $_SERVER['DOCUMENT_ROOT'] . '/../laravel',
+    dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel',
+];
+
+$found_laravel = false;
+
+foreach ($possible_paths as $path) {
+    $debug_info[] = "Checking path: $path";
+    if (file_exists($path . '/artisan')) {
+        $laravel_root = $path;
+        $found_laravel = true;
+        $debug_info[] = "Found Laravel at: $path";
+        break;
     }
 }
 
 // If we still can't find Laravel, show an error
-if (!file_exists($laravel_root . '/artisan')) {
-    echo "ERROR: Cannot find Laravel installation. Tried the following paths:<br>";
-    echo "<ul>";
-    echo "<li>/home/plaschem/laravel</li>";
-    foreach ($possible_paths as $path) {
-        echo "<li>" . htmlspecialchars($path) . "</li>";
+if (!$found_laravel) {
+    $debug_info[] = "ERROR: Could not find Laravel installation in any of the checked paths";
+}
+
+// Function to check if a directory exists and is writable
+function check_dir_permissions($dir) {
+    global $debug_info;
+    $result = [];
+    $debug_info[] = "Checking permissions for: $dir";
+    if (file_exists($dir)) {
+        $result['exists'] = true;
+        $result['writable'] = is_writable($dir);
+        $debug_info[] = "Directory exists: " . ($result['exists'] ? 'Yes' : 'No');
+        $debug_info[] = "Directory writable: " . ($result['writable'] ? 'Yes' : 'No');
+    } else {
+        $result['exists'] = false;
+        $debug_info[] = "Directory does not exist";
     }
-    echo "</ul>";
-    echo "Current directory: " . getcwd() . "<br>";
-    echo "Please check your deployment structure and try again.";
-    exit;
+    return $result;
+}
+
+// Function to check if a file exists
+function check_file_exists($file) {
+    global $debug_info;
+    $debug_info[] = "Checking file: $file";
+    $exists = file_exists($file);
+    $debug_info[] = "File exists: " . ($exists ? 'Yes' : 'No');
+    return $exists;
 }
 ?>
 <!DOCTYPE html>
@@ -155,10 +182,17 @@ if (!file_exists($laravel_root . '/artisan')) {
         }
         
         // Check Laravel root directory
-        echo "<p>Laravel root directory: " . realpath($laravel_root) . "</p>";
+        $laravel_path = realpath($laravel_root);
+        echo "<p>Laravel root directory: " . ($laravel_path ?: $laravel_root) . "</p>";
+        
+        if ($found_laravel) {
+            echo "<p>✅ Laravel installation found (artisan file exists)</p>";
+        } else {
+            echo "<p>❌ artisan file not found! Application may not function correctly.</p>";
+        }
         
         // Check if .env file exists
-        if (file_exists($laravel_root . '/.env')) {
+        if (check_file_exists($laravel_root . '/.env')) {
             echo "<p>✅ .env file exists</p>";
         } else {
             echo "<p>❌ .env file not found! Application may not function correctly.</p>";
@@ -169,18 +203,6 @@ if (!file_exists($laravel_root . '/artisan')) {
     <div class="card">
         <h2>Storage Directory Permissions</h2>
         <?php
-        // Function to check directory permissions
-        function check_dir_permissions($dir) {
-            $result = [];
-            if (file_exists($dir)) {
-                $result['exists'] = true;
-                $result['writable'] = is_writable($dir);
-            } else {
-                $result['exists'] = false;
-            }
-            return $result;
-        }
-        
         $storage_dirs = [
             $laravel_root . '/storage',
             $laravel_root . '/storage/app',
@@ -218,7 +240,7 @@ if (!file_exists($laravel_root . '/artisan')) {
         <h2>Database Migrations</h2>
         <?php
         // Check if artisan exists
-        if (!file_exists($laravel_root . '/artisan')) {
+        if (!$found_laravel) {
             echo "<p>❌ Artisan command not found!</p>";
         } else {
             echo "<p>Running migrations...</p>";
@@ -378,6 +400,11 @@ if (!file_exists($laravel_root . '/artisan')) {
             }
         }
         ?>
+    </div>
+    
+    <div class="card">
+        <h2>Debug Information</h2>
+        <pre><?php echo implode("\n", $debug_info); ?></pre>
     </div>
     
     <div class="card success">
