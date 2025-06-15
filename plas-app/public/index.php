@@ -19,7 +19,7 @@
 |
 */
 
-// Modified for shared hosting - point to Laravel core files in /home/plaschem/laravel
+// Modified for shared hosting - point to Laravel core files in the laravel directory (sibling to public_html)
 require __DIR__.'/../../laravel/vendor/autoload.php';
 
 /*
@@ -34,7 +34,7 @@ require __DIR__.'/../../laravel/vendor/autoload.php';
 |
 */
 
-// Modified for shared hosting - point to Laravel core files in /home/plaschem/laravel
+// Modified for shared hosting - point to Laravel core files in the laravel directory (sibling to public_html)
 $app = require_once __DIR__.'/../../laravel/bootstrap/app.php';
 
 /*

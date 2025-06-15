@@ -40,19 +40,21 @@ $debug_info[] = "Document root: " . $_SERVER['DOCUMENT_ROOT'];
 $debug_info[] = "Server home directory: " . dirname($_SERVER['DOCUMENT_ROOT']);
 
 // Determine the Laravel root directory
-// Default for our deployment structure
-$laravel_root = dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel';
-$debug_info[] = "Checking default path: $laravel_root";
+// Default for our deployment structure - sibling directory to public_html
+$home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
+$laravel_root = $home_dir . '/laravel';
+$debug_info[] = "Home directory: $home_dir";
+$debug_info[] = "Checking default Laravel path: $laravel_root";
 
 // Check if we're in a shared hosting environment with separated directories
 $possible_paths = [
-    dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel',
-    '../../laravel',
-    '../laravel',
-    dirname($_SERVER['DOCUMENT_ROOT']),
-    '..',
-    '../..',
-    $_SERVER['DOCUMENT_ROOT'] . '/../laravel',
+    $home_dir . '/laravel',               // Standard path in home directory
+    '../../laravel',                      // Relative path from public_html
+    '../laravel',                         // Alternative relative path
+    $home_dir,                            // Directly in home directory
+    '..',                                 // Parent directory
+    '../..',                              // Parent of parent directory
+    $_SERVER['DOCUMENT_ROOT'] . '/../laravel', // Alternative calculation
 ];
 
 $found_laravel = false;

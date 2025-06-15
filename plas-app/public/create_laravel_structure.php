@@ -26,12 +26,13 @@ set_time_limit(300);
 ob_start();
 
 // Define paths
-$laravel_root = dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel';
-$public_html = dirname($_SERVER['DOCUMENT_ROOT']) . '/public_html';
+$home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
+$laravel_root = $home_dir . '/laravel';
+$public_html = $home_dir . '/public_html';
 
 // Add more detailed path information
 $results = [];
-$results[] = "Server home directory: " . dirname($_SERVER['DOCUMENT_ROOT']);
+$results[] = "Server home directory: " . $home_dir;
 $results[] = "Laravel directory path: " . $laravel_root;
 $results[] = "Public HTML directory: " . $public_html;
 
@@ -62,7 +63,6 @@ $results[] = "Current directory: " . getcwd();
 $results[] = "Document root: " . $_SERVER['DOCUMENT_ROOT'];
 
 // Check if we can access the home directory
-$home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
 $results[] = "Home directory: " . $home_dir;
 $results[] = check_writable($home_dir);
 

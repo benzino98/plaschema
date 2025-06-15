@@ -25,12 +25,13 @@ set_time_limit(300);
 ob_start();
 
 // Define paths
-$laravel_root = dirname($_SERVER['DOCUMENT_ROOT']) . '/laravel';
+$home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
+$laravel_root = $home_dir . '/laravel';
 $env_file = $laravel_root . '/.env';
 
 // Collect results
 $results = [];
-$results[] = "Server home directory: " . dirname($_SERVER['DOCUMENT_ROOT']);
+$results[] = "Server home directory: " . $home_dir;
 $results[] = "Laravel directory path: " . $laravel_root;
 
 // Check if we're running in the correct environment
