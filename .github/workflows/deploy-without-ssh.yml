@@ -157,7 +157,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/structure_helper/
-          server-dir: ../laravel/
+          server-dir: /laravel/
           dangerous-clean-slate: false
 
       # Deploy Laravel core files
@@ -168,7 +168,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/laravel/
-          server-dir: ../laravel/
+          server-dir: /laravel/
           dangerous-clean-slate: false # Changed to false to preserve existing files if any
           exclude: |
             **/.git*
@@ -185,12 +185,12 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/public_html/
-          server-dir: ./public_html/
+          server-dir: /public_html/
           dangerous-clean-slate: false # Changed to false to preserve existing files if any
 
       - name: Post-deployment notification
         run: |
           echo "Deployment completed!"
           echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/initialize_deployment.php in your browser to complete the setup."
-          echo "Laravel core files deployed to: ./laravel/ (in your home directory)"
-          echo "Public files deployed to: ./public_html/ (in your home directory)"
+          echo "Laravel core files deployed to: /laravel/ (in your home directory)"
+          echo "Public files deployed to: /public_html/ (in your home directory)"
