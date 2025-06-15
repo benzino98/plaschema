@@ -89,7 +89,7 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=plaschem_db
 DB_USERNAME=plaschem_user
-DB_PASSWORD=
+DB_PASSWORD=nofqyP-pahgos-tossi0
 
 BROADCAST_DRIVER=log
 CACHE_DRIVER=file
