@@ -26,13 +26,13 @@ ob_start();
 
 // Define paths
 $home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
-$laravel_root = $home_dir; // Laravel files are in the root directory
+$laravel_root = $home_dir . '/laravel'; // Laravel files are in the laravel directory
 $env_file = $laravel_root . '/.env';
 
 // Collect results
 $results = [];
 $results[] = "Server home directory: " . $home_dir;
-$results[] = "Laravel directory path (root): " . $laravel_root;
+$results[] = "Laravel directory path: " . $laravel_root;
 
 // Check if we're running in the correct environment
 $results[] = "Current directory: " . getcwd();

@@ -27,13 +27,13 @@ ob_start();
 
 // Define paths
 $home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
-$laravel_root = $home_dir; // Laravel files will be in the root directory
+$laravel_root = $home_dir . '/laravel'; // Laravel files will be in the laravel directory
 $public_html = $home_dir . '/public_html';
 
 // Add more detailed path information
 $results = [];
 $results[] = "Server home directory: " . $home_dir;
-$results[] = "Laravel directory path (root): " . $laravel_root;
+$results[] = "Laravel directory path: " . $laravel_root;
 $results[] = "Public HTML directory: " . $public_html;
 
 // Function to create directory if it doesn't exist
