@@ -19,6 +19,11 @@ $allowed_ips = [
 //     die("Access denied. Your IP ({$_SERVER['REMOTE_ADDR']}) is not allowed to access this file.");
 // }
 
+// Check PHP version
+if (version_compare(PHP_VERSION, '8.2.0', '<')) {
+    die("Error: This application requires PHP 8.2.0 or higher. Your PHP version is " . PHP_VERSION);
+}
+
 // Set maximum execution time
 set_time_limit(300);
 
@@ -67,10 +72,16 @@ $action = $_GET['action'] ?? 'status';
 if (in_array($action, ['config', 'route', 'view'])) {
     // Bootstrap Laravel
     require_once '/home/plaschem/laravel/vendor/autoload.php';
-    $app = require_once '/home/plaschem/laravel/bootstrap/app.php';
+    
+    // Override storage path before bootstrapping the app
+    $app = new Illuminate\Foundation\Application('/home/plaschem/laravel');
+    $app->useStoragePath($storage_path);
+    
+    $app = $app->make(Illuminate\Contracts\Http\Kernel::class);
     
     // Get the kernel
     $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+    $kernel->bootstrap();
 }
 
 // Perform the requested action

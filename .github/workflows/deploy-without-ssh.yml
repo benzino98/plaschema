@@ -44,6 +44,7 @@ jobs:
           cp .env.example .env
           sed -i 's/APP_ENV=.*/APP_ENV=production/' .env
           sed -i 's/APP_DEBUG=.*/APP_DEBUG=false/' .env
+          sed -i 's/APP_URL=.*/APP_URL=https:\/\/plaschema.pl.gov.ng/' .env
           php artisan key:generate
           # Make sure the .env file is readable
           chmod 644 .env
@@ -91,6 +92,10 @@ jobs:
           sed -i "s|/../../laravel/vendor/autoload.php|/home/plaschem/laravel/vendor/autoload.php|g" deployment/public_html/index.php
           sed -i "s|/../../laravel/bootstrap/app.php|/home/plaschem/laravel/bootstrap/app.php|g" deployment/public_html/index.php
 
+          # Update the .env file with correct storage paths
+          echo "STORAGE_PATH=/home/plaschem/laravel/storage" >> deployment/laravel/.env
+          echo "PUBLIC_PATH=/home/plaschem/public_html" >> deployment/laravel/.env
+
           # Verify .env file exists and is readable
           if [ -f "deployment/laravel/.env" ]; then
             echo ".env file exists and will be deployed"
@@ -124,6 +129,8 @@ jobs:
             echo "QUEUE_CONNECTION=sync" >> deployment/laravel/.env
             echo "SESSION_DRIVER=file" >> deployment/laravel/.env
             echo "SESSION_LIFETIME=120" >> deployment/laravel/.env
+            echo "STORAGE_PATH=/home/plaschem/laravel/storage" >> deployment/laravel/.env
+            echo "PUBLIC_PATH=/home/plaschem/public_html" >> deployment/laravel/.env
             chmod 644 deployment/laravel/.env
             echo "Backup .env file created."
           fi

@@ -27,9 +27,28 @@ if (version_compare(PHP_VERSION, '8.2.0', '<')) {
 // Set maximum execution time
 set_time_limit(300);
 
+// Define paths
+$laravel_root = '/home/plaschem/laravel';
+$storage_path = $laravel_root . '/storage';
+
 // Bootstrap Laravel
 require_once '/home/plaschem/laravel/vendor/autoload.php';
-$app = require_once '/home/plaschem/laravel/bootstrap/app.php';
+
+// Create a new application instance with the correct base path
+$app = new Illuminate\Foundation\Application($laravel_root);
+
+// Set the storage path explicitly
+$app->useStoragePath($storage_path);
+
+// Bootstrap the application
+$app = $app->bootstrapWith([
+    Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class,
+    Illuminate\Foundation\Bootstrap\LoadConfiguration::class,
+    Illuminate\Foundation\Bootstrap\HandleExceptions::class,
+    Illuminate\Foundation\Bootstrap\RegisterFacades::class,
+    Illuminate\Foundation\Bootstrap\RegisterProviders::class,
+    Illuminate\Foundation\Bootstrap\BootProviders::class,
+]);
 
 // Get the kernel
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
@@ -38,11 +57,12 @@ $kernel->bootstrap();
 // Create output buffer to capture migration SQL
 ob_start();
 
-// Get the migration repository
-$repository = $app->make('migration.repository');
-
-// If migration.repository doesn't exist, try the correct class name
-if (!$repository) {
+// Try to get the migration repository
+try {
+    // Get the migration repository
+    $repository = $app->make('migration.repository');
+} catch (Exception $e) {
+    // If migration.repository doesn't exist, try the correct class name
     $repository = $app->make(Illuminate\Database\Migrations\DatabaseMigrationRepository::class);
 }
 
