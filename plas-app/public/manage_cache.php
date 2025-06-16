@@ -32,6 +32,10 @@ $laravel_root = '/home/plaschem/laravel';
 $bootstrap_cache = $laravel_root . '/bootstrap/cache';
 $storage_path = $laravel_root . '/storage';
 
+// Fix path issues by setting environment variables
+putenv("STORAGE_PATH={$storage_path}");
+putenv("LOG_PATH={$storage_path}/logs");
+
 // Function to delete directory contents
 function delete_directory_contents($dir) {
     $files = glob($dir . '/*');
@@ -78,6 +82,14 @@ if (in_array($action, ['config', 'route', 'view'])) {
     
     // Override the storage path
     $app->useStoragePath($storage_path);
+    
+    // Disable logging to prevent path issues
+    $app->make('config')->set('logging.channels.single.path', '/dev/null');
+    $app->make('config')->set('logging.default', 'null');
+    $app->make('config')->set('logging.channels.null', [
+        'driver' => 'monolog',
+        'handler' => Monolog\Handler\NullHandler::class,
+    ]);
     
     // Get the kernel and bootstrap
     $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);

@@ -25,6 +25,10 @@ set_time_limit(300);
 $laravel_root = '/home/plaschem/laravel';
 $storage_path = $laravel_root . '/storage';
 
+// Fix path issues by setting environment variables
+putenv("STORAGE_PATH={$storage_path}");
+putenv("LOG_PATH={$storage_path}/logs");
+
 // Initialize results array
 $results = [];
 
@@ -81,6 +85,14 @@ try {
     
     // Override the storage path
     $app->useStoragePath($storage_path);
+    
+    // Disable logging to prevent path issues
+    $app->make('config')->set('logging.channels.single.path', '/dev/null');
+    $app->make('config')->set('logging.default', 'null');
+    $app->make('config')->set('logging.channels.null', [
+        'driver' => 'monolog',
+        'handler' => Monolog\Handler\NullHandler::class,
+    ]);
     
     // Get the kernel and bootstrap
     $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
