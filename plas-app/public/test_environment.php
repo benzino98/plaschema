@@ -80,23 +80,27 @@ foreach ($dirs_to_check as $name => $dir) {
 // Try to bootstrap Laravel
 $results[] = "\nBootstrapping Laravel:";
 try {
+    // Require the autoloader
     require_once $laravel_root . '/vendor/autoload.php';
+    
+    // Create the application
     $app = require_once $laravel_root . '/bootstrap/app.php';
     
     // Override the storage path
     $app->useStoragePath($storage_path);
     
-    // Disable logging to prevent path issues
-    $app->make('config')->set('logging.channels.single.path', '/dev/null');
-    $app->make('config')->set('logging.default', 'null');
-    $app->make('config')->set('logging.channels.null', [
+    // Get the kernel
+    $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+    
+    // Bootstrap the application
+    $kernel->bootstrap();
+    
+    // Now we can safely use the config service
+    $app['config']->set('logging.default', 'null');
+    $app['config']->set('logging.channels.null', [
         'driver' => 'monolog',
         'handler' => Monolog\Handler\NullHandler::class,
     ]);
-    
-    // Get the kernel and bootstrap
-    $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-    $kernel->bootstrap();
     
     $results[] = "✅ Laravel bootstrapped successfully";
     

@@ -44,17 +44,16 @@ $app = require_once '/home/plaschem/laravel/bootstrap/app.php';
 // Override the storage path
 $app->useStoragePath($storage_path);
 
-// Disable logging to prevent path issues
-$app->make('config')->set('logging.channels.single.path', '/dev/null');
-$app->make('config')->set('logging.default', 'null');
-$app->make('config')->set('logging.channels.null', [
-    'driver' => 'monolog',
-    'handler' => Monolog\Handler\NullHandler::class,
-]);
-
 // Get the kernel and bootstrap
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
+
+// Now we can safely use the config service
+$app['config']->set('logging.default', 'null');
+$app['config']->set('logging.channels.null', [
+    'driver' => 'monolog',
+    'handler' => Monolog\Handler\NullHandler::class,
+]);
 
 // Create output buffer to capture migration SQL
 ob_start();
