@@ -145,11 +145,32 @@ jobs:
           cp plas-app/public/fix_env_file.php deployment/public_html/
           chmod 644 deployment/public_html/fix_env_file.php
 
-          # Create a directory structure helper file
-          mkdir -p deployment/structure_helper
-          echo "This file helps create the Laravel directory on the server. You can safely delete it." > deployment/structure_helper/README.txt
+      # Create a directory structure helper file
+      - name: Prepare directory structure helper
+        run: |
+          mkdir -p deployment/structure_helper/laravel
+          mkdir -p deployment/structure_helper/laravel/app
+          mkdir -p deployment/structure_helper/laravel/bootstrap/cache
+          mkdir -p deployment/structure_helper/laravel/config
+          mkdir -p deployment/structure_helper/laravel/database
+          mkdir -p deployment/structure_helper/laravel/resources
+          mkdir -p deployment/structure_helper/laravel/routes
+          mkdir -p deployment/structure_helper/laravel/storage/app/public
+          mkdir -p deployment/structure_helper/laravel/storage/framework/cache
+          mkdir -p deployment/structure_helper/laravel/storage/framework/sessions
+          mkdir -p deployment/structure_helper/laravel/storage/framework/views
+          mkdir -p deployment/structure_helper/laravel/storage/logs
+          echo "This file helps create the Laravel directory structure on the server." > deployment/structure_helper/README.txt
+          touch deployment/structure_helper/laravel/.gitkeep
+          touch deployment/structure_helper/laravel/app/.gitkeep
+          touch deployment/structure_helper/laravel/bootstrap/cache/.gitkeep
+          touch deployment/structure_helper/laravel/storage/app/public/.gitkeep
+          touch deployment/structure_helper/laravel/storage/framework/cache/.gitkeep
+          touch deployment/structure_helper/laravel/storage/framework/sessions/.gitkeep
+          touch deployment/structure_helper/laravel/storage/framework/views/.gitkeep
+          touch deployment/structure_helper/laravel/storage/logs/.gitkeep
 
-      # Create Laravel directory on the server
+      # Create Laravel directory on server
       - name: Create Laravel directory on server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -157,8 +178,9 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/structure_helper/
-          server-dir: laravel/
+          server-dir: ./
           dangerous-clean-slate: false
+          state-name: .ftp-deploy-sync-state-create-dir.json
 
       # Deploy Laravel core files
       - name: Deploy Laravel core files
@@ -168,8 +190,9 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/laravel/
-          server-dir: laravel/
+          server-dir: ./laravel/
           dangerous-clean-slate: false # Changed to false to preserve existing files if any
+          state-name: .ftp-deploy-sync-state-laravel.json
           exclude: |
             **/.git*
             **/.git*/**
@@ -185,8 +208,9 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/public_html/
-          server-dir: public_html/
+          server-dir: ./public_html/
           dangerous-clean-slate: false # Changed to false to preserve existing files if any
+          state-name: .ftp-deploy-sync-state-public.json
 
       - name: Post-deployment notification
         run: |
