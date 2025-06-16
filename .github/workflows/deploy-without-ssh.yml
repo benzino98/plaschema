@@ -89,13 +89,6 @@ jobs:
           sed -i "s|/../vendor/autoload.php|/../../laravel/vendor/autoload.php|g" deployment/public_html/index.php
           sed -i "s|/../bootstrap/app.php|/../../laravel/bootstrap/app.php|g" deployment/public_html/index.php
 
-          # Create a file to indicate which files should not be overwritten
-          echo "# Files listed here will not be overwritten during deployment" > deployment/laravel/.ftpignore
-          echo ".env" >> deployment/laravel/.ftpignore
-          echo "storage/app/*" >> deployment/laravel/.ftpignore
-          echo "storage/framework/*" >> deployment/laravel/.ftpignore
-          echo "storage/logs/*" >> deployment/laravel/.ftpignore
-
           # Verify .env file exists and is readable
           if [ -f "deployment/laravel/.env" ]; then
             echo ".env file exists and will be deployed"
@@ -152,117 +145,6 @@ jobs:
           cp plas-app/public/fix_env_file.php deployment/public_html/
           chmod 644 deployment/public_html/fix_env_file.php
 
-          # Create a backup script
-          cat > deployment/public_html/backup_before_deploy.php << 'EOL'
-          <?php
-          /**
-           * Backup Important Laravel Files
-           * 
-           * This script creates backups of important Laravel files before deployment.
-           * Run this script before deploying new code to ensure you don't lose important data.
-           */
-
-          // Set maximum execution time
-          set_time_limit(300);
-
-          // Define paths
-          $home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
-          $laravel_root = $home_dir . '/laravel';
-          $backup_dir = $home_dir . '/laravel_backups';
-          $timestamp = date('Y-m-d_H-i-s');
-
-          // Create backup directory if it doesn't exist
-          if (!file_exists($backup_dir)) {
-              mkdir($backup_dir, 0755, true);
-          }
-
-          // Files to backup
-          $files_to_backup = [
-              $laravel_root . '/.env'
-          ];
-
-          // Results
-          $results = [];
-          $results[] = "Starting backup process at " . date('Y-m-d H:i:s');
-
-          // Backup individual files
-          foreach ($files_to_backup as $file) {
-              if (file_exists($file)) {
-                  $filename = basename($file);
-                  $backup_file = $backup_dir . '/' . $filename . '_' . $timestamp;
-                  if (copy($file, $backup_file)) {
-                      $results[] = "✅ Backed up: $file to $backup_file";
-                  } else {
-                      $results[] = "❌ Failed to backup: $file";
-                  }
-              } else {
-                  $results[] = "⚠️ File not found, skipping: $file";
-              }
-          }
-
-          // Backup storage directory (only important user data)
-          $storage_backup_dir = $backup_dir . '/storage_' . $timestamp;
-          if (!file_exists($storage_backup_dir)) {
-              mkdir($storage_backup_dir, 0755, true);
-          }
-
-          // Function to recursively copy directories
-          function copy_directory($source, $dest) {
-              if (!is_dir($source)) {
-                  return false;
-              }
-              
-              if (!is_dir($dest)) {
-                  mkdir($dest, 0755, true);
-              }
-              
-              $dir = opendir($source);
-              while (($file = readdir($dir)) !== false) {
-                  if ($file != '.' && $file != '..') {
-                      $src = $source . '/' . $file;
-                      $dst = $dest . '/' . $file;
-                      if (is_dir($src)) {
-                          copy_directory($src, $dst);
-                      } else {
-                          copy($src, $dst);
-                      }
-                  }
-              }
-              closedir($dir);
-              return true;
-          }
-
-          // Backup important storage directories
-          $storage_dirs = [
-              $laravel_root . '/storage/app',
-              $laravel_root . '/storage/logs'
-          ];
-
-          foreach ($storage_dirs as $dir) {
-              if (is_dir($dir)) {
-                  $dir_name = basename($dir);
-                  $backup_subdir = $storage_backup_dir . '/' . $dir_name;
-                  if (copy_directory($dir, $backup_subdir)) {
-                      $results[] = "✅ Backed up directory: $dir to $backup_subdir";
-                  } else {
-                      $results[] = "❌ Failed to backup directory: $dir";
-                  }
-              } else {
-                  $results[] = "⚠️ Directory not found, skipping: $dir";
-              }
-          }
-
-          $results[] = "Backup completed at " . date('Y-m-d H:i:s');
-
-          // Output results
-          echo "<html><head><title>Laravel Backup</title></head><body>";
-          echo "<h1>Laravel Backup Results</h1>";
-          echo "<pre>" . implode("\n", $results) . "</pre>";
-          echo "</body></html>";
-          EOL
-
-          chmod 644 deployment/public_html/backup_before_deploy.php
-
           # Create a directory structure helper file
           mkdir -p deployment/structure_helper
           echo "This file helps create the Laravel directory on the server. You can safely delete it." > deployment/structure_helper/README.txt
@@ -277,7 +159,6 @@ jobs:
           local-dir: ./deployment/structure_helper/
           server-dir: laravel/
           dangerous-clean-slate: false
-          state: "keep"
 
       # Deploy Laravel core files
       - name: Deploy Laravel core files
@@ -288,18 +169,13 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/laravel/
           server-dir: laravel/
-          dangerous-clean-slate: false
-          state: "keep"
+          dangerous-clean-slate: false # Changed to false to preserve existing files if any
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/tests/**
             **/.github/**
-            .env
-            storage/app/**
-            storage/framework/**
-            storage/logs/**
 
       # Deploy public files
       - name: Deploy public files
@@ -310,15 +186,11 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deployment/public_html/
           server-dir: public_html/
-          dangerous-clean-slate: false
-          state: "keep"
+          dangerous-clean-slate: false # Changed to false to preserve existing files if any
 
       - name: Post-deployment notification
         run: |
           echo "Deployment completed!"
-          echo "IMPORTANT: Before making any changes to your site, run the backup script first:"
-          echo "Visit https://plaschema.pl.gov.ng/backup_before_deploy.php to create a backup of important files."
-          echo "Then visit https://plaschema.pl.gov.ng/initialize_deployment.php to complete the setup."
+          echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/initialize_deployment.php in your browser to complete the setup."
           echo "Laravel core files deployed to: laravel/ (in your home directory)"
           echo "Public files deployed to: public_html/ (in your home directory)"
-          echo "NOTE: Your existing .env file and storage directory contents have been preserved."
