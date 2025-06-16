@@ -73,13 +73,13 @@ if (in_array($action, ['config', 'route', 'view'])) {
     // Bootstrap Laravel
     require_once '/home/plaschem/laravel/vendor/autoload.php';
     
-    // Override storage path before bootstrapping the app
-    $app = new Illuminate\Foundation\Application('/home/plaschem/laravel');
+    // Use the standard Laravel bootstrap process
+    $app = require_once '/home/plaschem/laravel/bootstrap/app.php';
+    
+    // Override the storage path
     $app->useStoragePath($storage_path);
     
-    $app = $app->make(Illuminate\Contracts\Http\Kernel::class);
-    
-    // Get the kernel
+    // Get the kernel and bootstrap
     $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
     $kernel->bootstrap();
 }

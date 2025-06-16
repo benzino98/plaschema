@@ -31,26 +31,16 @@ set_time_limit(300);
 $laravel_root = '/home/plaschem/laravel';
 $storage_path = $laravel_root . '/storage';
 
-// Bootstrap Laravel
+// Bootstrap Laravel properly
 require_once '/home/plaschem/laravel/vendor/autoload.php';
 
-// Create a new application instance with the correct base path
-$app = new Illuminate\Foundation\Application($laravel_root);
+// Use the standard Laravel bootstrap process instead of manual bootstrapping
+$app = require_once '/home/plaschem/laravel/bootstrap/app.php';
 
-// Set the storage path explicitly
+// Override the storage path
 $app->useStoragePath($storage_path);
 
-// Bootstrap the application
-$app = $app->bootstrapWith([
-    Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables::class,
-    Illuminate\Foundation\Bootstrap\LoadConfiguration::class,
-    Illuminate\Foundation\Bootstrap\HandleExceptions::class,
-    Illuminate\Foundation\Bootstrap\RegisterFacades::class,
-    Illuminate\Foundation\Bootstrap\RegisterProviders::class,
-    Illuminate\Foundation\Bootstrap\BootProviders::class,
-]);
-
-// Get the kernel
+// Get the kernel and bootstrap
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
