@@ -19,6 +19,11 @@ $allowed_ips = [
 //     die("Access denied. Your IP ({$_SERVER['REMOTE_ADDR']}) is not allowed to access this file.");
 // }
 
+// Check PHP version
+if (version_compare(PHP_VERSION, '8.2.0', '<')) {
+    die("Error: This application requires PHP 8.2.0 or higher. Your PHP version is " . PHP_VERSION);
+}
+
 // Set maximum execution time
 set_time_limit(300);
 
@@ -28,12 +33,18 @@ $app = require_once '/home/plaschem/laravel/bootstrap/app.php';
 
 // Get the kernel
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
 
 // Create output buffer to capture migration SQL
 ob_start();
 
 // Get the migration repository
 $repository = $app->make('migration.repository');
+
+// If migration.repository doesn't exist, try the correct class name
+if (!$repository) {
+    $repository = $app->make(Illuminate\Database\Migrations\DatabaseMigrationRepository::class);
+}
 
 // Ensure the migration table exists
 if (!$repository->repositoryExists()) {
