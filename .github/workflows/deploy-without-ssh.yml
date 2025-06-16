@@ -145,6 +145,18 @@ jobs:
           cp plas-app/public/fix_env_file.php deployment/public_html/
           chmod 644 deployment/public_html/fix_env_file.php
 
+          # Copy the migration SQL exporter script
+          cp plas-app/public/export_migrations.php deployment/public_html/
+          chmod 644 deployment/public_html/export_migrations.php
+
+          # Copy the cache manager script
+          cp plas-app/public/manage_cache.php deployment/public_html/
+          chmod 644 deployment/public_html/manage_cache.php
+
+          # Copy the storage link creator script
+          cp plas-app/public/create_storage_link.php deployment/public_html/
+          chmod 644 deployment/public_html/create_storage_link.php
+
       # Create a directory structure helper file
       - name: Prepare directory structure helper
         run: |
