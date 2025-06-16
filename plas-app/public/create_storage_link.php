@@ -23,10 +23,10 @@ $allowed_ips = [
 set_time_limit(300);
 
 // Define paths
-$laravel_root = dirname(__DIR__) . '/../../laravel';
+$laravel_root = '/home/plaschem/laravel';
 $public_path = dirname(__DIR__);
 $storage_app_public = $laravel_root . '/storage/app/public';
-$public_storage = $public_path . '/storage';
+$public_storage = '/home/plaschem/public_html/storage';
 
 // Initialize results array
 $results = [];

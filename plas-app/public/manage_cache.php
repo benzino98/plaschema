@@ -23,7 +23,7 @@ $allowed_ips = [
 set_time_limit(300);
 
 // Define paths
-$laravel_root = dirname(__DIR__) . '/../../laravel';
+$laravel_root = '/home/plaschem/laravel';
 $bootstrap_cache = $laravel_root . '/bootstrap/cache';
 $storage_path = $laravel_root . '/storage';
 
@@ -66,8 +66,8 @@ $action = $_GET['action'] ?? 'status';
 // Bootstrap Laravel for certain actions
 if (in_array($action, ['config', 'route', 'view'])) {
     // Bootstrap Laravel
-    require_once $laravel_root . '/vendor/autoload.php';
-    $app = require_once $laravel_root . '/bootstrap/app.php';
+    require_once '/home/plaschem/laravel/vendor/autoload.php';
+    $app = require_once '/home/plaschem/laravel/bootstrap/app.php';
     
     // Get the kernel
     $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);

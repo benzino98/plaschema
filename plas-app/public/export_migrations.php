@@ -23,8 +23,8 @@ $allowed_ips = [
 set_time_limit(300);
 
 // Bootstrap Laravel
-require_once __DIR__ . '/../../laravel/vendor/autoload.php';
-$app = require_once __DIR__ . '/../../laravel/bootstrap/app.php';
+require_once '/home/plaschem/laravel/vendor/autoload.php';
+$app = require_once '/home/plaschem/laravel/bootstrap/app.php';
 
 // Get the kernel
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);

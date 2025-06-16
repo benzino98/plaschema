@@ -85,9 +85,11 @@ jobs:
           # Copy only the public directory contents to public_html
           cp -r plas-app/public/* deployment/public_html/
 
-          # Update the index.php to point to the correct paths (laravel directory)
-          sed -i "s|/../vendor/autoload.php|/../../laravel/vendor/autoload.php|g" deployment/public_html/index.php
-          sed -i "s|/../bootstrap/app.php|/../../laravel/bootstrap/app.php|g" deployment/public_html/index.php
+          # Update the index.php to point to the correct paths (absolute paths)
+          sed -i "s|/../vendor/autoload.php|/home/plaschem/laravel/vendor/autoload.php|g" deployment/public_html/index.php
+          sed -i "s|/../bootstrap/app.php|/home/plaschem/laravel/bootstrap/app.php|g" deployment/public_html/index.php
+          sed -i "s|/../../laravel/vendor/autoload.php|/home/plaschem/laravel/vendor/autoload.php|g" deployment/public_html/index.php
+          sed -i "s|/../../laravel/bootstrap/app.php|/home/plaschem/laravel/bootstrap/app.php|g" deployment/public_html/index.php
 
           # Verify .env file exists and is readable
           if [ -f "deployment/laravel/.env" ]; then
