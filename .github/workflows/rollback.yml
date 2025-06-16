@@ -1,0 +1,124 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_folder:
+        description: "Backup folder name to restore from (e.g., backup-20230101120000)"
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # List available backups
+      - name: List available backups
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./empty-dir/
+          server-dir: ./
+          dangerous-clean-slate: false
+          state-name: .ftp-deploy-sync-state-list.json
+          log-level: verbose
+          timeout: 600000
+          dry-run: true
+
+      # Create empty directory for FTP operations
+      - name: Create empty directory
+        run: mkdir -p empty-dir
+
+      # Create backup of current deployment before rollback
+      - name: Backup current deployment before rollback
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./empty-dir/
+          server-dir: ./backup-before-rollback-$(date +%Y%m%d%H%M%S)/
+          dangerous-clean-slate: false
+          state-name: .ftp-deploy-sync-state-pre-rollback.json
+          log-level: verbose
+          timeout: 600000
+
+      # Download backup to restore
+      - name: Download backup to restore
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./restore/
+          server-dir: ./${{ github.event.inputs.backup_folder }}/
+          dangerous-clean-slate: false
+          state-name: .ftp-deploy-sync-state-download.json
+          log-level: verbose
+          timeout: 600000
+
+      # Restore Laravel core files
+      - name: Restore Laravel core files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./restore/laravel/
+          server-dir: ./laravel/
+          dangerous-clean-slate: false
+          state-name: .ftp-deploy-sync-state-restore-laravel.json
+          log-level: verbose
+          timeout: 600000
+
+      # Restore public files
+      - name: Restore public files
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./restore/public_html/
+          server-dir: ./public_html/
+          dangerous-clean-slate: false
+          state-name: .ftp-deploy-sync-state-restore-public.json
+          log-level: verbose
+          timeout: 600000
+
+      # Clear cache after rollback
+      - name: Clear cache after rollback
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://plaschema.pl.gov.ng/manage_cache.php?action=clear_all
+          method: "GET"
+          timeout: 60000
+          preventFailureOnNoResponse: true
+          ignoreStatusCodes: true
+
+      # Send rollback notification
+      - name: Send rollback notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: deployments
+          SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_MESSAGE: "PLASCHEMA website rollback to ${{ github.event.inputs.backup_folder }} ${{ job.status }}"
+          SLACK_TITLE: "Rollback Status"
+          SLACK_USERNAME: GitHub Actions
+          SLACK_FOOTER: "Powered by GitHub Actions"
+          MSG_MINIMAL: false
+        continue-on-error: true
+
+      - name: Post-rollback notification
+        run: |
+          echo "Rollback completed!"
+          echo "Restored from backup: ${{ github.event.inputs.backup_folder }}"
+          echo "Laravel core files restored to: laravel/ (in your home directory)"
+          echo "Public files restored to: public_html/ (in your home directory)"
