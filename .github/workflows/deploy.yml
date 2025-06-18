@@ -163,30 +163,10 @@ jobs:
           ls -la deployment/laravel/ | grep -E "\.env|artisan"
 
       # Copy initialization file to public_html
-      - name: Copy initialization file to public_html
+      - name: Copy laravel utilities file to public_html
         run: |
-          cp plas-app/public/initialize_deployment.php deployment/public_html/
-          chmod 644 deployment/public_html/initialize_deployment.php
-
-          # Also copy the structure creator script for first-time setup
-          cp plas-app/public/create_laravel_structure.php deployment/public_html/
-          chmod 644 deployment/public_html/create_laravel_structure.php
-
-          # Copy the .env file creator script
-          cp plas-app/public/fix_env_file.php deployment/public_html/
-          chmod 644 deployment/public_html/fix_env_file.php
-
-          # Copy the migration SQL exporter script
-          cp plas-app/public/export_migrations.php deployment/public_html/
-          chmod 644 deployment/public_html/export_migrations.php
-
-          # Copy the cache manager script
-          cp plas-app/public/manage_cache.php deployment/public_html/
-          chmod 644 deployment/public_html/manage_cache.php
-
-          # Copy the storage link creator script
-          cp plas-app/public/create_storage_link.php deployment/public_html/
-          chmod 644 deployment/public_html/create_storage_link.php
+          cp plas-app/public/laravel_utilities.php deployment/public_html/
+          chmod 644 deployment/public_html/laravel_utilities.php
 
       # Create a directory structure helper file
       - name: Prepare directory structure helper
