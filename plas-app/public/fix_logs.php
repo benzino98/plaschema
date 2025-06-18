@@ -1,9 +1,9 @@
 <?php
 /**
- * Log Path Fixer Script for Server
+ * Log Path Fixer Script
  * 
- * This script fixes the log path issues by creating necessary directories
- * and setting the correct permissions on the server.
+ * This script fixes log path issues by creating necessary directories and setting permissions.
+ * It does not rely on exec() function for better compatibility with shared hosting.
  * 
  * SECURITY NOTICE: Delete this file after use!
  */
@@ -22,226 +22,152 @@ if (!empty($allowed_ips) && !in_array($_SERVER['REMOTE_ADDR'], $allowed_ips)) {
     die("<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>");
 }
 
-// Set execution time limit
-set_time_limit(300);
-
 // Define paths
 $home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
 $laravel_root = $home_dir . '/laravel';
 $storage_path = $laravel_root . '/storage';
 $logs_path = $storage_path . '/logs';
-$ci_cd_logs_path = '/home/runner/work/plaschema/plaschema/plas-app/storage/logs';
+$laravel_log = $logs_path . '/laravel.log';
 
 // Initialize results
 $results = [];
+$errors = [];
 
-// Function to create directory
-function create_directory($path, &$results) {
-    if (!file_exists($path)) {
-        if (mkdir($path, 0755, true)) {
-            $results[] = "✅ Created directory: {$path}";
-        } else {
-            $results[] = "❌ Failed to create directory: {$path}";
-        }
-    } else {
-        $results[] = "ℹ️ Directory already exists: {$path}";
+// Function to create directory with proper permissions
+function create_directory($path, &$results, &$errors) {
+    if (file_exists($path)) {
+        $results[] = "Directory already exists: {$path}";
         
-        // Make sure it's writable
-        if (is_writable($path)) {
-            $results[] = "✅ Directory is writable: {$path}";
-        } else {
-            if (chmod($path, 0755)) {
-                $results[] = "✅ Made directory writable: {$path}";
+        // Check permissions
+        if (!is_writable($path)) {
+            if (@chmod($path, 0755)) {
+                $results[] = "Fixed permissions on directory: {$path}";
             } else {
-                $results[] = "❌ Failed to make directory writable: {$path}";
+                $error = error_get_last();
+                $errors[] = "Failed to fix permissions on directory: {$path} - " . ($error['message'] ?? 'Permission denied');
             }
         }
+        
+        return true;
+    } else {
+        if (@mkdir($path, 0755, true)) {
+            $results[] = "Created directory: {$path}";
+            return true;
+        } else {
+            $error = error_get_last();
+            $errors[] = "Failed to create directory: {$path} - " . ($error['message'] ?? 'Permission denied');
+            return false;
+        }
+    }
+}
+
+// Function to update .env file
+function update_env_file($env_file, $key, $value, &$results, &$errors) {
+    if (file_exists($env_file)) {
+        $env_content = @file_get_contents($env_file);
+        
+        if ($env_content !== false) {
+            // Check if key already exists
+            if (preg_match("/^{$key}=/m", $env_content)) {
+                // Update existing key
+                $env_content = preg_replace("/^{$key}=.*/m", "{$key}={$value}", $env_content);
+                $results[] = "Updated {$key} in .env file";
+            } else {
+                // Add new key
+                $env_content .= PHP_EOL . "{$key}={$value}" . PHP_EOL;
+                $results[] = "Added {$key} to .env file";
+            }
+            
+            if (@file_put_contents($env_file, $env_content)) {
+                $results[] = "Successfully wrote changes to .env file";
+                return true;
+            } else {
+                $error = error_get_last();
+                $errors[] = "Failed to write to .env file: " . ($error['message'] ?? 'Permission denied');
+                return false;
+            }
+        } else {
+            $error = error_get_last();
+            $errors[] = "Failed to read .env file: " . ($error['message'] ?? 'Permission denied');
+            return false;
+        }
+    } else {
+        $errors[] = ".env file does not exist: {$env_file}";
+        return false;
     }
 }
 
 // Function to create .htaccess file
-function create_htaccess($path, &$results) {
-    $htaccess_content = <<<EOT
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^ - [F,L]
-</IfModule>
-<IfModule !mod_rewrite.c>
+function create_htaccess($path, &$results, &$errors) {
+    $htaccess_content = "# Deny access to all files
+<FilesMatch \".*\">
     Order Allow,Deny
     Deny from all
-</IfModule>
-EOT;
+</FilesMatch>
+
+# Disable directory browsing
+Options -Indexes";
 
     $htaccess_file = $path . '/.htaccess';
-    if (!file_exists($htaccess_file)) {
-        if (file_put_contents($htaccess_file, $htaccess_content)) {
-            $results[] = "✅ Created .htaccess file in: {$path}";
-        } else {
-            $results[] = "❌ Failed to create .htaccess file in: {$path}";
-        }
+    
+    if (@file_put_contents($htaccess_file, $htaccess_content)) {
+        $results[] = "Created .htaccess file in {$path}";
+        return true;
     } else {
-        $results[] = "ℹ️ .htaccess file already exists in: {$path}";
+        $error = error_get_last();
+        $errors[] = "Failed to create .htaccess file in {$path}: " . ($error['message'] ?? 'Permission denied');
+        return false;
     }
 }
 
-// Function to create .gitignore file
-function create_gitignore($path, &$results) {
-    $gitignore_content = <<<EOT
-*
-!.gitignore
-!.htaccess
-EOT;
+// Start fixing logs
+$results[] = "Starting log path fix process...";
 
-    $gitignore_file = $path . '/.gitignore';
-    if (!file_exists($gitignore_file)) {
-        if (file_put_contents($gitignore_file, $gitignore_content)) {
-            $results[] = "✅ Created .gitignore file in: {$path}";
-        } else {
-            $results[] = "❌ Failed to create .gitignore file in: {$path}";
-        }
-    } else {
-        $results[] = "ℹ️ .gitignore file already exists in: {$path}";
-    }
+// Step 1: Create Laravel root directory if it doesn't exist
+create_directory($laravel_root, $results, $errors);
+
+// Step 2: Create storage directory
+if (create_directory($storage_path, $results, $errors)) {
+    create_htaccess($storage_path, $results, $errors);
 }
 
-// Create logs directory
-create_directory($logs_path, $results);
+// Step 3: Create logs directory
+create_directory($logs_path, $results, $errors);
 
-// Create .htaccess file
-create_htaccess($logs_path, $results);
-
-// Create .gitignore file
-create_gitignore($logs_path, $results);
-
-// Create an empty laravel.log file if it doesn't exist
-$laravel_log = $logs_path . '/laravel.log';
-if (!file_exists($laravel_log)) {
-    if (file_put_contents($laravel_log, '')) {
-        $results[] = "✅ Created empty laravel.log file";
-    } else {
-        $results[] = "❌ Failed to create laravel.log file";
-    }
-} else {
-    $results[] = "ℹ️ laravel.log file already exists";
-}
-
-// Make sure the log file is writable
+// Step 4: Create or check laravel.log file
 if (file_exists($laravel_log)) {
-    if (is_writable($laravel_log)) {
-        $results[] = "✅ laravel.log is writable";
-    } else {
-        if (chmod($laravel_log, 0666)) {
-            $results[] = "✅ Made laravel.log writable";
+    $results[] = "Laravel log file exists: {$laravel_log}";
+    
+    // Fix permissions
+    if (!is_writable($laravel_log)) {
+        if (@chmod($laravel_log, 0666)) {
+            $results[] = "Fixed permissions on log file: {$laravel_log}";
         } else {
-            $results[] = "❌ Failed to make laravel.log writable";
-        }
-    }
-}
-
-// Fix CI/CD path issue by creating a symlink or directory
-if (!file_exists(dirname($ci_cd_logs_path))) {
-    if (@mkdir(dirname($ci_cd_logs_path), 0755, true)) {
-        $results[] = "✅ Created CI/CD storage directory structure";
-    } else {
-        $results[] = "❌ Failed to create CI/CD storage directory structure";
-    }
-}
-
-if (!file_exists($ci_cd_logs_path)) {
-    // Try to create a symlink first
-    if (function_exists('symlink') && !in_array('symlink', explode(',', ini_get('disable_functions')))) {
-        if (@symlink($logs_path, $ci_cd_logs_path)) {
-            $results[] = "✅ Created symlink from CI/CD logs path to actual logs path";
-        } else {
-            // If symlink fails, create the directory
-            if (@mkdir($ci_cd_logs_path, 0755, true)) {
-                $results[] = "✅ Created CI/CD logs directory";
-            } else {
-                $results[] = "❌ Failed to create CI/CD logs directory";
-            }
-        }
-    } else {
-        // If symlink function is not available, create the directory
-        if (@mkdir($ci_cd_logs_path, 0755, true)) {
-            $results[] = "✅ Created CI/CD logs directory";
-        } else {
-            $results[] = "❌ Failed to create CI/CD logs directory";
+            $error = error_get_last();
+            $errors[] = "Failed to fix permissions on log file: " . ($error['message'] ?? 'Permission denied');
         }
     }
 } else {
-    $results[] = "ℹ️ CI/CD logs path already exists";
-}
-
-// Update .env file with LOG_PATH if it exists
-$env_file = $laravel_root . '/.env';
-if (file_exists($env_file)) {
-    $env_content = file_get_contents($env_file);
-    
-    // Check if LOG_PATH already exists in .env
-    if (strpos($env_content, 'LOG_PATH=') === false) {
-        // Add LOG_PATH after LOG_CHANNEL
-        $env_content = preg_replace(
-            '/(LOG_CHANNEL=.*?)(\r?\n)/i',
-            "$1$2LOG_PATH={$logs_path}$2",
-            $env_content
-        );
+    if (@file_put_contents($laravel_log, "Log file created by fix_logs.php at " . date('Y-m-d H:i:s') . PHP_EOL)) {
+        $results[] = "Created log file: {$laravel_log}";
         
-        if (file_put_contents($env_file, $env_content)) {
-            $results[] = "✅ Added LOG_PATH to .env file";
+        // Set permissions
+        if (@chmod($laravel_log, 0666)) {
+            $results[] = "Set permissions on new log file";
         } else {
-            $results[] = "❌ Failed to update .env file";
+            $error = error_get_last();
+            $errors[] = "Failed to set permissions on new log file: " . ($error['message'] ?? 'Permission denied');
         }
     } else {
-        $results[] = "ℹ️ LOG_PATH already exists in .env file";
+        $error = error_get_last();
+        $errors[] = "Failed to create log file: " . ($error['message'] ?? 'Permission denied');
     }
-} else {
-    $results[] = "⚠️ .env file does not exist";
 }
 
-// Update bootstrap/app.php to set storage path
-$bootstrap_file = $laravel_root . '/bootstrap/app.php';
-if (file_exists($bootstrap_file)) {
-    $bootstrap_content = file_get_contents($bootstrap_file);
-    
-    // Check if we need to add storage path setting
-    if (strpos($bootstrap_content, 'useStoragePath') === false) {
-        // Look for the usePublicPath line
-        if (strpos($bootstrap_content, 'usePublicPath') !== false) {
-            // Add storage path setting after public path
-            $bootstrap_content = preg_replace(
-                '/(usePublicPath.*?);/i',
-                "$1;\n    \n    // Set storage path for logs and other storage needs\n    \$app->useStoragePath('{$storage_path}');\n    \n    // Set environment variables for paths\n    putenv(\"STORAGE_PATH={$storage_path}\");\n    putenv(\"LOG_PATH={$logs_path}\");",
-                $bootstrap_content
-            );
-            
-            if (file_put_contents($bootstrap_file, $bootstrap_content)) {
-                $results[] = "✅ Updated bootstrap/app.php to set storage path";
-            } else {
-                $results[] = "❌ Failed to update bootstrap/app.php";
-            }
-        } else {
-            $results[] = "⚠️ Could not find usePublicPath in bootstrap/app.php";
-        }
-    } else {
-        $results[] = "ℹ️ Storage path setting already exists in bootstrap/app.php";
-    }
-} else {
-    $results[] = "⚠️ bootstrap/app.php file does not exist";
-}
-
-// Clear Laravel cache
-if (file_exists($laravel_root . '/artisan')) {
-    $output = [];
-    $return_var = 0;
-    
-    exec("cd {$laravel_root} && php artisan cache:clear 2>&1", $output, $return_var);
-    
-    if ($return_var === 0) {
-        $results[] = "✅ Cleared Laravel cache";
-    } else {
-        $results[] = "❌ Failed to clear Laravel cache: " . implode("\n", $output);
-    }
-}
+// Step 5: Update .env file with LOG_PATH
+$env_file = $laravel_root . '/.env';
+update_env_file($env_file, 'LOG_PATH', $logs_path, $results, $errors);
+update_env_file($env_file, 'STORAGE_PATH', $storage_path, $results, $errors);
 
 // Output results
 ?>
@@ -285,6 +211,12 @@ if (file_exists($laravel_root . '/artisan')) {
             padding: 12px;
             margin-bottom: 20px;
         }
+        .errors {
+            background-color: #fff5f5;
+            border-left: 4px solid #e53e3e;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
         .warning {
             background-color: #fefcbf;
             border-left: 4px solid #d69e2e;
@@ -298,13 +230,32 @@ if (file_exists($laravel_root . '/artisan')) {
         li {
             padding: 8px 0;
         }
+        .summary {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .success {
+            background-color: #c6f6d5;
+            color: #2f855a;
+        }
+        .failure {
+            background-color: #fed7d7;
+            color: #c53030;
+        }
+        .next-steps {
+            margin-top: 30px;
+        }
     </style>
 </head>
 <body>
     <h1>Log Path Fixer</h1>
     
     <div class="warning">
-        <strong>Security Warning:</strong> This script makes changes to your Laravel application's directory structure and configuration.
+        <strong>Security Warning:</strong> This script fixes your Laravel application's log configuration.
         For security reasons, delete this file immediately after use.
     </div>
     
@@ -315,10 +266,11 @@ if (file_exists($laravel_root . '/artisan')) {
             <p><strong>Laravel Root:</strong> <?php echo htmlspecialchars($laravel_root); ?></p>
             <p><strong>Storage Path:</strong> <?php echo htmlspecialchars($storage_path); ?></p>
             <p><strong>Logs Path:</strong> <?php echo htmlspecialchars($logs_path); ?></p>
-            <p><strong>CI/CD Logs Path:</strong> <?php echo htmlspecialchars($ci_cd_logs_path); ?></p>
+            <p><strong>Laravel Log File:</strong> <?php echo htmlspecialchars($laravel_log); ?></p>
         </div>
     </div>
     
+    <?php if (!empty($results)): ?>
     <div class="card">
         <h2>Results</h2>
         <div class="results">
@@ -329,14 +281,36 @@ if (file_exists($laravel_root . '/artisan')) {
             </ul>
         </div>
     </div>
+    <?php endif; ?>
     
+    <?php if (!empty($errors)): ?>
     <div class="card">
+        <h2>Errors</h2>
+        <div class="errors">
+            <ul>
+                <?php foreach ($errors as $error): ?>
+                    <li><?php echo htmlspecialchars($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    </div>
+    <?php endif; ?>
+    
+    <div class="summary <?php echo empty($errors) ? 'success' : 'failure'; ?>">
+        <?php if (empty($errors)): ?>
+            Log paths have been successfully fixed!
+        <?php else: ?>
+            There were some issues while fixing log paths. Please check the errors above.
+        <?php endif; ?>
+    </div>
+    
+    <div class="card next-steps">
         <h2>Next Steps</h2>
-        <p>If you've made changes to your application code, make sure to:</p>
         <ol>
-            <li>Run <code>composer dump-autoload</code> to ensure any new helper functions are registered</li>
-            <li>Clear the Laravel cache with <code>php artisan cache:clear</code></li>
-            <li>Restart your web server if possible</li>
+            <li>Delete this file for security</li>
+            <li>Try accessing your Laravel application to see if the log errors are resolved</li>
+            <li>If you're still having issues, check the <a href="check_logs.php">log path checker</a> for more details</li>
+            <li>For persistent issues, check your web server error logs</li>
         </ol>
     </div>
     
