@@ -15,13 +15,130 @@
 // Basic security check - restrict by IP
 $allowed_ips = [
     // Add your IP address here
-    '102.91.104.42'
+    '102.91.104.42',
+    '135.129.124.105',
+    '127.0.0.1', // localhost for development
+    $_SERVER['SERVER_ADDR'] ?? '', // Server's own IP
 ];
 
-// Uncomment this section to enable IP restriction
-// if (!empty($allowed_ips) && !in_array($_SERVER['REMOTE_ADDR'], $allowed_ips)) {
-//     die("Access denied. Your IP ({$_SERVER['REMOTE_ADDR']}) is not allowed to access this file.");
-// }
+// IP restriction - only allowed IPs can access this file
+if (!empty($allowed_ips) && !in_array($_SERVER['REMOTE_ADDR'], $allowed_ips)) {
+    http_response_code(404); // Return 404 Not Found instead of 403 Forbidden to hide the file's existence
+    die("<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>");
+}
+
+// Password protection
+$correct_password = 'c3OtGl9V3Sj4pPl27'; // Change this to your secure password
+
+// Check if we need to show the login form
+$show_login = true;
+
+// Check if the password cookie is set and valid
+if (isset($_COOKIE['laravel_utils_auth']) && $_COOKIE['laravel_utils_auth'] === md5($correct_password)) {
+    $show_login = false;
+} 
+// Check if the password was just submitted
+elseif (isset($_POST['utils_password'])) {
+    if ($_POST['utils_password'] === $correct_password) {
+        // Set a cookie that expires in 12 hours
+        setcookie('laravel_utils_auth', md5($correct_password), time() + 43200, '/', '', true, true);
+        $show_login = false;
+        
+        // Redirect to remove the password from POST data
+        if (!isset($_GET['redirected'])) {
+            $redirect_url = $_SERVER['REQUEST_URI'];
+            $redirect_url .= (strpos($redirect_url, '?') === false) ? '?redirected=1' : '&redirected=1';
+            header("Location: $redirect_url");
+            exit;
+        }
+    } else {
+        $login_error = "Incorrect password. Please try again.";
+    }
+}
+
+// Show login form if needed
+if ($show_login) {
+    http_response_code(200);
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Authentication Required</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 400px;
+                margin: 50px auto;
+                padding: 20px;
+                background-color: #f7fafc;
+            }
+            h1 {
+                color: #4a5568;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            .card {
+                background: #fff;
+                border-radius: 5px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                padding: 20px;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: 500;
+            }
+            input[type="password"] {
+                width: 100%;
+                padding: 8px;
+                border-radius: 4px;
+                border: 1px solid #cbd5e0;
+            }
+            .btn {
+                display: inline-block;
+                background: #4299e1;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 4px;
+                text-decoration: none;
+                border: none;
+                cursor: pointer;
+            }
+            .btn:hover {
+                background: #3182ce;
+            }
+            .error {
+                color: #e53e3e;
+                margin-bottom: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h1>Authentication Required</h1>
+            <?php if (isset($login_error)): ?>
+                <div class="error"><?php echo $login_error; ?></div>
+            <?php endif; ?>
+            <form method="post">
+                <div class="form-group">
+                    <label for="utils_password">Password:</label>
+                    <input type="password" id="utils_password" name="utils_password" required autofocus>
+                </div>
+                <button type="submit" class="btn">Log In</button>
+            </form>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
 
 // Check PHP version
 if (version_compare(PHP_VERSION, '8.2.0', '<')) {
@@ -1711,6 +1828,103 @@ function handle_create_admin(&$results) {
     }
 }
 
+// File obfuscation utility
+function handle_obfuscate_file(&$results) {
+    global $laravel_root;
+    
+    $current_file = __FILE__;
+    $current_filename = basename($current_file);
+    $current_dir = dirname($current_file);
+    
+    // Process rename request
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['obfuscate_action'])) {
+        if ($_POST['obfuscate_action'] === 'rename') {
+            // Generate a new random filename
+            $random_prefix = substr(md5(uniqid(mt_rand(), true)), 0, 10);
+            $new_filename = $random_prefix . '_utils.php';
+            $new_filepath = $current_dir . '/' . $new_filename;
+            
+            // Create a copy of the file with the new name
+            if (copy($current_file, $new_filepath)) {
+                $results[] = "✅ File copied to: {$new_filename}";
+                $results[] = "To access the utilities, use: <a href='{$new_filename}'>{$new_filename}</a>";
+                
+                // Create a safety note file with the new name
+                $note_file = $laravel_root . '/.utils_location';
+                file_put_contents($note_file, $new_filename);
+                $results[] = "✅ Filename saved to private note at: .utils_location";
+                
+                $results[] = "<div class='warning' style='margin-top: 20px;'>";
+                $results[] = "<strong>IMPORTANT: SAVE THIS INFORMATION</strong><br>";
+                $results[] = "Your utility file is now accessible at: <code>{$new_filename}</code><br>";
+                $results[] = "Please make note of this name, as you will need it to access the utilities.<br>";
+                $results[] = "For security reasons, consider deleting this original file.";
+                $results[] = "</div>";
+                
+                $results[] = "<div style='margin-top: 20px;'>";
+                $results[] = "<a href='{$new_filename}' class='btn'>Go to New Utility File</a>";
+                $results[] = "<form method='post' style='display: inline-block; margin-left: 10px;'>";
+                $results[] = "<input type='hidden' name='obfuscate_action' value='delete_original'>";
+                $results[] = "<button type='submit' class='btn' style='background-color: #e53e3e;' onclick='return confirm(\"Are you sure you want to delete this original file? Make sure you have saved the new filename.\")'>Delete Original File</button>";
+                $results[] = "</form>";
+                $results[] = "</div>";
+            } else {
+                $results[] = "❌ Failed to create copy with new name. Check file permissions.";
+            }
+        } elseif ($_POST['obfuscate_action'] === 'delete_original') {
+            // Check if a note file exists before deleting
+            $note_file = $laravel_root . '/.utils_location';
+            if (!file_exists($note_file)) {
+                $results[] = "❌ Safety note file not found. Cannot safely delete original.";
+                return;
+            }
+            
+            // Get the new filename from the note file
+            $new_filename = trim(file_get_contents($note_file));
+            $new_filepath = $current_dir . '/' . $new_filename;
+            
+            // Verify the new file exists before deleting the original
+            if (!file_exists($new_filepath)) {
+                $results[] = "❌ New utility file not found at: {$new_filename}";
+                $results[] = "Cannot safely delete original file.";
+                return;
+            }
+            
+            // Delete the original file
+            if (unlink($current_file)) {
+                $results[] = "✅ Original file deleted successfully.";
+                $results[] = "Your utility file is now only accessible at: <code>{$new_filename}</code>";
+                $results[] = "<meta http-equiv='refresh' content='5;url={$new_filename}' />";
+                $results[] = "Redirecting to new location in 5 seconds...";
+            } else {
+                $results[] = "❌ Failed to delete original file. You may need to delete it manually.";
+            }
+        }
+    } else {
+        // Show the file obfuscation form
+        $results[] = "<form method='post' class='admin-form' style='margin-top: 20px; background: #f8fafc; padding: 15px; border-radius: 5px;'>";
+        $results[] = "<h4 style='margin-top: 0;'>Hide Utility File</h4>";
+        $results[] = "<p>This utility will create a copy of this file with a random name to make it harder to discover.</p>";
+        $results[] = "<input type='hidden' name='obfuscate_action' value='rename'>";
+        $results[] = "<button type='submit' class='btn' style='margin-top: 10px;'>Create Hidden Copy</button>";
+        $results[] = "</form>";
+        
+        // Check if a renamed version already exists
+        $note_file = $laravel_root . '/.utils_location';
+        if (file_exists($note_file)) {
+            $existing_name = trim(file_get_contents($note_file));
+            $existing_path = $current_dir . '/' . $existing_name;
+            
+            if (file_exists($existing_path)) {
+                $results[] = "<div style='margin-top: 20px;'>";
+                $results[] = "A hidden copy already exists at: <code>{$existing_name}</code>";
+                $results[] = "<a href='{$existing_name}' class='btn' style='margin-top: 10px;'>Go to Hidden Copy</a>";
+                $results[] = "</div>";
+            }
+        }
+    }
+}
+
 // Main execution
 // ===============================================================
 
@@ -1760,6 +1974,10 @@ switch ($utility) {
         handle_create_admin($results);
         break;
     
+    case 'obfuscate':
+        handle_obfuscate_file($results);
+        break;
+    
     // ... existing code ...
         
     default:
@@ -1777,6 +1995,7 @@ switch ($utility) {
         $results[] = "- vite_assets: Fix Vite asset issues";
         $results[] = "- fix_htaccess: Fix routing and .htaccess configuration";
         $results[] = "- create_admin: Create admin user and assign roles";
+        $results[] = "- obfuscate: Hide this utility file with a random name";
         break;
 }
 
@@ -1964,6 +2183,14 @@ if ($api_mode) {
                 <p>Create admin users and assign roles</p>
                 <div class="actions">
                     <a href="?utility=create_admin" class="btn">Create Admin User</a>
+                </div>
+            </div>
+            
+            <div class="utility-card">
+                <h3>Security</h3>
+                <p>Hide this utility file and manage access</p>
+                <div class="actions">
+                    <a href="?utility=obfuscate" class="btn">Hide Utility File</a>
                 </div>
             </div>
         </div>
