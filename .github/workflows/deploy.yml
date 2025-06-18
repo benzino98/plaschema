@@ -114,6 +114,9 @@ jobs:
           echo "STORAGE_PATH=/home/plaschem/laravel/storage" >> deployment/laravel/.env
           echo "PUBLIC_PATH=/home/plaschem/public_html" >> deployment/laravel/.env
 
+          # Fix log path in .env to ensure logs are written to the correct location
+          echo "LOG_PATH=/home/plaschem/laravel/storage/logs" >> deployment/laravel/.env
+
           # Verify .env file exists and is readable
           if [ -f "deployment/laravel/.env" ]; then
             echo ".env file exists and will be deployed"
@@ -133,6 +136,7 @@ jobs:
             echo "LOG_CHANNEL=stack" >> deployment/laravel/.env
             echo "LOG_DEPRECATIONS_CHANNEL=null" >> deployment/laravel/.env
             echo "LOG_LEVEL=debug" >> deployment/laravel/.env
+            echo "LOG_PATH=/home/plaschem/laravel/storage/logs" >> deployment/laravel/.env
             echo "" >> deployment/laravel/.env
             echo "DB_CONNECTION=mysql" >> deployment/laravel/.env
             echo "DB_HOST=127.0.0.1" >> deployment/laravel/.env
@@ -238,6 +242,16 @@ jobs:
           log-level: verbose
           timeout: 600000
 
+      # Create storage directories with proper permissions
+      - name: Create storage directories with proper permissions
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://plaschema.pl.gov.ng/create_laravel_structure.php?create_dirs=1
+          method: "GET"
+          timeout: 60000
+          preventFailureOnNoResponse: true
+          ignoreStatusCodes: true
+
       # Deploy Laravel core files
       - name: Deploy Laravel core files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -271,6 +285,16 @@ jobs:
           state-name: .ftp-deploy-sync-state-public.json
           log-level: verbose
           timeout: 600000
+
+      # Set proper permissions on server
+      - name: Set proper permissions on server
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://plaschema.pl.gov.ng/create_laravel_structure.php?fix_permissions=1
+          method: "GET"
+          timeout: 60000
+          preventFailureOnNoResponse: true
+          ignoreStatusCodes: true
 
       # Run post-deployment script
       - name: Run post-deployment script
