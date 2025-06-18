@@ -1049,13 +1049,64 @@ function handle_app_key(&$results) {
     global $laravel_root;
     
     $env_file = $laravel_root . '/.env';
+    $env_example_file = $laravel_root . '/.env.example';
     
+    // Check if .env file exists, if not try to create it from .env.example
     if (!file_exists($env_file)) {
-        $results[] = "❌ .env file does not exist at {$env_file}";
-        return;
+        $results[] = "⚠️ .env file does not exist at {$env_file}";
+        
+        // Try to create .env from .env.example if it exists
+        if (file_exists($env_example_file)) {
+            $results[] = "Attempting to create .env file from .env.example...";
+            if (copy($env_example_file, $env_file)) {
+                $results[] = "✅ Created .env file from .env.example";
+            } else {
+                $results[] = "❌ Failed to create .env file. Trying to create a minimal .env file...";
+                
+                // Create a minimal .env file
+                $minimal_env = "APP_NAME=Laravel\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=https://plaschema.pl.gov.ng\n\nLOG_CHANNEL=stack\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=plaschem_db\nDB_USERNAME=plaschem_user\nDB_PASSWORD=\n\nCACHE_DRIVER=file\nQUEUE_CONNECTION=sync\nSESSION_DRIVER=file\nSESSION_LIFETIME=120\n";
+                
+                if (file_put_contents($env_file, $minimal_env)) {
+                    $results[] = "✅ Created minimal .env file";
+                } else {
+                    $results[] = "❌ Failed to create .env file. Please check file permissions.";
+                    $results[] = "Create a .env file manually in {$laravel_root} with at least APP_KEY=";
+                    return;
+                }
+            }
+        } else {
+            // Create a minimal .env file if .env.example doesn't exist
+            $results[] = "⚠️ .env.example does not exist. Creating a minimal .env file...";
+            $minimal_env = "APP_NAME=Laravel\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=https://plaschema.pl.gov.ng\n\nLOG_CHANNEL=stack\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=plaschem_db\nDB_USERNAME=plaschem_user\nDB_PASSWORD=\n\nCACHE_DRIVER=file\nQUEUE_CONNECTION=sync\nSESSION_DRIVER=file\nSESSION_LIFETIME=120\n";
+            
+            if (file_put_contents($env_file, $minimal_env)) {
+                $results[] = "✅ Created minimal .env file";
+            } else {
+                $results[] = "❌ Failed to create .env file. Please check file permissions.";
+                $results[] = "Create a .env file manually in {$laravel_root} with at least APP_KEY=";
+                return;
+            }
+        }
     }
     
+    // Make .env writable if it's not
+    if (!is_writable($env_file)) {
+        $results[] = "⚠️ .env file is not writable. Attempting to fix permissions...";
+        if (@chmod($env_file, 0644)) {
+            $results[] = "✅ Fixed .env file permissions";
+        } else {
+            $results[] = "❌ Failed to make .env file writable. Please fix permissions manually.";
+            $results[] = "Run: chmod 644 {$env_file}";
+            return;
+        }
+    }
+    
+    // Now read the .env file content
     $env_content = file_get_contents($env_file);
+    if ($env_content === false) {
+        $results[] = "❌ Failed to read .env file. Creating a new one...";
+        $env_content = "APP_NAME=Laravel\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=https://plaschema.pl.gov.ng\n\nLOG_CHANNEL=stack\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=plaschem_db\nDB_USERNAME=plaschem_user\nDB_PASSWORD=\n\nCACHE_DRIVER=file\nQUEUE_CONNECTION=sync\nSESSION_DRIVER=file\nSESSION_LIFETIME=120\n";
+    }
     
     // Check if APP_KEY exists and has a value
     if (preg_match('/APP_KEY=(.+)/', $env_content, $matches)) {
@@ -1069,6 +1120,8 @@ function handle_app_key(&$results) {
     // If we got here, we need to generate a new key
     $results[] = "⚠️ No valid APP_KEY found. Generating a new application key...";
     
+    // Try using the Laravel method first
+    $laravel_method_successful = false;
     try {
         // Bootstrap Laravel to use the artisan command
         list($app, $kernel) = bootstrap_laravel();
@@ -1079,22 +1132,26 @@ function handle_app_key(&$results) {
         $results = array_merge($results, $output);
         
         // Verify the key was generated
+        clearstatcache();
         $new_env_content = file_get_contents($env_file);
         if (preg_match('/APP_KEY=(.+)/', $new_env_content, $matches)) {
             $new_key = trim($matches[1]);
             if (!empty($new_key) && $new_key !== 'base64:') {
                 $results[] = "✅ Successfully generated and set new APP_KEY: {$new_key}";
-            } else {
-                $results[] = "❌ Failed to set APP_KEY properly";
+                $laravel_method_successful = true;
             }
-        } else {
-            $results[] = "❌ APP_KEY not found in .env after generation attempt";
+        }
+        
+        if (!$laravel_method_successful) {
+            $results[] = "⚠️ Laravel key:generate may have failed to update the .env file.";
         }
     } catch (Exception $e) {
-        $results[] = "❌ Error generating APP_KEY: " . $e->getMessage();
-        
-        // Fallback method: Generate a key manually
-        $results[] = "Trying fallback method to generate APP_KEY...";
+        $results[] = "❌ Error with Laravel key:generate: " . $e->getMessage();
+    }
+    
+    // If Laravel method wasn't successful, use the fallback method
+    if (!$laravel_method_successful) {
+        $results[] = "Using fallback method to generate APP_KEY...";
         
         // Generate a random key (32 random bytes, base64 encoded)
         $random_key = 'base64:' . base64_encode(random_bytes(32));
@@ -1109,10 +1166,42 @@ function handle_app_key(&$results) {
         // Save the updated .env file
         if (file_put_contents($env_file, $env_content)) {
             $results[] = "✅ Successfully generated and set new APP_KEY (fallback method): {$random_key}";
+            
+            // Double-check the key was actually written
+            clearstatcache();
+            $final_env_content = file_get_contents($env_file);
+            if (strpos($final_env_content, $random_key) !== false) {
+                $results[] = "✅ Verified APP_KEY was written to .env file";
+            } else {
+                $results[] = "⚠️ APP_KEY may not have been written to .env file properly.";
+                
+                // Last resort: Create a completely new .env file
+                $new_env = "APP_NAME=Laravel\nAPP_ENV=production\nAPP_DEBUG=false\nAPP_URL=https://plaschema.pl.gov.ng\nAPP_KEY={$random_key}\n\nLOG_CHANNEL=stack\n\nDB_CONNECTION=mysql\nDB_HOST=127.0.0.1\nDB_PORT=3306\nDB_DATABASE=plaschem_db\nDB_USERNAME=plaschem_user\nDB_PASSWORD=\n\nCACHE_DRIVER=file\nQUEUE_CONNECTION=sync\nSESSION_DRIVER=file\nSESSION_LIFETIME=120\n";
+                
+                $backup_env = $env_file . '.backup.' . date('YmdHis');
+                if (copy($env_file, $backup_env)) {
+                    $results[] = "✅ Created backup of original .env file at {$backup_env}";
+                }
+                
+                if (file_put_contents($env_file, $new_env)) {
+                    $results[] = "✅ Created new .env file with APP_KEY set to: {$random_key}";
+                } else {
+                    $results[] = "❌ Failed to create new .env file.";
+                    $results[] = "Please manually add the following line to your .env file:";
+                    $results[] = "APP_KEY={$random_key}";
+                }
+            }
         } else {
-            $results[] = "❌ Failed to write new APP_KEY to .env file";
+            $results[] = "❌ Failed to update .env file with new APP_KEY.";
+            $results[] = "Please manually add the following line to your .env file:";
+            $results[] = "APP_KEY={$random_key}";
         }
     }
+    
+    // Final instructions
+    $results[] = "After setting the APP_KEY, you should:";
+    $results[] = "1. Clear your application cache by clicking on 'Clear All Cache' in the Cache Management section";
+    $results[] = "2. Restart your application if needed on your hosting environment";
 }
 
 // Main execution
