@@ -181,6 +181,69 @@ function bootstrap_laravel() {
 // Utility implementations
 // ===============================================================
 
+// Migration utility
+function handle_migrations($action, &$results) {
+    global $laravel_root;
+    
+    switch ($action) {
+        case 'status':
+            $results[] = "Checking migration status...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                $output = [];
+                $kernel->call('migrate:status', [], $output);
+                $results = array_merge($results, $output);
+            } catch (Exception $e) {
+                $results[] = "Error checking migration status: " . $e->getMessage();
+            }
+            break;
+            
+        case 'run':
+            $results[] = "Running migrations...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                $output = [];
+                $kernel->call('migrate', ['--force' => true], $output);
+                $results = array_merge($results, $output);
+            } catch (Exception $e) {
+                $results[] = "Error running migrations: " . $e->getMessage();
+            }
+            break;
+            
+        case 'rollback':
+            $results[] = "Rolling back last migration batch...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                $output = [];
+                $kernel->call('migrate:rollback', ['--force' => true], $output);
+                $results = array_merge($results, $output);
+            } catch (Exception $e) {
+                $results[] = "Error rolling back migrations: " . $e->getMessage();
+            }
+            break;
+            
+        case 'fresh':
+            $results[] = "WARNING: Dropping all tables and re-running all migrations...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                $output = [];
+                $kernel->call('migrate:fresh', ['--force' => true], $output);
+                $results = array_merge($results, $output);
+            } catch (Exception $e) {
+                $results[] = "Error refreshing migrations: " . $e->getMessage();
+            }
+            break;
+            
+        default:
+            $results[] = "Available migration actions:";
+            $results[] = "- status: Check migration status";
+            $results[] = "- run: Run pending migrations";
+            $results[] = "- rollback: Rollback the last migration batch";
+            $results[] = "- fresh: Drop all tables and re-run all migrations (use with caution!)";
+            break;
+    }
+}
+
 // Cache management utility
 function handle_cache_management($action, &$results) {
     global $bootstrap_cache, $storage_path, $laravel_root;
@@ -603,6 +666,10 @@ switch ($utility) {
         handle_test_environment($results);
         break;
         
+    case 'migrations':
+        handle_migrations($action, $results);
+        break;
+        
     // Add more utilities as needed
         
     default:
@@ -614,6 +681,7 @@ switch ($utility) {
         $results[] = "- fix_log: Fix log paths";
         $results[] = "- storage_link: Create storage symlink";
         $results[] = "- test_env: Test environment";
+        $results[] = "- migrations: Manage database migrations";
         break;
 }
 
@@ -755,6 +823,16 @@ if ($api_mode) {
                     <a href="?utility=test_env" class="btn">Test Environment</a>
                 </div>
             </div>
+            
+            <div class="utility-card">
+                <h3>Database Migrations</h3>
+                <p>Manage your database migrations</p>
+                <div class="actions">
+                    <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
+                    <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
+                    <a href="?utility=migrations&action=rollback" class="btn">Rollback Migrations</a>
+                </div>
+            </div>
         </div>
     <?php else: ?>
         <div class="card">
@@ -775,6 +853,13 @@ if ($api_mode) {
                 
                 <?php if ($utility === 'fix_cache'): ?>
                     <a href="?utility=fix_cache&clear_cache=1" class="btn">Fix Paths & Clear Cache</a>
+                <?php endif; ?>
+                
+                <?php if ($utility === 'migrations'): ?>
+                    <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
+                    <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
+                    <a href="?utility=migrations&action=rollback" class="btn">Rollback Migrations</a>
+                    <a href="?utility=migrations&action=fresh" class="btn" onclick="return confirm('WARNING: This will drop all tables and re-run all migrations. All data will be lost. Are you sure?')">Fresh Migrations</a>
                 <?php endif; ?>
             </div>
             
