@@ -1044,6 +1044,77 @@ function handle_database_config(&$results) {
     }
 }
 
+// App Key Generation utility
+function handle_app_key(&$results) {
+    global $laravel_root;
+    
+    $env_file = $laravel_root . '/.env';
+    
+    if (!file_exists($env_file)) {
+        $results[] = "❌ .env file does not exist at {$env_file}";
+        return;
+    }
+    
+    $env_content = file_get_contents($env_file);
+    
+    // Check if APP_KEY exists and has a value
+    if (preg_match('/APP_KEY=(.+)/', $env_content, $matches)) {
+        $current_key = trim($matches[1]);
+        if (!empty($current_key) && $current_key !== 'base64:') {
+            $results[] = "✅ APP_KEY is already set: {$current_key}";
+            return;
+        }
+    }
+    
+    // If we got here, we need to generate a new key
+    $results[] = "⚠️ No valid APP_KEY found. Generating a new application key...";
+    
+    try {
+        // Bootstrap Laravel to use the artisan command
+        list($app, $kernel) = bootstrap_laravel();
+        
+        // Call key:generate
+        $output = [];
+        $kernel->call('key:generate', ['--force' => true], $output);
+        $results = array_merge($results, $output);
+        
+        // Verify the key was generated
+        $new_env_content = file_get_contents($env_file);
+        if (preg_match('/APP_KEY=(.+)/', $new_env_content, $matches)) {
+            $new_key = trim($matches[1]);
+            if (!empty($new_key) && $new_key !== 'base64:') {
+                $results[] = "✅ Successfully generated and set new APP_KEY: {$new_key}";
+            } else {
+                $results[] = "❌ Failed to set APP_KEY properly";
+            }
+        } else {
+            $results[] = "❌ APP_KEY not found in .env after generation attempt";
+        }
+    } catch (Exception $e) {
+        $results[] = "❌ Error generating APP_KEY: " . $e->getMessage();
+        
+        // Fallback method: Generate a key manually
+        $results[] = "Trying fallback method to generate APP_KEY...";
+        
+        // Generate a random key (32 random bytes, base64 encoded)
+        $random_key = 'base64:' . base64_encode(random_bytes(32));
+        
+        // Update or add APP_KEY in .env
+        if (preg_match('/APP_KEY=/', $env_content)) {
+            $env_content = preg_replace('/APP_KEY=.*/', "APP_KEY={$random_key}", $env_content);
+        } else {
+            $env_content .= "\nAPP_KEY={$random_key}";
+        }
+        
+        // Save the updated .env file
+        if (file_put_contents($env_file, $env_content)) {
+            $results[] = "✅ Successfully generated and set new APP_KEY (fallback method): {$random_key}";
+        } else {
+            $results[] = "❌ Failed to write new APP_KEY to .env file";
+        }
+    }
+}
+
 // Main execution
 // ===============================================================
 
@@ -1077,6 +1148,10 @@ switch ($utility) {
         handle_database_config($results);
         break;
         
+    case 'app_key':
+        handle_app_key($results);
+        break;
+    
     // Add more utilities as needed
         
     default:
@@ -1090,6 +1165,7 @@ switch ($utility) {
         $results[] = "- test_env: Test environment";
         $results[] = "- migrations: Manage database migrations";
         $results[] = "- db_config: Configure database connection";
+        $results[] = "- app_key: Generate application encryption key";
         break;
 }
 
@@ -1221,6 +1297,14 @@ if ($api_mode) {
                 <div class="actions">
                     <a href="?utility=fix_cache" class="btn">Fix Cache Paths</a>
                     <a href="?utility=fix_log" class="btn">Fix Log Path</a>
+                </div>
+            </div>
+            
+            <div class="utility-card">
+                <h3>Application Key</h3>
+                <p>Generate or check Laravel application encryption key</p>
+                <div class="actions">
+                    <a href="?utility=app_key" class="btn">Generate App Key</a>
                 </div>
             </div>
             
