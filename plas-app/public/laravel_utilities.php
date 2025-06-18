@@ -1646,82 +1646,105 @@ function handle_create_admin(&$results) {
                 return;
             }
             
+            // Get current timestamp for database
+            $now = date('Y-m-d H:i:s');
+            
             // Check if user already exists
-            $userExists = $app['db']->table('users')->where('email', $email)->exists();
+            try {
+                $userExists = $app['db']->table('users')->where('email', $email)->exists();
+            } catch (Exception $e) {
+                $results[] = "❌ Error checking if user exists: " . $e->getMessage();
+                return;
+            }
+            
             if ($userExists) {
                 $results[] = "⚠️ A user with this email already exists.";
                 
                 // If user exists, we can update their role instead
-                $user = $app['db']->table('users')->where('email', $email)->first();
-                $userId = $user->id;
-                
-                // Check if user already has the role
-                $hasRole = $app['db']->table('user_role')
-                    ->join('roles', 'roles.id', '=', 'user_role.role_id')
-                    ->where('user_role.user_id', $userId)
-                    ->where('roles.slug', $role)
-                    ->exists();
-                
-                if ($hasRole) {
-                    $results[] = "✅ User already has the '{$role}' role.";
-                } else {
-                    // Get role ID
-                    $roleRecord = $app['db']->table('roles')->where('slug', $role)->first();
-                    if (!$roleRecord) {
-                        $results[] = "❌ Role '{$role}' not found.";
-                        return;
+                try {
+                    $user = $app['db']->table('users')->where('email', $email)->first();
+                    $userId = $user->id;
+                    
+                    // Check if user already has the role
+                    $hasRole = $app['db']->table('user_role')
+                        ->join('roles', 'roles.id', '=', 'user_role.role_id')
+                        ->where('user_role.user_id', $userId)
+                        ->where('roles.slug', $role)
+                        ->exists();
+                    
+                    if ($hasRole) {
+                        $results[] = "✅ User already has the '{$role}' role.";
+                    } else {
+                        // Get role ID
+                        $roleRecord = $app['db']->table('roles')->where('slug', $role)->first();
+                        if (!$roleRecord) {
+                            $results[] = "❌ Role '{$role}' not found.";
+                            return;
+                        }
+                        
+                        // Assign role to user
+                        $app['db']->table('user_role')->insert([
+                            'user_id' => $userId,
+                            'role_id' => $roleRecord->id,
+                            'created_at' => $now,
+                            'updated_at' => $now
+                        ]);
+                        
+                        $results[] = "✅ Role '{$role}' assigned to existing user.";
                     }
-                    
-                    // Assign role to user
-                    $app['db']->table('user_role')->insert([
-                        'user_id' => $userId,
-                        'role_id' => $roleRecord->id,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
-                    
-                    $results[] = "✅ Role '{$role}' assigned to existing user.";
+                } catch (Exception $e) {
+                    $results[] = "❌ Error updating user role: " . $e->getMessage();
                 }
                 
                 return;
             }
             
-            // Create new user
-            $userId = $app['db']->table('users')->insertGetId([
-                'name' => $name,
-                'email' => $email,
-                'password' => bcrypt($password),
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-            
-            $results[] = "✅ User created successfully!";
-            
-            // Get role ID
-            $roleRecord = $app['db']->table('roles')->where('slug', $role)->first();
-            if (!$roleRecord) {
-                $results[] = "❌ Role '{$role}' not found. User created without role.";
-                return;
+            // Create new user with proper error handling
+            try {
+                // Hash the password correctly
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                
+                $userId = $app['db']->table('users')->insertGetId([
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => $hashedPassword,
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]);
+                
+                $results[] = "✅ User created successfully!";
+                
+                // Get role ID
+                $roleRecord = $app['db']->table('roles')->where('slug', $role)->first();
+                if (!$roleRecord) {
+                    $results[] = "❌ Role '{$role}' not found. User created without role.";
+                    return;
+                }
+                
+                // Assign role to user
+                $app['db']->table('user_role')->insert([
+                    'user_id' => $userId,
+                    'role_id' => $roleRecord->id,
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ]);
+                
+                $results[] = "✅ Role '{$role}' assigned to user.";
+                
+                // Provide login instructions
+                $results[] = "✅ Admin user created successfully!";
+                $results[] = "You can now log in with the following credentials:";
+                $results[] = "Email: {$email}";
+                $results[] = "Password: (the password you entered)";
+            } catch (Exception $e) {
+                $results[] = "❌ Error creating user: " . $e->getMessage();
+                // Add more detailed debugging information
+                $results[] = "Error details: " . $e->getTraceAsString();
             }
             
-            // Assign role to user
-            $app['db']->table('user_role')->insert([
-                'user_id' => $userId,
-                'role_id' => $roleRecord->id,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-            
-            $results[] = "✅ Role '{$role}' assigned to user.";
-            
-            // Provide login instructions
-            $results[] = "✅ Admin user created successfully!";
-            $results[] = "You can now log in with the following credentials:";
-            $results[] = "Email: {$email}";
-            $results[] = "Password: (the password you entered)";
-            
         } catch (Exception $e) {
-            $results[] = "❌ Error creating admin user: " . $e->getMessage();
+            $results[] = "❌ Error initializing Laravel: " . $e->getMessage();
+            $results[] = "Error details: " . $e->getTraceAsString();
         }
     } else {
         // Display the admin creation form
