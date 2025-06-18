@@ -25,9 +25,9 @@ set_time_limit(300);
 
 // Database configuration - update these values to match your .env file
 $db_host = 'localhost';  // Usually localhost
-$db_name = 'plaschem_db'; // Your database name
-$db_user = 'plaschem_user'; // Your database username
-$db_pass = ''; // Your database password
+$db_name = 'plaschem_plaschema_db'; // Your database name
+$db_user = 'plaschem_root'; // Your database username
+$db_pass = 'nofqyP-pahgos-tossi0'; // Your database password
 
 // Define Laravel root
 $home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
