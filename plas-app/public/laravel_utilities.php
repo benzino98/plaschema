@@ -1501,6 +1501,216 @@ EOT;
     $results[] = "</div>";
 }
 
+// Create Admin User utility
+function handle_create_admin(&$results) {
+    global $laravel_root;
+    
+    // Process form submission for creating admin user
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['admin_action']) && $_POST['admin_action'] === 'create') {
+        try {
+            // Bootstrap Laravel
+            list($app, $kernel) = bootstrap_laravel();
+            
+            // Get form data
+            $name = $_POST['admin_name'] ?? '';
+            $email = $_POST['admin_email'] ?? '';
+            $password = $_POST['admin_password'] ?? '';
+            $role = $_POST['admin_role'] ?? 'admin';
+            
+            // Validate input
+            if (empty($name) || empty($email) || empty($password)) {
+                $results[] = "❌ All fields are required.";
+                return;
+            }
+            
+            // Check if email is valid
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $results[] = "❌ Invalid email format.";
+                return;
+            }
+            
+            // Check if user already exists
+            $userExists = $app['db']->table('users')->where('email', $email)->exists();
+            if ($userExists) {
+                $results[] = "⚠️ A user with this email already exists.";
+                
+                // If user exists, we can update their role instead
+                $user = $app['db']->table('users')->where('email', $email)->first();
+                $userId = $user->id;
+                
+                // Check if user already has the role
+                $hasRole = $app['db']->table('user_role')
+                    ->join('roles', 'roles.id', '=', 'user_role.role_id')
+                    ->where('user_role.user_id', $userId)
+                    ->where('roles.slug', $role)
+                    ->exists();
+                
+                if ($hasRole) {
+                    $results[] = "✅ User already has the '{$role}' role.";
+                } else {
+                    // Get role ID
+                    $roleRecord = $app['db']->table('roles')->where('slug', $role)->first();
+                    if (!$roleRecord) {
+                        $results[] = "❌ Role '{$role}' not found.";
+                        return;
+                    }
+                    
+                    // Assign role to user
+                    $app['db']->table('user_role')->insert([
+                        'user_id' => $userId,
+                        'role_id' => $roleRecord->id,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                    
+                    $results[] = "✅ Role '{$role}' assigned to existing user.";
+                }
+                
+                return;
+            }
+            
+            // Create new user
+            $userId = $app['db']->table('users')->insertGetId([
+                'name' => $name,
+                'email' => $email,
+                'password' => bcrypt($password),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            
+            $results[] = "✅ User created successfully!";
+            
+            // Get role ID
+            $roleRecord = $app['db']->table('roles')->where('slug', $role)->first();
+            if (!$roleRecord) {
+                $results[] = "❌ Role '{$role}' not found. User created without role.";
+                return;
+            }
+            
+            // Assign role to user
+            $app['db']->table('user_role')->insert([
+                'user_id' => $userId,
+                'role_id' => $roleRecord->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+            
+            $results[] = "✅ Role '{$role}' assigned to user.";
+            
+            // Provide login instructions
+            $results[] = "✅ Admin user created successfully!";
+            $results[] = "You can now log in with the following credentials:";
+            $results[] = "Email: {$email}";
+            $results[] = "Password: (the password you entered)";
+            
+        } catch (Exception $e) {
+            $results[] = "❌ Error creating admin user: " . $e->getMessage();
+        }
+    } else {
+        // Display the admin creation form
+        $results[] = "<form method='post' action='?utility=create_admin' class='admin-form' style='margin-top: 20px; background: #f8fafc; padding: 15px; border-radius: 5px;'>";
+        $results[] = "<h4 style='margin-top: 0;'>Create Admin User</h4>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='admin_name' style='display: block; margin-bottom: 5px;'>Name:</label>";
+        $results[] = "<input type='text' name='admin_name' id='admin_name' required style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "</div>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='admin_email' style='display: block; margin-bottom: 5px;'>Email:</label>";
+        $results[] = "<input type='email' name='admin_email' id='admin_email' required style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "</div>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='admin_password' style='display: block; margin-bottom: 5px;'>Password:</label>";
+        $results[] = "<input type='password' name='admin_password' id='admin_password' required style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "</div>";
+        
+        // Get available roles
+        try {
+            list($app, $kernel) = bootstrap_laravel();
+            $roles = $app['db']->table('roles')->get();
+            
+            $results[] = "<div style='margin-bottom: 10px;'>";
+            $results[] = "<label for='admin_role' style='display: block; margin-bottom: 5px;'>Role:</label>";
+            $results[] = "<select name='admin_role' id='admin_role' style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+            
+            foreach ($roles as $role) {
+                $selected = $role->slug === 'super-admin' ? 'selected' : '';
+                $results[] = "<option value='{$role->slug}' {$selected}>{$role->name}</option>";
+            }
+            
+            $results[] = "</select>";
+            $results[] = "</div>";
+        } catch (Exception $e) {
+            $results[] = "<div style='margin-bottom: 10px; color: #e53e3e;'>";
+            $results[] = "Could not fetch roles: " . $e->getMessage();
+            $results[] = "Defaulting to built-in roles.";
+            $results[] = "</div>";
+            
+            // Fallback to hardcoded roles
+            $results[] = "<div style='margin-bottom: 10px;'>";
+            $results[] = "<label for='admin_role' style='display: block; margin-bottom: 5px;'>Role:</label>";
+            $results[] = "<select name='admin_role' id='admin_role' style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+            $results[] = "<option value='super-admin' selected>Super Admin</option>";
+            $results[] = "<option value='admin'>Admin</option>";
+            $results[] = "<option value='editor'>Editor</option>";
+            $results[] = "<option value='viewer'>Viewer</option>";
+            $results[] = "</select>";
+            $results[] = "</div>";
+        }
+        
+        $results[] = "<input type='hidden' name='admin_action' value='create'>";
+        $results[] = "<button type='submit' class='btn' style='margin-top: 10px;'>Create Admin User</button>";
+        $results[] = "</form>";
+        
+        // Display a list of existing users with roles
+        try {
+            list($app, $kernel) = bootstrap_laravel();
+            
+            $users = $app['db']->table('users')
+                ->leftJoin('user_role', 'users.id', '=', 'user_role.user_id')
+                ->leftJoin('roles', 'user_role.role_id', '=', 'roles.id')
+                ->select('users.id', 'users.name', 'users.email', 'roles.name as role_name')
+                ->get();
+            
+            if (count($users) > 0) {
+                $results[] = "<div style='margin-top: 30px;'>";
+                $results[] = "<h4>Existing Users</h4>";
+                $results[] = "<table style='width: 100%; border-collapse: collapse;'>";
+                $results[] = "<thead>";
+                $results[] = "<tr>";
+                $results[] = "<th style='text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0;'>Name</th>";
+                $results[] = "<th style='text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0;'>Email</th>";
+                $results[] = "<th style='text-align: left; padding: 8px; border-bottom: 1px solid #e2e8f0;'>Role</th>";
+                $results[] = "</tr>";
+                $results[] = "</thead>";
+                $results[] = "<tbody>";
+                
+                foreach ($users as $user) {
+                    $results[] = "<tr>";
+                    $results[] = "<td style='padding: 8px; border-bottom: 1px solid #e2e8f0;'>{$user->name}</td>";
+                    $results[] = "<td style='padding: 8px; border-bottom: 1px solid #e2e8f0;'>{$user->email}</td>";
+                    $results[] = "<td style='padding: 8px; border-bottom: 1px solid #e2e8f0;'>{$user->role_name}</td>";
+                    $results[] = "</tr>";
+                }
+                
+                $results[] = "</tbody>";
+                $results[] = "</table>";
+                $results[] = "</div>";
+            } else {
+                $results[] = "<div style='margin-top: 30px;'>";
+                $results[] = "<h4>No users found</h4>";
+                $results[] = "</div>";
+            }
+        } catch (Exception $e) {
+            $results[] = "<div style='margin-top: 30px; color: #e53e3e;'>";
+            $results[] = "Could not fetch existing users: " . $e->getMessage();
+            $results[] = "</div>";
+        }
+    }
+}
+
 // Main execution
 // ===============================================================
 
@@ -1546,7 +1756,11 @@ switch ($utility) {
         handle_fix_htaccess($results);
         break;
     
-    // Add more utilities as needed
+    case 'create_admin':
+        handle_create_admin($results);
+        break;
+    
+    // ... existing code ...
         
     default:
         // Show dashboard/menu
@@ -1562,6 +1776,7 @@ switch ($utility) {
         $results[] = "- app_key: Generate application encryption key";
         $results[] = "- vite_assets: Fix Vite asset issues";
         $results[] = "- fix_htaccess: Fix routing and .htaccess configuration";
+        $results[] = "- create_admin: Create admin user and assign roles";
         break;
 }
 
@@ -1741,6 +1956,14 @@ if ($api_mode) {
                 <p>Configure your database connection settings</p>
                 <div class="actions">
                     <a href="?utility=db_config" class="btn">Configure Database</a>
+                </div>
+            </div>
+            
+            <div class="utility-card">
+                <h3>User Management</h3>
+                <p>Create admin users and assign roles</p>
+                <div class="actions">
+                    <a href="?utility=create_admin" class="btn">Create Admin User</a>
                 </div>
             </div>
         </div>
