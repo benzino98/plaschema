@@ -231,6 +231,167 @@ function handle_migrations($action, &$results) {
             }
             break;
             
+        case 'fix_migration':
+            $results[] = "Fixing migration issues and creating all tables...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                
+                // Step 1: Run base framework migrations (users, cache, jobs)
+                $results[] = "Step 1: Creating base framework tables...";
+                $baseFiles = [
+                    '0001_01_01_000000_create_users_table.php', // users, password_reset_tokens, sessions
+                    '0001_01_01_000001_create_cache_table.php', // cache, cache_locks
+                    '0001_01_01_000002_create_jobs_table.php', // jobs, job_batches, failed_jobs
+                    '2025_05_05_144205_create_personal_access_tokens_table.php',
+                ];
+                foreach ($baseFiles as $file) {
+                    $migrationPath = $laravel_root . '/database/migrations/' . $file;
+                    if (file_exists($migrationPath)) {
+                        $results[] = "Running migration: " . $file;
+                        $output = [];
+                        $kernel->call('migrate', [
+                            '--path' => 'database/migrations/' . $file,
+                            '--force' => true,
+                        ], $output);
+                        $results = array_merge($results, $output);
+                    } else {
+                        $results[] = "⚠️ Migration file not found: " . $file;
+                    }
+                }
+                
+                // Step 2: Run permission and role migrations
+                $results[] = "Step 2: Creating authentication and permission tables...";
+                $authFiles = [
+                    '2025_05_02_084409_create_roles_table.php',
+                    '2025_05_02_084415_create_permissions_table.php',
+                    '2025_05_02_084424_create_role_permission_table.php',
+                    '2025_05_02_084430_create_user_role_table.php',
+                ];
+                foreach ($authFiles as $file) {
+                    $migrationPath = $laravel_root . '/database/migrations/' . $file;
+                    if (file_exists($migrationPath)) {
+                        $results[] = "Running migration: " . $file;
+                        $output = [];
+                        $kernel->call('migrate', [
+                            '--path' => 'database/migrations/' . $file,
+                            '--force' => true,
+                        ], $output);
+                        $results = array_merge($results, $output);
+                    } else {
+                        $results[] = "⚠️ Migration file not found: " . $file;
+                    }
+                }
+                
+                // Step 3: Create the core content tables
+                $results[] = "Step 3: Creating core content tables...";
+                $contentFiles = [
+                    '2023_08_12_174437_create_news_table.php',
+                    '2023_08_12_174452_create_faqs_table.php',
+                    '2023_08_12_174445_create_healthcare_providers_table.php',
+                    '2023_08_15_000000_create_resource_categories_table.php',
+                    '2023_08_15_000001_create_resources_table.php',
+                    '2025_05_02_151506_create_message_categories_table.php',
+                    '2025_05_02_151517_create_contact_messages_table.php',
+                    '2025_05_05_121722_create_notifications_table.php',
+                    '2025_05_06_120209_create_translations_table.php',
+                    '2025_08_01_000000_create_activity_logs_table.php',
+                ];
+                foreach ($contentFiles as $file) {
+                    $migrationPath = $laravel_root . '/database/migrations/' . $file;
+                    if (file_exists($migrationPath)) {
+                        $results[] = "Running migration: " . $file;
+                        $output = [];
+                        $kernel->call('migrate', [
+                            '--path' => 'database/migrations/' . $file,
+                            '--force' => true,
+                        ], $output);
+                        $results = array_merge($results, $output);
+                    } else {
+                        $results[] = "⚠️ Migration file not found: " . $file;
+                    }
+                }
+                
+                // Step 4: Run the remaining alteration migrations (SKIP data seeding migrations)
+                $results[] = "Step 4: Running alteration migrations (skipping data seeds)...";
+                $alterFiles = [
+                    '2025_05_02_112025_add_type_column_to_healthcare_providers_table.php',
+                    '2025_05_02_112031_add_type_column_to_healthcare_providers_table.php',
+                    '2025_05_05_121112_add_responsive_images_columns_to_models.php',
+                    '2023_09_15_000001_alter_resources_table_searchable_content.php',
+                    '2025_05_13_152941_alter_resources_table_increase_searchable_content_size.php',
+                    '2025_05_18_112641_add_show_on_plans_page_to_faqs_table.php',
+                ];
+                foreach ($alterFiles as $file) {
+                    $migrationPath = $laravel_root . '/database/migrations/' . $file;
+                    if (file_exists($migrationPath)) {
+                        $results[] = "Running migration: " . $file;
+                        $output = [];
+                        $kernel->call('migrate', [
+                            '--path' => 'database/migrations/' . $file,
+                            '--force' => true,
+                        ], $output);
+                        $results = array_merge($results, $output);
+                    } else {
+                        $results[] = "⚠️ Migration file not found: " . $file;
+                    }
+                }
+                
+                // Final check for any remaining migrations
+                $results[] = "Checking for any remaining migrations...";
+                $output = [];
+                $kernel->call('migrate:status', [], $output);
+                $pending = false;
+                foreach ($output as $line) {
+                    if (stripos($line, 'No') === false && stripos($line, 'Ran?') === false && stripos($line, '|') !== false) {
+                        $pending = true;
+                        break;
+                    }
+                }
+                
+                if ($pending) {
+                    $results[] = "⚠️ There are still pending migrations. Running final migration pass...";
+                    $output = [];
+                    $kernel->call('migrate', [
+                        '--force' => true,
+                        '--pretend' => true, // First do a dry run to check for issues
+                    ], $output);
+                    
+                    // Check if there are any issues
+                    $hasErrors = false;
+                    foreach ($output as $line) {
+                        if (stripos($line, 'error') !== false || stripos($line, 'exception') !== false) {
+                            $hasErrors = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!$hasErrors) {
+                        $output = [];
+                        $kernel->call('migrate', [
+                            '--force' => true,
+                        ], $output);
+                        $results = array_merge($results, $output);
+                    } else {
+                        $results[] = "⚠️ Detected potential issues with remaining migrations. Skipping automatic migration.";
+                        $results[] = "Please check the migration files manually or use more specific migration options.";
+                    }
+                } else {
+                    $results[] = "✅ All migrations have been processed!";
+                }
+                
+                // Count the total tables
+                try {
+                    $tableCount = count($app['db']->connection()->getDoctrineSchemaManager()->listTableNames());
+                    $results[] = "✅ Total tables in database: {$tableCount}";
+                } catch (Exception $e) {
+                    $results[] = "⚠️ Could not count tables: " . $e->getMessage();
+                }
+                
+            } catch (Exception $e) {
+                $results[] = "Error in migration fix: " . $e->getMessage();
+            }
+            break;
+            
         case 'schema_only':
             $results[] = "Running only schema migrations (tables only)...";
             try {
@@ -341,6 +502,7 @@ function handle_migrations($action, &$results) {
             $results[] = "Available migration actions:";
             $results[] = "- status: Check migration status";
             $results[] = "- run: Run pending migrations";
+            $results[] = "- fix_migration: Fix migration issues and create all 24 tables";
             $results[] = "- sequential: Run migrations and seeders in the correct sequence";
             $results[] = "- schema_only: Run only table creation migrations";
             $results[] = "- seed: Run database seeders";
@@ -1075,6 +1237,7 @@ if ($api_mode) {
                 <p>Manage your database migrations</p>
                 <div class="actions">
                     <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
+                    <a href="?utility=migrations&action=fix_migration" class="btn">Fix Migrations (Create All Tables)</a>
                     <a href="?utility=migrations&action=sequential" class="btn">Sequential Migration</a>
                     <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
                     <a href="?utility=migrations&action=schema_only" class="btn">Schema Only</a>
@@ -1115,6 +1278,7 @@ if ($api_mode) {
                 
                 <?php if ($utility === 'migrations'): ?>
                     <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
+                    <a href="?utility=migrations&action=fix_migration" class="btn">Fix Migrations (Create All Tables)</a>
                     <a href="?utility=migrations&action=sequential" class="btn">Sequential Migration</a>
                     <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
                     <a href="?utility=migrations&action=schema_only" class="btn">Schema Only</a>
