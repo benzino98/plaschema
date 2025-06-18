@@ -175,6 +175,26 @@ function bootstrap_laravel() {
         'handler' => Monolog\Handler\NullHandler::class,
     ]);
     
+    // Ensure database configuration is set correctly
+    if ($app['config']->get('database.default') == 'sqlite' && !file_exists($app['config']->get('database.connections.sqlite.database'))) {
+        // Default to MySQL if SQLite database file doesn't exist
+        $app['config']->set('database.default', 'mysql');
+        
+        // Set default MySQL credentials if they're not already set
+        if (empty($app['config']->get('database.connections.mysql.host'))) {
+            $app['config']->set('database.connections.mysql.host', '127.0.0.1');
+        }
+        if (empty($app['config']->get('database.connections.mysql.database'))) {
+            $app['config']->set('database.connections.mysql.database', 'plaschem_db');
+        }
+        if (empty($app['config']->get('database.connections.mysql.username'))) {
+            $app['config']->set('database.connections.mysql.username', 'plaschem_user');
+        }
+        
+        // Reset the database connection
+        $app['db']->purge();
+    }
+    
     return [$app, $kernel];
 }
 
@@ -641,6 +661,141 @@ function handle_test_environment(&$results) {
     }
 }
 
+// Database configuration utility
+function handle_database_config(&$results) {
+    global $laravel_root;
+    
+    // Get the current .env file
+    $env_file = $laravel_root . '/.env';
+    
+    if (!file_exists($env_file)) {
+        $results[] = "❌ .env file does not exist at {$env_file}";
+        return;
+    }
+    
+    $env_content = file_get_contents($env_file);
+    
+    // Process form submission
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['db_action']) && $_POST['db_action'] === 'update') {
+        // Get form data
+        $db_connection = $_POST['db_connection'] ?? 'mysql';
+        $db_host = $_POST['db_host'] ?? '127.0.0.1';
+        $db_port = $_POST['db_port'] ?? '3306';
+        $db_database = $_POST['db_database'] ?? '';
+        $db_username = $_POST['db_username'] ?? '';
+        $db_password = $_POST['db_password'] ?? '';
+        
+        // Update database configuration in .env
+        $patterns = [
+            '/DB_CONNECTION=.*/' => "DB_CONNECTION={$db_connection}",
+            '/DB_HOST=.*/' => "DB_HOST={$db_host}",
+            '/DB_PORT=.*/' => "DB_PORT={$db_port}",
+            '/DB_DATABASE=.*/' => "DB_DATABASE={$db_database}",
+            '/DB_USERNAME=.*/' => "DB_USERNAME={$db_username}",
+            '/DB_PASSWORD=.*/' => "DB_PASSWORD={$db_password}",
+        ];
+        
+        foreach ($patterns as $pattern => $replacement) {
+            if (preg_match($pattern, $env_content)) {
+                $env_content = preg_replace($pattern, $replacement, $env_content);
+            } else {
+                // If the variable doesn't exist in .env, append it
+                $env_content .= "\n" . $replacement;
+            }
+        }
+        
+        // Save the updated .env file
+        if (file_put_contents($env_file, $env_content)) {
+            $results[] = "✅ Database configuration updated successfully";
+            
+            // Test the connection
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                $app['db']->connection()->getPdo();
+                $results[] = "✅ Database connection successful";
+            } catch (Exception $e) {
+                $results[] = "❌ Database connection failed: " . $e->getMessage();
+            }
+        } else {
+            $results[] = "❌ Failed to update .env file";
+        }
+    } else {
+        // Extract current database settings
+        $current_settings = [
+            'connection' => preg_match('/DB_CONNECTION=(.*)/', $env_content, $matches) ? trim($matches[1]) : 'mysql',
+            'host' => preg_match('/DB_HOST=(.*)/', $env_content, $matches) ? trim($matches[1]) : '127.0.0.1',
+            'port' => preg_match('/DB_PORT=(.*)/', $env_content, $matches) ? trim($matches[1]) : '3306',
+            'database' => preg_match('/DB_DATABASE=(.*)/', $env_content, $matches) ? trim($matches[1]) : '',
+            'username' => preg_match('/DB_USERNAME=(.*)/', $env_content, $matches) ? trim($matches[1]) : '',
+            'password' => preg_match('/DB_PASSWORD=(.*)/', $env_content, $matches) ? trim($matches[1]) : '',
+        ];
+        
+        // Display current settings and form
+        $results[] = "Current Database Settings:";
+        $results[] = "- Connection: {$current_settings['connection']}";
+        $results[] = "- Host: {$current_settings['host']}";
+        $results[] = "- Port: {$current_settings['port']}";
+        $results[] = "- Database: {$current_settings['database']}";
+        $results[] = "- Username: {$current_settings['username']}";
+        $results[] = "- Password: " . (empty($current_settings['password']) ? "(not set)" : "********");
+        
+        // Add form HTML
+        $results[] = "<form method='post' action='?utility=db_config' class='db-config-form' style='margin-top: 20px; background: #f8fafc; padding: 15px; border-radius: 5px;'>";
+        $results[] = "<h4 style='margin-top: 0;'>Update Database Configuration</h4>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='db_connection' style='display: block; margin-bottom: 5px;'>Connection:</label>";
+        $results[] = "<select name='db_connection' id='db_connection' style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "<option value='mysql'" . ($current_settings['connection'] == 'mysql' ? " selected" : "") . ">MySQL</option>";
+        $results[] = "<option value='pgsql'" . ($current_settings['connection'] == 'pgsql' ? " selected" : "") . ">PostgreSQL</option>";
+        $results[] = "<option value='sqlite'" . ($current_settings['connection'] == 'sqlite' ? " selected" : "") . ">SQLite</option>";
+        $results[] = "<option value='sqlsrv'" . ($current_settings['connection'] == 'sqlsrv' ? " selected" : "") . ">SQL Server</option>";
+        $results[] = "</select>";
+        $results[] = "</div>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='db_host' style='display: block; margin-bottom: 5px;'>Host:</label>";
+        $results[] = "<input type='text' name='db_host' id='db_host' value='{$current_settings['host']}' style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "</div>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='db_port' style='display: block; margin-bottom: 5px;'>Port:</label>";
+        $results[] = "<input type='text' name='db_port' id='db_port' value='{$current_settings['port']}' style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "</div>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='db_database' style='display: block; margin-bottom: 5px;'>Database:</label>";
+        $results[] = "<input type='text' name='db_database' id='db_database' value='{$current_settings['database']}' style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "</div>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='db_username' style='display: block; margin-bottom: 5px;'>Username:</label>";
+        $results[] = "<input type='text' name='db_username' id='db_username' value='{$current_settings['username']}' style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "</div>";
+        
+        $results[] = "<div style='margin-bottom: 10px;'>";
+        $results[] = "<label for='db_password' style='display: block; margin-bottom: 5px;'>Password:</label>";
+        $results[] = "<input type='password' name='db_password' id='db_password' value='{$current_settings['password']}' style='width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0;'>";
+        $results[] = "</div>";
+        
+        $results[] = "<input type='hidden' name='db_action' value='update'>";
+        $results[] = "<button type='submit' class='btn' style='margin-top: 10px;'>Update Database Configuration</button>";
+        $results[] = "</form>";
+        
+        // Test current connection
+        $results[] = "<div style='margin-top: 20px;'>";
+        $results[] = "<h4>Test Current Connection</h4>";
+        try {
+            list($app, $kernel) = bootstrap_laravel();
+            $app['db']->connection()->getPdo();
+            $results[] = "✅ Database connection successful";
+        } catch (Exception $e) {
+            $results[] = "❌ Database connection failed: " . $e->getMessage();
+        }
+        $results[] = "</div>";
+    }
+}
+
 // Main execution
 // ===============================================================
 
@@ -670,6 +825,10 @@ switch ($utility) {
         handle_migrations($action, $results);
         break;
         
+    case 'db_config':
+        handle_database_config($results);
+        break;
+        
     // Add more utilities as needed
         
     default:
@@ -682,6 +841,7 @@ switch ($utility) {
         $results[] = "- storage_link: Create storage symlink";
         $results[] = "- test_env: Test environment";
         $results[] = "- migrations: Manage database migrations";
+        $results[] = "- db_config: Configure database connection";
         break;
 }
 
@@ -831,6 +991,14 @@ if ($api_mode) {
                     <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
                     <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
                     <a href="?utility=migrations&action=rollback" class="btn">Rollback Migrations</a>
+                </div>
+            </div>
+            
+            <div class="utility-card">
+                <h3>Database Configuration</h3>
+                <p>Configure your database connection settings</p>
+                <div class="actions">
+                    <a href="?utility=db_config" class="btn">Configure Database</a>
                 </div>
             </div>
         </div>
