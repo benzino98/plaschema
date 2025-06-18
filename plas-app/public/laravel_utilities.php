@@ -1381,6 +1381,126 @@ function handle_vite_assets(&$results) {
     $results[] = "Please clear your application cache and refresh your page.";
 }
 
+// Fix htaccess file for routing
+function handle_fix_htaccess(&$results) {
+    global $laravel_root;
+    
+    $public_html = '/home/plaschem/public_html';
+    $htaccess_file = $public_html . '/.htaccess';
+    
+    $htaccess_content = <<<'EOT'
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# PHP settings
+<IfModule mod_php.c>
+    php_value upload_max_filesize 64M
+    php_value post_max_size 64M
+    php_value memory_limit 256M
+    php_value max_execution_time 600
+    php_value max_input_vars 3000
+    php_value display_errors Off
+    php_value log_errors On
+</IfModule>
+EOT;
+
+    $results[] = "Checking .htaccess file in public directory...";
+    
+    if (file_exists($htaccess_file)) {
+        // Backup existing file
+        $backup_file = $htaccess_file . '.backup.' . date('YmdHis');
+        if (copy($htaccess_file, $backup_file)) {
+            $results[] = "✅ Created backup of existing .htaccess at: {$backup_file}";
+        } else {
+            $results[] = "⚠️ Failed to create backup of existing .htaccess";
+        }
+        
+        // Check if the file already has the necessary rewrite rules
+        $current_content = file_get_contents($htaccess_file);
+        if (strpos($current_content, 'RewriteRule ^ index.php [L]') !== false) {
+            $results[] = "ℹ️ .htaccess file already contains Laravel routing rules";
+            
+            // Ask if they want to overwrite
+            $results[] = "<div class='warning'>";
+            $results[] = "Existing .htaccess file appears to contain Laravel routing rules.";
+            $results[] = "<a href='?utility=fix_htaccess&action=force' class='btn'>Overwrite with default Laravel .htaccess</a>";
+            $results[] = "</div>";
+            
+            if (isset($_GET['action']) && $_GET['action'] === 'force') {
+                // Force overwrite
+                if (file_put_contents($htaccess_file, $htaccess_content)) {
+                    $results[] = "✅ Successfully overwrote .htaccess file with default Laravel configuration";
+                } else {
+                    $results[] = "❌ Failed to overwrite .htaccess file. Please check permissions.";
+                }
+            }
+            
+            return;
+        }
+    }
+    
+    // Create or overwrite the file
+    if (file_put_contents($htaccess_file, $htaccess_content)) {
+        $results[] = "✅ Successfully created/updated .htaccess file with Laravel routing rules";
+    } else {
+        $results[] = "❌ Failed to create/update .htaccess file. Please check permissions.";
+        $results[] = "<div class='warning'>";
+        $results[] = "Manual solution: Create a file at {$htaccess_file} with the following content:";
+        $results[] = "<pre style='background:#f8f9fa;padding:10px;border-radius:5px;overflow:auto;'>";
+        $results[] = htmlspecialchars($htaccess_content);
+        $results[] = "</pre>";
+        $results[] = "</div>";
+    }
+    
+    // Check if mod_rewrite is enabled
+    $results[] = "Checking if mod_rewrite is enabled...";
+    
+    // Create a simple PHP test file to check mod_rewrite
+    $test_file = $public_html . '/rewrite-test.php';
+    $test_content = "<?php\necho 'Mod_rewrite check: ' . (function_exists('apache_get_modules') && in_array('mod_rewrite', apache_get_modules()) ? 'Enabled' : 'Unknown (CGI mode)');\nunlink(__FILE__);";
+    
+    if (file_put_contents($test_file, $test_content)) {
+        $results[] = "Created test file to check mod_rewrite. <a href='/rewrite-test.php' target='_blank'>Check mod_rewrite status</a>";
+    }
+    
+    $results[] = "<div class='card' style='margin-top:20px;'>";
+    $results[] = "<h3>Troubleshooting 404 Errors</h3>";
+    $results[] = "<p>If you still encounter 404 errors after fixing the .htaccess file, try these steps:</p>";
+    $results[] = "<ol>";
+    $results[] = "<li>Check if mod_rewrite is enabled on your server</li>";
+    $results[] = "<li>Make sure AllowOverride is set to All in your Apache configuration</li>";
+    $results[] = "<li>Clear browser cache or try in incognito/private browsing mode</li>";
+    $results[] = "<li>Check if there are any other .htaccess files in parent directories that might be conflicting</li>";
+    $results[] = "</ol>";
+    $results[] = "</div>";
+}
+
 // Main execution
 // ===============================================================
 
@@ -1422,6 +1542,10 @@ switch ($utility) {
         handle_vite_assets($results);
         break;
     
+    case 'fix_htaccess':
+        handle_fix_htaccess($results);
+        break;
+    
     // Add more utilities as needed
         
     default:
@@ -1437,6 +1561,7 @@ switch ($utility) {
         $results[] = "- db_config: Configure database connection";
         $results[] = "- app_key: Generate application encryption key";
         $results[] = "- vite_assets: Fix Vite asset issues";
+        $results[] = "- fix_htaccess: Fix routing and .htaccess configuration";
         break;
 }
 
@@ -1568,6 +1693,7 @@ if ($api_mode) {
                 <div class="actions">
                     <a href="?utility=fix_cache" class="btn">Fix Cache Paths</a>
                     <a href="?utility=fix_log" class="btn">Fix Log Path</a>
+                    <a href="?utility=fix_htaccess" class="btn">Fix .htaccess & Routing</a>
                 </div>
             </div>
             
