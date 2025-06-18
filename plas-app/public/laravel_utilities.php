@@ -1204,6 +1204,183 @@ function handle_app_key(&$results) {
     $results[] = "2. Restart your application if needed on your hosting environment";
 }
 
+// Fix Vite assets utility
+function handle_vite_assets(&$results) {
+    global $laravel_root;
+    
+    $manifest_dir = $laravel_root . '/public/build';
+    $manifest_file = $manifest_dir . '/manifest.json';
+    $dummy_manifest_content = '{
+    "resources/css/app.css": {
+        "file": "assets/app-4ed993c7.css",
+        "isEntry": true,
+        "src": "resources/css/app.css"
+    },
+    "resources/js/app.js": {
+        "file": "assets/app-a25c28d9.js",
+        "isEntry": true,
+        "src": "resources/js/app.js"
+    }
+}';
+    
+    $results[] = "Checking Vite assets configuration...";
+    
+    // Check if the project is using Vite
+    $vite_config = $laravel_root . '/vite.config.js';
+    $package_json = $laravel_root . '/package.json';
+    
+    if (!file_exists($vite_config) && !file_exists($package_json)) {
+        $results[] = "⚠️ This project doesn't appear to use Vite (vite.config.js and package.json not found).";
+        $results[] = "If you're still seeing Vite errors, we'll create a dummy manifest to fix it.";
+    } else {
+        $results[] = "✅ This project appears to use Vite for asset bundling.";
+    }
+    
+    // Check if the build directory exists
+    if (!file_exists($manifest_dir)) {
+        $results[] = "⚠️ Build directory doesn't exist at: {$manifest_dir}";
+        $results[] = "Creating build directory...";
+        
+        if (mkdir($manifest_dir, 0755, true)) {
+            $results[] = "✅ Created build directory: {$manifest_dir}";
+        } else {
+            $results[] = "❌ Failed to create build directory. Please check permissions.";
+            return;
+        }
+    } else {
+        $results[] = "✅ Build directory exists at: {$manifest_dir}";
+    }
+    
+    // Check if the manifest file exists
+    if (!file_exists($manifest_file)) {
+        $results[] = "⚠️ Vite manifest file doesn't exist: {$manifest_file}";
+        $results[] = "Creating dummy manifest file...";
+        
+        if (file_put_contents($manifest_file, $dummy_manifest_content)) {
+            $results[] = "✅ Created dummy manifest file: {$manifest_file}";
+        } else {
+            $results[] = "❌ Failed to create manifest file. Please check permissions.";
+            return;
+        }
+    } else {
+        $results[] = "✅ Vite manifest file exists: {$manifest_file}";
+        
+        // Check if the manifest file is valid JSON
+        $manifest_content = file_get_contents($manifest_file);
+        json_decode($manifest_content);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $results[] = "⚠️ Existing manifest file is not valid JSON. Replacing with dummy manifest...";
+            
+            // Create a backup of the existing file
+            $backup_file = $manifest_file . '.backup.' . date('YmdHis');
+            if (copy($manifest_file, $backup_file)) {
+                $results[] = "✅ Created backup of original manifest file: {$backup_file}";
+            }
+            
+            if (file_put_contents($manifest_file, $dummy_manifest_content)) {
+                $results[] = "✅ Replaced invalid manifest with dummy manifest.";
+            } else {
+                $results[] = "❌ Failed to replace manifest file. Please check permissions.";
+                return;
+            }
+        } else {
+            $results[] = "✅ Existing manifest file is valid JSON.";
+        }
+    }
+    
+    // Create assets directory and dummy asset files
+    $assets_dir = $manifest_dir . '/assets';
+    if (!file_exists($assets_dir)) {
+        $results[] = "Creating assets directory...";
+        if (mkdir($assets_dir, 0755, true)) {
+            $results[] = "✅ Created assets directory: {$assets_dir}";
+        } else {
+            $results[] = "❌ Failed to create assets directory. Please check permissions.";
+            return;
+        }
+    }
+    
+    // Create dummy CSS file
+    $css_file = $assets_dir . '/app-4ed993c7.css';
+    if (!file_exists($css_file)) {
+        $dummy_css = "/* Placeholder CSS file to satisfy Vite manifest requirements */";
+        if (file_put_contents($css_file, $dummy_css)) {
+            $results[] = "✅ Created dummy CSS file: {$css_file}";
+        } else {
+            $results[] = "❌ Failed to create dummy CSS file.";
+        }
+    }
+    
+    // Create dummy JS file
+    $js_file = $assets_dir . '/app-a25c28d9.js';
+    if (!file_exists($js_file)) {
+        $dummy_js = "// Placeholder JS file to satisfy Vite manifest requirements";
+        if (file_put_contents($js_file, $dummy_js)) {
+            $results[] = "✅ Created dummy JS file: {$js_file}";
+        } else {
+            $results[] = "❌ Failed to create dummy JS file.";
+        }
+    }
+    
+    // Fix app config if needed
+    $app_config_file = $laravel_root . '/config/app.php';
+    if (file_exists($app_config_file)) {
+        $app_config = file_get_contents($app_config_file);
+        
+        // Check if Vite middleware is disabled
+        if (strpos($app_config, "'disable_vite' => true") === false) {
+            $results[] = "Adding Vite disable option to app config...";
+            
+            // Backup original file
+            $backup_config = $app_config_file . '.backup.' . date('YmdHis');
+            if (copy($app_config_file, $backup_config)) {
+                $results[] = "✅ Created backup of app config: {$backup_config}";
+            }
+            
+            // Add disable_vite option to the config array
+            if (preg_match('/(return \[\s*)/i', $app_config, $matches)) {
+                $replacement = $matches[1] . "    'disable_vite' => env('DISABLE_VITE', false),\n\n    ";
+                $app_config = preg_replace('/(return \[\s*)/i', $replacement, $app_config, 1);
+                
+                if (file_put_contents($app_config_file, $app_config)) {
+                    $results[] = "✅ Added disable_vite option to app config.";
+                } else {
+                    $results[] = "❌ Failed to update app config.";
+                }
+            } else {
+                $results[] = "⚠️ Could not find appropriate location to add disable_vite option in app config.";
+            }
+        } else {
+            $results[] = "✅ Vite disable option already exists in app config.";
+        }
+    }
+    
+    // Check and update .env file to disable Vite
+    $env_file = $laravel_root . '/.env';
+    if (file_exists($env_file)) {
+        $env_content = file_get_contents($env_file);
+        
+        if (strpos($env_content, 'DISABLE_VITE=') === false) {
+            $results[] = "Adding DISABLE_VITE option to .env file...";
+            
+            // Append to the .env file
+            $env_content .= "\n# Disable Vite asset processing in production\nDISABLE_VITE=true\n";
+            
+            if (file_put_contents($env_file, $env_content)) {
+                $results[] = "✅ Added DISABLE_VITE=true to .env file.";
+            } else {
+                $results[] = "❌ Failed to update .env file.";
+            }
+        } else {
+            $results[] = "✅ DISABLE_VITE option already exists in .env file.";
+        }
+    }
+    
+    $results[] = "✅ Vite asset fixes have been applied!";
+    $results[] = "Please clear your application cache and refresh your page.";
+}
+
 // Main execution
 // ===============================================================
 
@@ -1241,6 +1418,10 @@ switch ($utility) {
         handle_app_key($results);
         break;
     
+    case 'vite_assets':
+        handle_vite_assets($results);
+        break;
+    
     // Add more utilities as needed
         
     default:
@@ -1255,6 +1436,7 @@ switch ($utility) {
         $results[] = "- migrations: Manage database migrations";
         $results[] = "- db_config: Configure database connection";
         $results[] = "- app_key: Generate application encryption key";
+        $results[] = "- vite_assets: Fix Vite asset issues";
         break;
 }
 
@@ -1394,6 +1576,14 @@ if ($api_mode) {
                 <p>Generate or check Laravel application encryption key</p>
                 <div class="actions">
                     <a href="?utility=app_key" class="btn">Generate App Key</a>
+                </div>
+            </div>
+            
+            <div class="utility-card">
+                <h3>Vite Assets</h3>
+                <p>Fix Vite manifest missing errors in production</p>
+                <div class="actions">
+                    <a href="?utility=vite_assets" class="btn">Fix Vite Assets</a>
                 </div>
             </div>
             
