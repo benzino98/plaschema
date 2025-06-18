@@ -11,6 +11,7 @@
 // Basic security - restrict by IP
 $allowed_ips = [
     '102.91.104.42',
+    '102.91.103.139',
     '135.129.124.105',
     '127.0.0.1',
     $_SERVER['SERVER_ADDR'] ?? '',
