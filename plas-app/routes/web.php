@@ -27,6 +27,13 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/refresh-statistics', [HomeController::class, 'refreshStatistics'])->name('refresh-statistics');
 
 Route::get('/dashboard', function () {
+    // Check if user has admin role and redirect to admin dashboard
+    $user = auth()->user();
+    if ($user && ($user->hasRole('admin') || $user->hasRole('super-admin') || $user->hasRole('editor') || $user->hasRole('viewer'))) {
+        return redirect()->route('admin.dashboard');
+    }
+    
+    // Otherwise show regular dashboard
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
