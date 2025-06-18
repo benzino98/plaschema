@@ -5,6 +5,35 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
 use Monolog\Processor\PsrLogMessageProcessor;
 
+// Define a helper function for getting log path if it doesn't exist
+if (!function_exists('get_log_path')) {
+    function get_log_path($file = 'laravel.log') {
+        // First try environment variable
+        $logPath = getenv('LOG_PATH');
+        if ($logPath) {
+            return rtrim($logPath, '/') . '/' . $file;
+        }
+        
+        // Next try storage_path if available
+        if (function_exists('storage_path')) {
+            return storage_path('logs/' . $file);
+        }
+        
+        // Fallback to a hardcoded path
+        if (isset($_SERVER['SERVER_NAME']) && strpos($_SERVER['SERVER_NAME'], 'plaschema.pl.gov.ng') !== false) {
+            return '/home/plaschem/laravel/storage/logs/' . $file;
+        }
+        
+        // Last resort - use a path relative to base_path
+        if (function_exists('base_path')) {
+            return base_path('storage/logs/' . $file);
+        }
+        
+        // Ultimate fallback
+        return sys_get_temp_dir() . '/laravel.log';
+    }
+}
+
 return [
 
     /*
@@ -60,17 +89,19 @@ return [
 
         'single' => [
             'driver' => 'single',
-            'path' => function_exists('safe_log_path') ? safe_log_path('laravel.log') : storage_path('logs/laravel.log'),
+            'path' => get_log_path('laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
+            'permission' => 0666,
         ],
 
         'daily' => [
             'driver' => 'daily',
-            'path' => function_exists('safe_log_path') ? safe_log_path('laravel.log') : storage_path('logs/laravel.log'),
+            'path' => get_log_path('laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
+            'permission' => 0666,
         ],
 
         'slack' => [
@@ -124,7 +155,8 @@ return [
         ],
 
         'emergency' => [
-            'path' => function_exists('safe_log_path') ? safe_log_path('laravel.log') : storage_path('logs/laravel.log'),
+            'path' => get_log_path('laravel.log'),
+            'permission' => 0666,
         ],
 
     ],
