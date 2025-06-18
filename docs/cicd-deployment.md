@@ -128,14 +128,17 @@ The rollback process will:
 
 4. **Application Errors After Deployment**
    - Check the Laravel logs at `/home/plaschem/laravel/storage/logs/laravel.log`
-   - Run the cache clearing script at `https://plaschema.pl.gov.ng/manage_cache.php?action=clear_all`
+   - Run the cache clearing script at `https://plaschema.pl.gov.ng/laravel_utilities.php?utility=cache&action=clear_cache`
    - Verify that the `.env` file contains the correct configuration
 
 ### Useful Commands
 
-- **Clear Cache**: Visit `https://plaschema.pl.gov.ng/manage_cache.php?action=clear_all`
-- **Initialize Deployment**: Visit `https://plaschema.pl.gov.ng/initialize_deployment.php`
-- **Create Storage Link**: Visit `https://plaschema.pl.gov.ng/create_storage_link.php`
+- **Clear Cache**: Visit `https://plaschema.pl.gov.ng/laravel_utilities.php?utility=cache&action=clear_cache`
+- **Initialize Deployment**: Visit `https://plaschema.pl.gov.ng/laravel_utilities.php`
+- **Create Storage Link**: Visit `https://plaschema.pl.gov.ng/laravel_utilities.php?utility=storage_link`
+- **Fix Cache Paths**: Visit `https://plaschema.pl.gov.ng/laravel_utilities.php?utility=fix_cache`
+- **Fix Log Path**: Visit `https://plaschema.pl.gov.ng/laravel_utilities.php?utility=fix_log`
+- **Test Environment**: Visit `https://plaschema.pl.gov.ng/laravel_utilities.php?utility=test_env`
 
 ## Maintenance
 

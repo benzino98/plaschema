@@ -29,7 +29,7 @@ The deployment workflow follows Laravel's recommended security practice of keepi
     ├── index.php         # Modified to point to ../laravel
     ├── css/
     ├── js/
-    ├── initialize_deployment.php
+    ├── laravel_utilities.php
     └── ...
 ```
 
@@ -74,14 +74,15 @@ The No-SSH deployment workflow (`deploy-without-ssh.yml`) is designed specifical
 
 After the GitHub Action completes, you need to:
 
-1. Visit `https://your-domain.com/initialize_deployment.php` in your browser
-2. This page will:
+1. Visit `https://your-domain.com/laravel_utilities.php` in your browser
+2. This utility dashboard provides several functions:
    - Check your server environment
    - Verify directory permissions
    - Run database migrations
    - Clear and regenerate caches
    - Create symbolic links if supported
-   - Delete itself after completion for security
+   - Fix cache and log paths
+   - Manage the Laravel cache system
 
 ### Manually Triggering the Workflow
 

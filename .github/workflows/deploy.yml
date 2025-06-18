@@ -270,7 +270,7 @@ jobs:
       - name: Set proper permissions on server
         uses: fjogeleit/http-request-action@v1
         with:
-          url: https://plaschema.pl.gov.ng/create_laravel_structure.php?fix_permissions=1
+          url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=fix_cache
           method: "GET"
           timeout: 60000
           preventFailureOnNoResponse: true
@@ -280,7 +280,17 @@ jobs:
       - name: Run post-deployment script
         uses: fjogeleit/http-request-action@v1
         with:
-          url: https://plaschema.pl.gov.ng/manage_cache.php?action=clear_all
+          url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=cache&action=clear_cache
+          method: "GET"
+          timeout: 60000
+          preventFailureOnNoResponse: true
+          ignoreStatusCodes: true
+
+      # Create storage link
+      - name: Create storage link
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=storage_link
           method: "GET"
           timeout: 60000
           preventFailureOnNoResponse: true
@@ -305,7 +315,7 @@ jobs:
       - name: Post-deployment notification
         run: |
           echo "Deployment completed!"
-          echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/initialize_deployment.php in your browser to complete the setup."
+          echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/laravel_utilities.php in your browser to complete the setup."
           echo "Laravel core files deployed to: laravel/ (in your home directory)"
           echo "Public files deployed to: public_html/ (in your home directory)"
 
