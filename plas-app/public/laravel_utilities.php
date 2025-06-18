@@ -227,6 +227,89 @@ function handle_migrations($action, &$results) {
                 $results = array_merge($results, $output);
             } catch (Exception $e) {
                 $results[] = "Error running migrations: " . $e->getMessage();
+                $results[] = "Try using the 'Sequential Migration' option below to resolve dependencies.";
+            }
+            break;
+            
+        case 'schema_only':
+            $results[] = "Running only schema migrations (tables only)...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                
+                // Get list of migrations
+                $migrationFiles = glob($laravel_root . '/database/migrations/*.php');
+                $migrationNames = [];
+                
+                // Filter to include only migrations that create tables (typically named create_*_table.php)
+                foreach ($migrationFiles as $file) {
+                    $basename = basename($file);
+                    if (strpos($basename, 'create_') !== false && strpos($basename, '_table') !== false) {
+                        $parts = explode('_', $basename);
+                        $timestamp = $parts[0];
+                        $migrationNames[] = $timestamp . '_' . implode('_', array_slice($parts, 1));
+                    }
+                }
+                
+                // Run only these migrations first
+                if (!empty($migrationNames)) {
+                    $results[] = "Found " . count($migrationNames) . " table creation migrations";
+                    
+                    $output = [];
+                    $kernel->call('migrate', [
+                        '--force' => true,
+                        '--path' => 'database/migrations',
+                        '--realpath' => true
+                    ], $output);
+                    
+                    $results = array_merge($results, $output);
+                } else {
+                    $results[] = "No table creation migrations found";
+                }
+            } catch (Exception $e) {
+                $results[] = "Error running schema migrations: " . $e->getMessage();
+            }
+            break;
+            
+        case 'sequential':
+            $results[] = "Running migrations in sequential batches...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                
+                // Step 1: Run migrations that create tables first
+                $results[] = "Step 1: Creating database tables...";
+                $output = [];
+                $kernel->call('migrate', [
+                    '--force' => true,
+                    '--path' => 'database/migrations',
+                ], $output);
+                $results = array_merge($results, $output);
+                
+                // Step 2: Seed any required base data
+                $results[] = "Step 2: Running database seeders...";
+                if (file_exists($laravel_root . '/database/seeders/DatabaseSeeder.php')) {
+                    $output = [];
+                    $kernel->call('db:seed', [
+                        '--force' => true,
+                        '--class' => 'DatabaseSeeder'
+                    ], $output);
+                    $results = array_merge($results, $output);
+                } else {
+                    $results[] = "No database seeders found.";
+                }
+            } catch (Exception $e) {
+                $results[] = "Error in sequential migration: " . $e->getMessage();
+            }
+            break;
+            
+        case 'seed':
+            $results[] = "Running database seeders...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                $output = [];
+                $kernel->call('db:seed', ['--force' => true], $output);
+                $results = array_merge($results, $output);
+            } catch (Exception $e) {
+                $results[] = "Error running seeders: " . $e->getMessage();
             }
             break;
             
@@ -258,6 +341,9 @@ function handle_migrations($action, &$results) {
             $results[] = "Available migration actions:";
             $results[] = "- status: Check migration status";
             $results[] = "- run: Run pending migrations";
+            $results[] = "- sequential: Run migrations and seeders in the correct sequence";
+            $results[] = "- schema_only: Run only table creation migrations";
+            $results[] = "- seed: Run database seeders";
             $results[] = "- rollback: Rollback the last migration batch";
             $results[] = "- fresh: Drop all tables and re-run all migrations (use with caution!)";
             break;
@@ -989,8 +1075,12 @@ if ($api_mode) {
                 <p>Manage your database migrations</p>
                 <div class="actions">
                     <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
+                    <a href="?utility=migrations&action=sequential" class="btn">Sequential Migration</a>
                     <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
+                    <a href="?utility=migrations&action=schema_only" class="btn">Schema Only</a>
+                    <a href="?utility=migrations&action=seed" class="btn">Run Seeders</a>
                     <a href="?utility=migrations&action=rollback" class="btn">Rollback Migrations</a>
+                    <a href="?utility=migrations&action=fresh" class="btn" onclick="return confirm('WARNING: This will drop all tables and re-run all migrations. All data will be lost. Are you sure?')">Fresh Migrations</a>
                 </div>
             </div>
             
@@ -1025,7 +1115,10 @@ if ($api_mode) {
                 
                 <?php if ($utility === 'migrations'): ?>
                     <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
+                    <a href="?utility=migrations&action=sequential" class="btn">Sequential Migration</a>
                     <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
+                    <a href="?utility=migrations&action=schema_only" class="btn">Schema Only</a>
+                    <a href="?utility=migrations&action=seed" class="btn">Run Seeders</a>
                     <a href="?utility=migrations&action=rollback" class="btn">Rollback Migrations</a>
                     <a href="?utility=migrations&action=fresh" class="btn" onclick="return confirm('WARNING: This will drop all tables and re-run all migrations. All data will be lost. Are you sure?')">Fresh Migrations</a>
                 <?php endif; ?>
