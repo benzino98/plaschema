@@ -22,6 +22,13 @@ class ApiService
     protected $cacheService;
 
     /**
+     * API request timeout in seconds
+     * 
+     * @var int
+     */
+    protected $timeout;
+
+    /**
      * Create a new API service instance.
      *
      * @param  \App\Services\CacheService  $cacheService
@@ -31,6 +38,7 @@ class ApiService
     {
         $this->baseUrl = config('services.external_api.url', 'https://enrollments.plaschema.app/api');
         $this->cacheService = $cacheService;
+        $this->timeout = config('services.external_api.timeout', 10); // Increased default timeout to 10 seconds
     }
 
     /**
@@ -53,7 +61,9 @@ class ApiService
         
         // No cache, try to fetch from API
         try {
-            $response = Http::timeout(5)->get($this->baseUrl . '/data-records');
+            $response = Http::timeout($this->timeout)
+                ->retry(2, 1000) // Retry twice with 1 second between attempts
+                ->get($this->baseUrl . '/data-records');
             
             if ($response->successful()) {
                 $data = $response->json();
@@ -118,7 +128,9 @@ class ApiService
         
         // Force a fresh fetch from the API
         try {
-            $response = Http::timeout(5)->get($this->baseUrl . '/data-records');
+            $response = Http::timeout($this->timeout)
+                ->retry(2, 1000) // Retry twice with 1 second between attempts
+                ->get($this->baseUrl . '/data-records');
             
             if ($response->successful()) {
                 $data = $response->json();

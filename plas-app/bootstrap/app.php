@@ -17,4 +17,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
         //
     })->create();
 
-$app->usePublicPath('/home/plaschem/public_html');
+// Only set custom public path in production environment
+// This avoids issues in CI/CD pipelines and local development
+if (app()->environment('production') && file_exists('/home/plaschem/public_html')) {
+    $app->usePublicPath('/home/plaschem/public_html');
+}
+
+return $app;
