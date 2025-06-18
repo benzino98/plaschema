@@ -226,7 +226,7 @@ jobs:
       - name: Create storage directories with proper permissions
         uses: fjogeleit/http-request-action@v1
         with:
-          url: https://plaschema.pl.gov.ng/create_laravel_structure.php?create_dirs=1
+          url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=fix_cache&create_dirs=1
           method: "GET"
           timeout: 60000
           preventFailureOnNoResponse: true
