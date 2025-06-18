@@ -872,6 +872,39 @@ function handle_fix_log_path(&$results) {
     } else {
         $results[] = "⚠️ .env file does not exist";
     }
+    
+    // Fix CI/CD path issue by creating a symlink or directory
+    $ci_cd_logs_path = '/home/runner/work/plaschema/plaschema/plas-app/storage/logs';
+    if (!file_exists($ci_cd_logs_path)) {
+        // Create the directory structure
+        if (!file_exists(dirname($ci_cd_logs_path))) {
+            mkdir(dirname($ci_cd_logs_path), 0755, true);
+            $results[] = "✅ Created CI/CD storage directory structure";
+        }
+        
+        // Try to create a symlink first
+        if (function_exists('symlink') && !in_array('symlink', explode(',', ini_get('disable_functions')))) {
+            if (symlink($logs_path, $ci_cd_logs_path)) {
+                $results[] = "✅ Created symlink from CI/CD logs path to actual logs path";
+            } else {
+                // If symlink fails, create the directory
+                if (mkdir($ci_cd_logs_path, 0755, true)) {
+                    $results[] = "✅ Created CI/CD logs directory";
+                } else {
+                    $results[] = "❌ Failed to create CI/CD logs directory";
+                }
+            }
+        } else {
+            // If symlink function is not available, create the directory
+            if (mkdir($ci_cd_logs_path, 0755, true)) {
+                $results[] = "✅ Created CI/CD logs directory";
+            } else {
+                $results[] = "❌ Failed to create CI/CD logs directory";
+            }
+        }
+    } else {
+        $results[] = "ℹ️ CI/CD logs path already exists";
+    }
 }
 
 // Create storage link utility
