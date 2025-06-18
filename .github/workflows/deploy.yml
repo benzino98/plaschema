@@ -226,11 +226,14 @@ jobs:
       - name: Create storage directories with proper permissions
         uses: fjogeleit/http-request-action@v1
         with:
-          url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=fix_cache&create_dirs=1
+          url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=fix_cache
           method: "GET"
-          timeout: 60000
+          timeout: 120000
           preventFailureOnNoResponse: true
-          ignoreStatusCodes: true
+          ignoreStatusCodes: "404,500"
+          retry: 3
+          retryWait: 10000
+        continue-on-error: true
 
       # Deploy Laravel core files
       - name: Deploy Laravel core files
@@ -266,15 +269,49 @@ jobs:
           log-level: verbose
           timeout: 600000
 
+      # Pause to ensure files are fully uploaded and accessible
+      - name: Pause before post-deployment steps
+        run: |
+          echo "Pausing for 10 seconds to ensure files are fully uploaded and processed by the server..."
+          sleep 10
+
+      # Check if utility script is accessible
+      - name: Check utility script accessibility
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://plaschema.pl.gov.ng/laravel_utilities.php
+          method: "GET"
+          timeout: 30000
+          preventFailureOnNoResponse: true
+          ignoreStatusCodes: "404,500"
+        continue-on-error: true
+        id: check_utility
+
+      # Log utility script status
+      - name: Log utility script status
+        run: |
+          echo "Utility script status code: ${{ steps.check_utility.outputs.statusCode }}"
+          echo "Response size: ${{ steps.check_utility.outputs.size }}"
+          if [[ "${{ steps.check_utility.outputs.statusCode }}" == "200" ]]; then
+            echo "✅ Utility script is accessible"
+          else
+            echo "⚠️ Utility script may not be fully accessible yet, but continuing with deployment"
+            echo "Waiting an additional 20 seconds..."
+            sleep 20
+          fi
+
       # Set proper permissions on server
       - name: Set proper permissions on server
         uses: fjogeleit/http-request-action@v1
         with:
           url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=fix_cache
           method: "GET"
-          timeout: 60000
+          timeout: 120000
           preventFailureOnNoResponse: true
-          ignoreStatusCodes: true
+          ignoreStatusCodes: "404,500"
+          retry: 3
+          retryWait: 10000
+        continue-on-error: true
 
       # Run post-deployment script
       - name: Run post-deployment script
@@ -282,9 +319,12 @@ jobs:
         with:
           url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=cache&action=clear_cache
           method: "GET"
-          timeout: 60000
+          timeout: 120000
           preventFailureOnNoResponse: true
-          ignoreStatusCodes: true
+          ignoreStatusCodes: "404,500"
+          retry: 3
+          retryWait: 10000
+        continue-on-error: true
 
       # Create storage link
       - name: Create storage link
@@ -292,9 +332,12 @@ jobs:
         with:
           url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=storage_link
           method: "GET"
-          timeout: 60000
+          timeout: 120000
           preventFailureOnNoResponse: true
-          ignoreStatusCodes: true
+          ignoreStatusCodes: "404,500"
+          retry: 3
+          retryWait: 10000
+        continue-on-error: true
 
       # Send deployment notification
       - name: Send deployment notification
@@ -314,10 +357,22 @@ jobs:
 
       - name: Post-deployment notification
         run: |
-          echo "Deployment completed!"
-          echo "IMPORTANT: Visit https://plaschema.pl.gov.ng/laravel_utilities.php in your browser to complete the setup."
+          echo "===== Deployment Completed ====="
           echo "Laravel core files deployed to: laravel/ (in your home directory)"
           echo "Public files deployed to: public_html/ (in your home directory)"
+          echo ""
+          echo "===== Post-Deployment Steps ====="
+          echo "1. Visit https://plaschema.pl.gov.ng/laravel_utilities.php in your browser to access the Laravel Utilities dashboard"
+          echo ""
+          echo "===== Manual Steps (if automated steps failed) ====="
+          echo "If any of the automated utility steps failed, you can manually perform them through the utilities dashboard:"
+          echo "- Fix Cache Paths: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=fix_cache"
+          echo "- Clear Cache: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=cache&action=clear_cache"
+          echo "- Create Storage Link: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=storage_link"
+          echo "- Test Environment: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=test_env"
+          echo ""
+          echo "If the utility script itself returns errors, check the server logs for details."
+          echo "====================================="
 
       # Create deployment status file for rollback reference
       - name: Create deployment status file
