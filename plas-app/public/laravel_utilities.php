@@ -1886,6 +1886,65 @@ function handle_create_admin(&$results) {
     }
 }
 
+// Run Role and Permission Seeder utility
+function handle_role_permission_seeder(&$results) {
+    try {
+        // Bootstrap Laravel
+        list($app, $kernel) = bootstrap_laravel();
+        
+        $results[] = "<h3>Running Role and Permission Seeder</h3>";
+        
+        // Check if the RoleAndPermissionSeeder class exists
+        $seederClass = 'Database\\Seeders\\RoleAndPermissionSeeder';
+        if (!class_exists($seederClass)) {
+            $results[] = "❌ Error: RoleAndPermissionSeeder class not found.";
+            $results[] = "Please make sure the seeder file exists at database/seeders/RoleAndPermissionSeeder.php";
+            return;
+        }
+        
+        // Create an instance of the seeder
+        $seeder = new $seederClass();
+        
+        // Run the seeder
+        $results[] = "🔄 Running RoleAndPermissionSeeder...";
+        
+        try {
+            // Start a database transaction
+            $app['db']->beginTransaction();
+            
+            // Run the seeder
+            $seeder->run();
+            
+            // Commit the transaction
+            $app['db']->commit();
+            
+            $results[] = "✅ Successfully ran RoleAndPermissionSeeder!";
+            $results[] = "✅ Default roles and permissions have been created.";
+            
+            // Count the number of roles and permissions created
+            $roleCount = $app['db']->table('roles')->count();
+            $permissionCount = $app['db']->table('permissions')->count();
+            $rolePermissionCount = $app['db']->table('role_permission')->count();
+            
+            $results[] = "📊 Summary:";
+            $results[] = "- {$roleCount} roles created";
+            $results[] = "- {$permissionCount} permissions created";
+            $results[] = "- {$rolePermissionCount} role-permission associations created";
+            
+        } catch (Exception $e) {
+            // Rollback the transaction in case of error
+            $app['db']->rollBack();
+            
+            $results[] = "❌ Error running seeder: " . $e->getMessage();
+            $results[] = "Error details: " . $e->getTraceAsString();
+        }
+        
+    } catch (Exception $e) {
+        $results[] = "❌ Error initializing Laravel: " . $e->getMessage();
+        $results[] = "Error details: " . $e->getTraceAsString();
+    }
+}
+
 // File obfuscation utility
 function handle_obfuscate_file(&$results) {
     global $laravel_root;
@@ -2036,6 +2095,10 @@ switch ($utility) {
         handle_obfuscate_file($results);
         break;
     
+    case 'role_permission_seeder':
+        handle_role_permission_seeder($results);
+        break;
+    
     // ... existing code ...
         
     default:
@@ -2053,6 +2116,7 @@ switch ($utility) {
         $results[] = "- vite_assets: Fix Vite asset issues";
         $results[] = "- fix_htaccess: Fix routing and .htaccess configuration";
         $results[] = "- create_admin: Create admin user and assign roles";
+        $results[] = "- role_permission_seeder: Run Role and Permission Seeder";
         $results[] = "- obfuscate: Hide this utility file with a random name";
         break;
 }
@@ -2241,6 +2305,7 @@ if ($api_mode) {
                 <p>Create admin users and assign roles</p>
                 <div class="actions">
                     <a href="?utility=create_admin" class="btn">Create Admin User</a>
+                    <a href="?utility=role_permission_seeder" class="btn">Run Role & Permission Seeder</a>
                 </div>
             </div>
             
