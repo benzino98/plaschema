@@ -309,8 +309,7 @@ update_env_file($env_file, 'STORAGE_PATH', $storage_path, $results, $errors);
         <ol>
             <li>Delete this file for security</li>
             <li>Try accessing your Laravel application to see if the log errors are resolved</li>
-            <li>If you're still having issues, check the <a href="check_logs.php">log path checker</a> for more details</li>
-            <li>For persistent issues, check your web server error logs</li>
+            <li>If issues persist, check the web server error logs for additional information</li>
         </ol>
     </div>
     

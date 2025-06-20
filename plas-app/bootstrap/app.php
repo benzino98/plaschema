@@ -21,7 +21,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
 $isProduction = false;
 $isCI = false;
 
-// Check for production environment
+// Check for production environment first
 if (isset($_SERVER['SERVER_NAME']) && strpos($_SERVER['SERVER_NAME'], 'plaschema.pl.gov.ng') !== false) {
     $isProduction = true;
 }
@@ -31,9 +31,11 @@ if (!$isProduction && is_dir('/home/plaschem/public_html')) {
     $isProduction = true;
 }
 
-// Check for CI/CD environment
-if (getenv('GITHUB_ACTIONS') === 'true' || is_dir('/home/runner/work/plaschema')) {
-    $isCI = true;
+// Only check for CI/CD environment if we're not in production
+if (!$isProduction) {
+    if (getenv('GITHUB_ACTIONS') === 'true' || is_dir('/home/runner/work/plaschema')) {
+        $isCI = true;
+    }
 }
 
 // Set paths based on environment
@@ -61,6 +63,14 @@ if ($isProduction) {
     $app->useStoragePath($storagePath);
     
     // Set environment variables for paths
+    putenv("STORAGE_PATH=" . $storagePath);
+    putenv("LOG_PATH=" . $logsPath);
+} else {
+    // Local development environment - ensure we have default paths
+    $storagePath = dirname(__DIR__) . '/storage';
+    $logsPath = $storagePath . '/logs';
+    
+    // Ensure environment variables are set
     putenv("STORAGE_PATH=" . $storagePath);
     putenv("LOG_PATH=" . $logsPath);
 }
