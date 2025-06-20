@@ -38,7 +38,7 @@ class ApiService
     {
         $this->baseUrl = config('services.external_api.url', 'https://enrollments.plaschema.app/api');
         $this->cacheService = $cacheService ?? app(CacheService::class);
-        $this->timeout = config('services.external_api.timeout', 10); // Increased default timeout to 10 seconds
+        $this->timeout = config('services.external_api.timeout', 15); // Increased default timeout to 15 seconds
     }
 
     /**
@@ -62,7 +62,8 @@ class ApiService
         // No cache, try to fetch from API
         try {
             $response = Http::timeout($this->timeout)
-                ->retry(2, 1000) // Retry twice with 1 second between attempts
+                ->retry(3, 2000) // Retry 3 times with 2 seconds between attempts
+                ->connectTimeout(5) // Separate connection timeout
                 ->get($this->baseUrl . '/data-records');
             
             if ($response->successful()) {
@@ -92,24 +93,16 @@ class ApiService
                 'body' => $response->body()
             ]);
         } catch (\Exception $e) {
+            // Detailed error logging with API URL
             Log::error('Failed to fetch enrollment statistics from external API', [
-                'exception' => $e->getMessage()
+                'exception' => $e->getMessage(),
+                'api_url' => $this->baseUrl . '/data-records',
+                'timeout_setting' => $this->timeout
             ]);
         }
         
         // API failed, use fallback demo data
-        $fallbackData = [
-            'total_count' => 219415,
-            'formal_count' => 129949,
-            'total_informal_count' => 5274,
-            'bhcpf_count' => 66194,
-            'equity_count' => 17998,
-            'spouse_count' => 14586,
-            'children_count' => 49769,
-            'principals_count' => 65594,
-            'last_updated' => now()->toDateTimeString(),
-            'is_fallback' => true,
-        ];
+        $fallbackData = $this->getFallbackData();
         
         // Cache the fallback data for a shorter period
         $this->cacheService->put($cacheKey, $fallbackData, 120); // 2 minutes
@@ -129,7 +122,8 @@ class ApiService
         // Force a fresh fetch from the API
         try {
             $response = Http::timeout($this->timeout)
-                ->retry(2, 1000) // Retry twice with 1 second between attempts
+                ->retry(3, 2000) // Retry 3 times with 2 seconds between attempts
+                ->connectTimeout(5) // Separate connection timeout
                 ->get($this->baseUrl . '/data-records');
             
             if ($response->successful()) {
@@ -158,13 +152,50 @@ class ApiService
                 'body' => $response->body()
             ]);
             
-            return null;
+            // Return cached data if available
+            $cachedData = $this->cacheService->get($cacheKey);
+            if ($cachedData) {
+                return $cachedData;
+            }
+            
+            // Return fallback data if no cached data
+            return $this->getFallbackData();
         } catch (\Exception $e) {
             Log::error('Failed to refresh enrollment statistics from external API', [
-                'exception' => $e->getMessage()
+                'exception' => $e->getMessage(),
+                'api_url' => $this->baseUrl . '/data-records',
+                'timeout_setting' => $this->timeout
             ]);
             
-            return null;
+            // Return cached data if available
+            $cachedData = $this->cacheService->get($cacheKey);
+            if ($cachedData) {
+                return $cachedData;
+            }
+            
+            // Return fallback data if no cached data
+            return $this->getFallbackData();
         }
+    }
+    
+    /**
+     * Get fallback data for when the API is unavailable
+     *
+     * @return array
+     */
+    protected function getFallbackData()
+    {
+        return [
+            'total_count' => 219415,
+            'formal_count' => 129949,
+            'total_informal_count' => 5274,
+            'bhcpf_count' => 66194,
+            'equity_count' => 17998,
+            'spouse_count' => 14586,
+            'children_count' => 49769,
+            'principals_count' => 65594,
+            'last_updated' => now()->toDateTimeString(),
+            'is_fallback' => true,
+        ];
     }
 } 
