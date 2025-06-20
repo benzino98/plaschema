@@ -13,6 +13,18 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # Explicitly allow direct access to utility files
+    RewriteRule ^(laravel_utilities\.php|fix_logs\.php|create_admin\.php|check_logs\.php)$ - [L]
+
+    # Disable caching for utility files
+    <FilesMatch "^(laravel_utilities\.php|fix_logs\.php|create_admin\.php|check_logs\.php)$">
+        <IfModule mod_headers.c>
+            Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+            Header set Pragma "no-cache"
+            Header set Expires "Thu, 01 Jan 1970 00:00:00 GMT"
+        </IfModule>
+    </FilesMatch>
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
@@ -38,7 +50,7 @@ Options -Indexes
     php_value log_errors On
 </IfModule>
 # php -- BEGIN cPanel-generated handler, do not edit
-# Set the “ea-php82” package as the default “PHP” programming language.
+# Set the "ea-php82" package as the default "PHP" programming language.
 <IfModule mime_module>
   AddHandler application/x-httpd-ea-php82___lsphp .php .php8 .phtml
 </IfModule>
