@@ -38,7 +38,7 @@ class ApiService
     {
         $this->baseUrl = config('services.external_api.url', 'https://enrollments.plaschema.app/api');
         $this->cacheService = $cacheService ?? app(CacheService::class);
-        $this->timeout = config('services.external_api.timeout', 15); // Increased default timeout to 15 seconds
+        $this->timeout = config('services.external_api.timeout', 30); // Increased default timeout to 15 seconds
     }
 
     /**
