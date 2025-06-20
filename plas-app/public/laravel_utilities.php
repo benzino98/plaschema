@@ -16,6 +16,7 @@
 $allowed_ips = [
     // Add your IP address here
     '102.91.104.42',
+    '98.97.79.54',
     '102.91.103.139',
     '135.129.124.105',
     '127.0.0.1', // localhost for development
