@@ -1909,31 +1909,75 @@ function handle_role_permission_seeder(&$results) {
         $results[] = "🔄 Running RoleAndPermissionSeeder...";
         
         try {
-            // Start a database transaction
-            $app['db']->beginTransaction();
+            // Check if the database connection supports transactions
+            $supportsTransactions = false;
+            
+            try {
+                $pdo = $app['db']->connection()->getPdo();
+                // Only use transactions if connection is active and driver supports them
+                $supportsTransactions = $pdo && !$pdo->inTransaction();
+            } catch (Exception $e) {
+                $results[] = "⚠️ Database transaction check failed: " . $e->getMessage();
+                // Continue without transactions
+            }
+            
+            if ($supportsTransactions) {
+                // Start a database transaction
+                try {
+                    $app['db']->beginTransaction();
+                    $results[] = "✅ Database transaction started.";
+                } catch (Exception $e) {
+                    $results[] = "⚠️ Could not start transaction: " . $e->getMessage();
+                    $supportsTransactions = false;
+                }
+            } else {
+                $results[] = "⚠️ Running seeder without transaction support.";
+            }
             
             // Run the seeder
             $seeder->run();
             
-            // Commit the transaction
-            $app['db']->commit();
+            // Commit the transaction if we're using transactions
+            if ($supportsTransactions && $app['db']->transactionLevel() > 0) {
+                try {
+                    $app['db']->commit();
+                    $results[] = "✅ Database transaction committed.";
+                } catch (Exception $e) {
+                    $results[] = "⚠️ Could not commit transaction: " . $e->getMessage();
+                    // Try to rollback if commit fails
+                    if ($app['db']->transactionLevel() > 0) {
+                        $app['db']->rollBack();
+                    }
+                }
+            }
             
             $results[] = "✅ Successfully ran RoleAndPermissionSeeder!";
             $results[] = "✅ Default roles and permissions have been created.";
             
             // Count the number of roles and permissions created
-            $roleCount = $app['db']->table('roles')->count();
-            $permissionCount = $app['db']->table('permissions')->count();
-            $rolePermissionCount = $app['db']->table('role_permission')->count();
-            
-            $results[] = "📊 Summary:";
-            $results[] = "- {$roleCount} roles created";
-            $results[] = "- {$permissionCount} permissions created";
-            $results[] = "- {$rolePermissionCount} role-permission associations created";
+            try {
+                $roleCount = $app['db']->table('roles')->count();
+                $permissionCount = $app['db']->table('permissions')->count();
+                $rolePermissionCount = $app['db']->table('role_permission')->count();
+                
+                $results[] = "📊 Summary:";
+                $results[] = "- {$roleCount} roles created";
+                $results[] = "- {$permissionCount} permissions created";
+                $results[] = "- {$rolePermissionCount} role-permission associations created";
+            } catch (Exception $e) {
+                $results[] = "⚠️ Could not count created items: " . $e->getMessage();
+            }
             
         } catch (Exception $e) {
-            // Rollback the transaction in case of error
-            $app['db']->rollBack();
+            // Rollback the transaction in case of error (only if we're using transactions)
+            if (isset($app['db']) && method_exists($app['db'], 'transactionLevel') && $app['db']->transactionLevel() > 0) {
+                try {
+                    $app['db']->rollBack();
+                    $results[] = "⚠️ Transaction rolled back due to error.";
+                } catch (Exception $rollbackEx) {
+                    $results[] = "⚠️ Could not rollback transaction: " . $rollbackEx->getMessage();
+                }
+            }
             
             $results[] = "❌ Error running seeder: " . $e->getMessage();
             $results[] = "Error details: " . $e->getTraceAsString();
