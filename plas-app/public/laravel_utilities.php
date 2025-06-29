@@ -304,10 +304,10 @@ function bootstrap_laravel() {
             $app['config']->set('database.connections.mysql.host', '127.0.0.1');
         }
         if (empty($app['config']->get('database.connections.mysql.database'))) {
-            $app['config']->set('database.connections.mysql.database', 'plaschem_db');
+            $app['config']->set('database.connections.mysql.database', 'plaschem_plaschema_db');
         }
         if (empty($app['config']->get('database.connections.mysql.username'))) {
-            $app['config']->set('database.connections.mysql.username', 'plaschem_user');
+            $app['config']->set('database.connections.mysql.username', 'plaschem_root');
         }
         
         // Reset the database connection
