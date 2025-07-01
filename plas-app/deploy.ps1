@@ -49,14 +49,28 @@ if ($Status) {
 Write-Status "Pulling latest changes from development..." "Cyan"
 git pull origin development
 
+# Find the Laravel app directory
+$LaravelAppDir = ""
+if (Test-Path "plas-app") {
+    $LaravelAppDir = "plas-app"
+} elseif (Test-Path "../plas-app") {
+    $LaravelAppDir = "../plas-app"
+} else {
+    Write-Status "Error: Could not find the Laravel application directory." "Red"
+    exit 1
+}
+
 # Build assets for production
 Write-Status "Building assets for production..." "Cyan"
-npm run build
-
-# Verify build was successful
-if ($LASTEXITCODE -ne 0) {
-    Write-Status "Error: Asset build failed. Please fix the errors and try again." "Red"
-    exit 1
+Push-Location $LaravelAppDir
+try {
+    npm run build
+    if ($LASTEXITCODE -ne 0) {
+        Write-Status "Error: Asset build failed. Please fix the errors and try again." "Red"
+        exit 1
+    }
+} finally {
+    Pop-Location
 }
 
 # Final confirmation
