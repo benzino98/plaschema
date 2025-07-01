@@ -104,6 +104,10 @@ jobs:
           # Copy only the public directory contents to public_html
           cp -r plas-app/public/* deployment/public_html/
 
+          # Copy fix_storage_link.php to public_html directory for web access
+          cp plas-app/fix_storage_link.php deployment/public_html/
+          chmod 644 deployment/public_html/fix_storage_link.php
+
           # Update the index.php to point to the correct paths (absolute paths)
           sed -i "s|/../vendor/autoload.php|/home/plaschem/laravel/vendor/autoload.php|g" deployment/public_html/index.php
           sed -i "s|/../bootstrap/app.php|/home/plaschem/laravel/bootstrap/app.php|g" deployment/public_html/index.php
