@@ -37,8 +37,13 @@ class ResponsiveImage extends Component
             return $path;
         }
         
-        // Return the plain path without adding 'storage/' prefix
-        return $path;
+        // If it already has storage/ prefix, return as is
+        if (str_starts_with($path, 'storage/') || str_starts_with($path, '/storage/')) {
+            return $path;
+        }
+        
+        // Add storage/ prefix to the path
+        return 'storage/' . $path;
     }
 
     /**

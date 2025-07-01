@@ -14,8 +14,8 @@
         }
         
         // Check if it already has 'storage/' prefix to avoid duplication
-        if (str_starts_with($path, 'storage/')) {
-            return asset($path);
+        if (str_starts_with($path, 'storage/') || str_starts_with($path, '/storage/')) {
+            return asset(ltrim($path, '/'));
         }
         
         // Standard path, add storage prefix
