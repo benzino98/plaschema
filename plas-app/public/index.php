@@ -19,8 +19,14 @@
 |
 */
 
-// Modified for shared hosting - point to Laravel core files in the laravel directory
-require '/home/plaschem/laravel/vendor/autoload.php';
+// Check if we're in production or local environment
+if (file_exists('/home/plaschem/laravel/vendor/autoload.php')) {
+    // Production path
+    require '/home/plaschem/laravel/vendor/autoload.php';
+} else {
+    // Local path - use relative path
+    require __DIR__.'/../vendor/autoload.php';
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -34,8 +40,14 @@ require '/home/plaschem/laravel/vendor/autoload.php';
 |
 */
 
-// Modified for shared hosting - point to Laravel core files in the laravel directory
-$app = require_once '/home/plaschem/laravel/bootstrap/app.php';
+// Check if we're in production or local environment
+if (file_exists('/home/plaschem/laravel/bootstrap/app.php')) {
+    // Production path
+    $app = require_once '/home/plaschem/laravel/bootstrap/app.php';
+} else {
+    // Local path - use relative path
+    $app = require_once __DIR__.'/../bootstrap/app.php';
+}
 
 /*
 |--------------------------------------------------------------------------
