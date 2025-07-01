@@ -339,6 +339,19 @@ jobs:
           retryWait: 10000
         continue-on-error: true
 
+      # Use enhanced storage link fix script (backup method)
+      - name: Use enhanced storage link fix script
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://plaschema.pl.gov.ng/fix_storage_link.php
+          method: "GET"
+          timeout: 120000
+          preventFailureOnNoResponse: true
+          ignoreStatusCodes: "404,500"
+          retry: 3
+          retryWait: 10000
+        continue-on-error: true
+
       # Send deployment notification
       - name: Send deployment notification
         if: always()
