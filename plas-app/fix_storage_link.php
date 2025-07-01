@@ -24,23 +24,31 @@ if (!empty($allowed_ips) && !in_array($_SERVER['REMOTE_ADDR'], $allowed_ips)) {
 // Set execution time limit
 set_time_limit(300);
 
-// Define paths for both local and production environments
-if (file_exists('/home/plaschem/laravel')) {
-    // Production environment
-    $storage_path = '/home/plaschem/laravel/storage/app/public';
-    $public_path = '/home/plaschem/public_html/storage';
-} else {
-    // Local environment
-    $storage_path = __DIR__ . '/storage/app/public';
-    $public_path = __DIR__ . '/public/storage';
-}
-
 // Initialize response
 $response = [
     'success' => false,
     'message' => '',
     'details' => []
 ];
+
+// Define paths for both local and production environments
+if (file_exists('/home/plaschem/laravel')) {
+    // Production environment
+    $storage_path = '/home/plaschem/laravel/storage/app/public';
+    $public_path = '/home/plaschem/public_html/storage';
+    
+    // Add debug info
+    $response['environment'] = 'Production';
+    $response['server_root'] = $_SERVER['DOCUMENT_ROOT'] ?? 'Unknown';
+} else {
+    // Local environment
+    $storage_path = __DIR__ . '/storage/app/public';
+    $public_path = __DIR__ . '/public/storage';
+    
+    // Add debug info
+    $response['environment'] = 'Local';
+    $response['script_path'] = __DIR__;
+}
 
 // Function to check if a path exists and is writable
 function check_path_writable($path) {
