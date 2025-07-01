@@ -240,7 +240,7 @@ function create_directory($path, &$results) {
     return true;
 }
 
-// Create .htaccess file to prevent direct access
+// Function to create .htaccess file to prevent direct access
 function create_htaccess($path, &$results) {
     $htaccess_file = $path . '/.htaccess';
     if (!file_exists($htaccess_file)) {
@@ -251,11 +251,57 @@ function create_htaccess($path, &$results) {
             $results[] = "❌ Failed to create .htaccess file in: " . $path;
             return false;
         }
+    } else {
+        $results[] = "ℹ️ .htaccess file already exists in: " . $path;
     }
     return true;
 }
 
-// Create a .gitignore file to prevent committing cache files
+// Function to update build directory timestamp
+function handle_update_build(&$results) {
+    $home_dir = dirname($_SERVER['DOCUMENT_ROOT']);
+    $public_html = $home_dir . '/public_html';
+    $build_dir = $public_html . '/build';
+    
+    $results[] = "Updating build directory: " . $build_dir;
+    
+    // Check if build directory exists
+    if (!file_exists($build_dir)) {
+        $results[] = "❌ Build directory does not exist: " . $build_dir;
+        return false;
+    }
+    
+    // Create timestamp file
+    $timestamp_file = $build_dir . '/build_timestamp.txt';
+    $timestamp_content = "Build updated at: " . date('Y-m-d H:i:s') . "\n";
+    $timestamp_content .= "Server: " . $_SERVER['SERVER_NAME'] . "\n";
+    $timestamp_content .= "Updated by: Laravel Utilities\n";
+    
+    if (file_put_contents($timestamp_file, $timestamp_content)) {
+        $results[] = "✅ Created timestamp file: " . $timestamp_file;
+    } else {
+        $results[] = "❌ Failed to create timestamp file: " . $timestamp_file;
+    }
+    
+    // Touch all files in the build directory to update their timestamps
+    $files = glob($build_dir . '/*');
+    $updated_count = 0;
+    
+    foreach ($files as $file) {
+        if (is_file($file)) {
+            if (touch($file)) {
+                $updated_count++;
+            }
+        }
+    }
+    
+    $results[] = "✅ Updated timestamps for {$updated_count} files in the build directory";
+    $results[] = "✅ Build directory timestamp updated successfully";
+    
+    return true;
+}
+
+// Function to create .gitignore file
 function create_gitignore($path, &$results) {
     $gitignore_file = $path . '/.gitignore';
     if (!file_exists($gitignore_file)) {
@@ -2143,6 +2189,10 @@ switch ($utility) {
         handle_role_permission_seeder($results);
         break;
     
+    case 'update_build':
+        handle_update_build($results);
+        break;
+    
     // ... existing code ...
         
     default:
@@ -2161,6 +2211,7 @@ switch ($utility) {
         $results[] = "- fix_htaccess: Fix routing and .htaccess configuration";
         $results[] = "- create_admin: Create admin user and assign roles";
         $results[] = "- role_permission_seeder: Run Role and Permission Seeder";
+        $results[] = "- update_build: Update build directory timestamps";
         $results[] = "- obfuscate: Hide this utility file with a random name";
         break;
 }
@@ -2310,6 +2361,14 @@ if ($api_mode) {
                 <p>Fix Vite manifest missing errors in production</p>
                 <div class="actions">
                     <a href="?utility=vite_assets" class="btn">Fix Vite Assets</a>
+                </div>
+            </div>
+            
+            <div class="utility-card">
+                <h3>Build Directory</h3>
+                <p>Update build directory timestamps to reflect latest deployment</p>
+                <div class="actions">
+                    <a href="?utility=update_build" class="btn">Update Build Timestamps</a>
                 </div>
             </div>
             
