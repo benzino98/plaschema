@@ -35,10 +35,10 @@
                 @if($news->image_path)
                 <div class="mb-8 rounded-lg overflow-hidden" style="aspect-ratio: 16/9;">
                     <x-responsive-image
-                        :path-small="$news->image_path_small"
-                        :path-medium="$news->image_path_medium"
-                        :path-large="$news->image_path_large"
-                        :path-original="$news->image_path"
+                        :path-small="ImageHelper::formatPath($news->image_path_small)"
+                        :path-medium="ImageHelper::formatPath($news->image_path_medium)"
+                        :path-large="ImageHelper::formatPath($news->image_path_large)"
+                        :path-original="ImageHelper::formatPath($news->image_path)"
                         :alt="$news->title"
                         class="w-full h-full object-cover"
                         loading="lazy"
@@ -98,7 +98,7 @@
                             <a href="{{ route('news.show', $relatedItem->slug) }}" class="flex items-start group">
                                 <div class="w-16 h-16 rounded overflow-hidden flex-shrink-0">
                                     @if($relatedItem->image_path_small)
-                                        <img src="{{ asset('storage/' . $relatedItem->image_path_small) }}" alt="{{ $relatedItem->title }}" class="w-full h-full object-cover" loading="lazy" style="object-position: center 20%;">
+                                        <img src="{{ ImageHelper::url($relatedItem->image_path_small) }}" alt="{{ $relatedItem->title }}" class="w-full h-full object-cover" loading="lazy" style="object-position: center 20%;">
                                     @else
                                         <img src="{{ asset('images/news-placeholder.jpg') }}" alt="News" class="w-full h-full object-cover" loading="lazy">
                                     @endif
@@ -152,10 +152,10 @@
                 @foreach($relatedNews->take(3) as $item)
                     <x-card 
                         title="{{ $item->title }}" 
-                        image="{{ $item->image_path }}"
-                        imageSmall="{{ $item->image_path_small }}"
-                        imageMedium="{{ $item->image_path_medium }}"
-                        imageLarge="{{ $item->image_path_large }}"
+                        image="{{ ImageHelper::formatPath($item->image_path) }}"
+                        imageSmall="{{ ImageHelper::formatPath($item->image_path_small) }}"
+                        imageMedium="{{ ImageHelper::formatPath($item->image_path_medium) }}"
+                        imageLarge="{{ ImageHelper::formatPath($item->image_path_large) }}"
                         animation="slide-up"
                         url="{{ route('news.show', $item->slug) }}"
                         aspectRatio="16/9"

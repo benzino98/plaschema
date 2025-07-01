@@ -56,10 +56,10 @@
                 @foreach($featuredNews as $item)
                     <x-card 
                         title="{{ $item->title }}" 
-                        image="{{ $item->image_path }}"
-                        imageSmall="{{ $item->image_path_small }}"
-                        imageMedium="{{ $item->image_path_medium }}"
-                        imageLarge="{{ $item->image_path_large }}"
+                        image="{{ ImageHelper::formatPath($item->image_path) }}"
+                        imageSmall="{{ ImageHelper::formatPath($item->image_path_small) }}"
+                        imageMedium="{{ ImageHelper::formatPath($item->image_path_medium) }}"
+                        imageLarge="{{ ImageHelper::formatPath($item->image_path_large) }}"
                         animation="slide-up"
                         url="{{ route('news.show', $item->slug) }}"
                         aspectRatio="16/9"
@@ -89,10 +89,10 @@
                 @foreach($latestNews as $item)
                     <x-card 
                         title="{{ $item->title }}" 
-                        image="{{ $item->image_path ?: asset('images/news-placeholder.jpg') }}"
-                        imageSmall="{{ $item->image_path_small }}"
-                        imageMedium="{{ $item->image_path_medium }}"
-                        imageLarge="{{ $item->image_path_large }}"
+                        image="{{ $item->image_path ? ImageHelper::formatPath($item->image_path) : asset('images/news-placeholder.jpg') }}"
+                        imageSmall="{{ ImageHelper::formatPath($item->image_path_small) }}"
+                        imageMedium="{{ ImageHelper::formatPath($item->image_path_medium) }}"
+                        imageLarge="{{ ImageHelper::formatPath($item->image_path_large) }}"
                         animation="slide-up"
                         url="{{ route('news.show', $item->slug) }}"
                         aspectRatio="16/9"
