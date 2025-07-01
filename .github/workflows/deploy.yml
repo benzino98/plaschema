@@ -272,6 +272,35 @@ jobs:
           state-name: .ftp-deploy-sync-state-public.json
           log-level: verbose
           timeout: 600000
+          exclude: |
+            **/storage/**
+
+      # Force update build directory
+      - name: Force update build directory
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./deployment/public_html/build/
+          server-dir: ./public_html/build/
+          dangerous-clean-slate: true # Force clean and update the build directory
+          state-name: .ftp-deploy-sync-state-build.json
+          log-level: verbose
+          timeout: 600000
+
+      # Update build directory timestamps
+      - name: Update build directory timestamps
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=update_build
+          method: "GET"
+          timeout: 120000
+          preventFailureOnNoResponse: true
+          ignoreStatusCodes: "404,500"
+          retry: 3
+          retryWait: 10000
+        continue-on-error: true
 
       # Pause to ensure files are fully uploaded and accessible
       - name: Pause before post-deployment steps
