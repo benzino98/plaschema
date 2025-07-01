@@ -50,6 +50,11 @@ if (file_exists('/home/plaschem/laravel')) {
     $response['script_path'] = __DIR__;
 }
 
+// Add PHP info for debugging
+$response['php_version'] = PHP_VERSION;
+$response['symlink_function_exists'] = function_exists('symlink') ? 'Yes' : 'No';
+$response['is_callable_symlink'] = is_callable('symlink') ? 'Yes' : 'No';
+
 // Function to check if a path exists and is writable
 function check_path_writable($path) {
     if (!file_exists($path)) {
@@ -108,30 +113,51 @@ if (file_exists($public_path)) {
             } else {
                 $response['details'][] = "Failed to remove existing directory: $public_path";
             }
+        } else {
+            // It's a regular file, remove it
+            if (unlink($public_path)) {
+                $response['details'][] = "Removed existing file: $public_path";
+            } else {
+                $response['details'][] = "Failed to remove existing file: $public_path";
+            }
         }
     }
 }
 
-// Create the symbolic link
-if (symlink($storage_path, $public_path)) {
-    $response['success'] = true;
-    $response['message'] = "Storage link created successfully";
-    $response['details'][] = "Created symbolic link from $public_path to $storage_path";
+// Check if symlink function is available
+if (function_exists('symlink')) {
+    // Try to create the symbolic link
+    try {
+        if (symlink($storage_path, $public_path)) {
+            $response['success'] = true;
+            $response['message'] = "Storage link created successfully";
+            $response['details'][] = "Created symbolic link from $public_path to $storage_path";
+        } else {
+            $response['message'] = "Failed to create storage link";
+            $response['details'][] = "Error creating symbolic link: " . error_get_last()['message'] ?? 'Unknown error';
+            // Fall back to alternative method
+            $use_alternative = true;
+        }
+    } catch (Exception $e) {
+        $response['details'][] = "Exception when creating symlink: " . $e->getMessage();
+        $use_alternative = true;
+    }
 } else {
-    $response['message'] = "Failed to create storage link";
-    $response['details'][] = "Error creating symbolic link: " . error_get_last()['message'] ?? 'Unknown error';
+    $response['details'][] = "Symlink function not available. Using alternative method...";
+    $use_alternative = true;
+}
+
+// Use alternative method if symlink failed or is not available
+if (isset($use_alternative) && $use_alternative) {
+    $response['details'][] = "Using alternative method for storage link...";
     
-    // Try alternative method using file_put_contents for shared hosting that doesn't support symlinks
-    if (!function_exists('symlink') || !@symlink($storage_path, $public_path)) {
-        $response['details'][] = "Symlink function not available or failed. Trying alternative method...";
-        
-        // Create a PHP file that redirects to the actual file
-        $redirect_content = <<<EOT
+    // Create a PHP file that redirects to the actual file
+    $redirect_content = <<<EOT
 <?php
 // This is a workaround for environments where symlinks are not supported
 \$path = '{$storage_path}' . substr(\$_SERVER['REQUEST_URI'], strlen('/storage'));
 if (file_exists(\$path)) {
-    \$mime = mime_content_type(\$path);
+    \$mime = mime_content_type(\$path) ?: 'application/octet-stream';
     header('Content-Type: ' . \$mime);
     readfile(\$path);
     exit;
@@ -140,13 +166,12 @@ http_response_code(404);
 echo "File not found";
 EOT;
 
-        if (file_put_contents($public_path, $redirect_content)) {
-            $response['success'] = true;
-            $response['message'] = "Storage link alternative created successfully";
-            $response['details'][] = "Created alternative storage link solution";
-        } else {
-            $response['details'][] = "Alternative method also failed";
-        }
+    if (file_put_contents($public_path, $redirect_content)) {
+        $response['success'] = true;
+        $response['message'] = "Storage link alternative created successfully";
+        $response['details'][] = "Created alternative storage link solution";
+    } else {
+        $response['details'][] = "Alternative method also failed";
     }
 }
 
