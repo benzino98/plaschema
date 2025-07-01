@@ -25,9 +25,9 @@ $formatCardImageUrl = function($path) {
         return $path;
     }
     
-    // If it already has asset path, return as is
+    // If it already has storage/ prefix, use asset()
     if (str_starts_with($path, '/storage/') || str_starts_with($path, 'storage/')) {
-        return asset($path);
+        return asset(ltrim($path, '/'));
     }
     
     // Otherwise, assume it's a relative path in storage and prefix it
