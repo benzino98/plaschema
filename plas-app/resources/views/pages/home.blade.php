@@ -191,7 +191,7 @@
             @forelse($latestNews as $news)
                 <x-card 
                     title="{{ $news->title }}" 
-                    image="{{ $news->image_path_medium ? asset('storage/' . $news->image_path_medium) : asset('images/placeholder.svg') }}"
+                    image="{{ $news->image_path_medium ? ImageHelper::formatPath($news->image_path_medium) : asset('images/placeholder.svg') }}"
                     animation="slide-up"
                 >
                     <p class="text-gray-600 mb-4">{{ $news->excerpt }}</p>

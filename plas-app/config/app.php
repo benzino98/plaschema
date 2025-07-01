@@ -153,6 +153,7 @@ return [
         App\Providers\CacheServiceProvider::class,
         App\Providers\RepositoryServiceProvider::class,
         App\Providers\BladeServiceProvider::class,
+        App\Providers\ImageServiceProvider::class,
     ])->toArray(),
 
     /*
@@ -171,5 +172,6 @@ return [
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'Str' => Illuminate\Support\Str::class,
         'Image' => Intervention\Image\Facades\Image::class,
+        'ImageHelper' => App\Helpers\ImageHelper::class,
     ],
 ];
