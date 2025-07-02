@@ -42,11 +42,34 @@ class NewsController extends Controller
         $this->activityLogService = $activityLogService;
         $this->cacheService = $cacheService;
         
-        // Add permission middleware
-        $this->middleware('permission:view-news')->only(['index', 'show']);
-        $this->middleware('permission:create-news')->only(['create', 'store']);
-        $this->middleware('permission:edit-news')->only(['edit', 'update']);
-        $this->middleware('permission:delete-news')->only(['destroy', 'bulkAction']);
+        // Add permission middleware with exception for super admin
+        $this->middleware(function ($request, $next) {
+            // Check if user is super admin
+            if (auth()->check() && auth()->user()->hasRole('super-admin')) {
+                return $next($request);
+            }
+            
+            // Apply regular permission middleware for non-super-admin users
+            if (request()->route()->getName() === 'admin.news.index' || request()->route()->getName() === 'admin.news.show') {
+                if (!auth()->user()->can('view-news')) {
+                    abort(403, 'Unauthorized action.');
+                }
+            } elseif (request()->route()->getName() === 'admin.news.create' || request()->route()->getName() === 'admin.news.store') {
+                if (!auth()->user()->can('create-news')) {
+                    abort(403, 'Unauthorized action.');
+                }
+            } elseif (request()->route()->getName() === 'admin.news.edit' || request()->route()->getName() === 'admin.news.update') {
+                if (!auth()->user()->can('edit-news')) {
+                    abort(403, 'Unauthorized action.');
+                }
+            } elseif (request()->route()->getName() === 'admin.news.destroy' || request()->route()->getName() === 'admin.news.delete' || request()->route()->getName() === 'admin.news.bulk-action') {
+                if (!auth()->user()->can('delete-news')) {
+                    abort(403, 'Unauthorized action.');
+                }
+            }
+            
+            return $next($request);
+        });
     }
 
     /**
@@ -239,8 +262,11 @@ class NewsController extends Controller
      */
     public function deleteConfirm(string $id)
     {
-        // Check if the user has permission to delete news
-        if (!auth()->user()->can('delete-news')) {
+        // Check if the user is a super admin or has permission to delete news
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole('super-admin');
+        
+        if (!$isSuperAdmin && !$user->can('delete-news')) {
             return redirect()->route('admin.news.index')
                 ->with('error', 'You do not have permission to delete news articles.');
         }
