@@ -7,7 +7,7 @@
 
 // Get image paths from database
 $db_host = 'localhost';
-$db_name = 'plaschem_db'; // Adjust if your database name is different
+$db_name = 'plas_app_db'; // Adjust if your database name is different
 $db_user = 'plaschem_user'; // Adjust if your database user is different
 $db_pass = ''; // Leave blank for security, you'll need to fill this in manually
 
