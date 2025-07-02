@@ -72,6 +72,71 @@ class CacheService
     }
 
     /**
+     * Retrieve an expired item from the cache if possible.
+     * This method tries to get a value from the cache storage
+     * even if it's technically expired but still physically present.
+     * 
+     * Note: Only works with some cache drivers like database and file.
+     * 
+     * @param string $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getExpired(string $key, $default = null)
+    {
+        $prefixedKey = $this->prefix . $key;
+        
+        // For database cache driver
+        if (config('cache.default') === 'database') {
+            try {
+                $cacheRecord = DB::table(config('cache.stores.database.table', 'cache'))
+                    ->where('key', '=', $prefixedKey)
+                    ->first();
+                
+                if ($cacheRecord) {
+                    // The value exists but might be expired
+                    try {
+                        return unserialize($cacheRecord->value);
+                    } catch (\Exception $e) {
+                        Log::warning("Failed to unserialize expired cache value", [
+                            'key' => $key, 
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning("Error retrieving expired cache from database", [
+                    'key' => $key, 
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
+        // For file cache driver
+        if (config('cache.default') === 'file') {
+            try {
+                $path = storage_path('framework/cache/data/' . sha1($prefixedKey));
+                if (file_exists($path)) {
+                    $contents = file_get_contents($path);
+                    $data = unserialize($contents);
+                    
+                    // The file exists but might be expired
+                    if (is_array($data) && isset($data[0])) {
+                        return $data[0];
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning("Error retrieving expired cache from file", [
+                    'key' => $key, 
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
+        return $default;
+    }
+
+    /**
      * Remove an item from the cache
      * 
      * @param string $key
