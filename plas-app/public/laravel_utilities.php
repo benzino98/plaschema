@@ -2155,72 +2155,8 @@ function handle_update_permissions(&$results) {
         $results[] = "🔄 Running UpdatePermissionsSeeder...";
         
         try {
-            // Check if the database connection supports transactions
-            $supportsTransactions = false;
-            
-            try {
-                $pdo = $app['db']->connection()->getPdo();
-                // Only use transactions if connection is active and driver supports them
-                $supportsTransactions = $pdo && !$pdo->inTransaction();
-            } catch (Exception $e) {
-                $results[] = "⚠️ Database transaction check failed: " . $e->getMessage();
-                // Continue without transactions
-            }
-            
-            if ($supportsTransactions) {
-                // Start a database transaction
-                try {
-                    $app['db']->beginTransaction();
-                    $results[] = "✅ Database transaction started.";
-                } catch (Exception $e) {
-                    $results[] = "⚠️ Could not start transaction: " . $e->getMessage();
-                    $supportsTransactions = false;
-                }
-            } else {
-                $results[] = "⚠️ Running seeder without transaction support.";
-            }
-            
-            // Set up a custom output handler to capture seeder output
-            $outputBuffer = [];
-            $seeder->setCommand(new class($outputBuffer) {
-                protected $buffer;
-                
-                public function __construct(&$buffer) {
-                    $this->buffer = &$buffer;
-                }
-                
-                public function info($message) {
-                    $this->buffer[] = "ℹ️ " . $message;
-                }
-                
-                public function error($message) {
-                    $this->buffer[] = "❌ " . $message;
-                }
-                
-                public function warn($message) {
-                    $this->buffer[] = "⚠️ " . $message;
-                }
-            });
-            
-            // Run the seeder
+            // Run the seeder directly without transaction handling
             $seeder->run();
-            
-            // Add seeder output to results
-            $results = array_merge($results, $outputBuffer);
-            
-            // Commit the transaction if we're using transactions
-            if ($supportsTransactions && $app['db']->transactionLevel() > 0) {
-                try {
-                    $app['db']->commit();
-                    $results[] = "✅ Database transaction committed.";
-                } catch (Exception $e) {
-                    $results[] = "⚠️ Could not commit transaction: " . $e->getMessage();
-                    // Try to rollback if commit fails
-                    if ($app['db']->transactionLevel() > 0) {
-                        $app['db']->rollBack();
-                    }
-                }
-            }
             
             $results[] = "✅ Successfully updated permissions and role assignments!";
             
@@ -2238,17 +2174,40 @@ function handle_update_permissions(&$results) {
                 $results[] = "⚠️ Could not count items: " . $e->getMessage();
             }
             
-        } catch (Exception $e) {
-            // Rollback the transaction in case of error (only if we're using transactions)
-            if (isset($app['db']) && method_exists($app['db'], 'transactionLevel') && $app['db']->transactionLevel() > 0) {
-                try {
-                    $app['db']->rollBack();
-                    $results[] = "⚠️ Transaction rolled back due to error.";
-                } catch (Exception $rollbackEx) {
-                    $results[] = "⚠️ Could not rollback transaction: " . $rollbackEx->getMessage();
+            // Check logs for additional information
+            try {
+                $logPath = storage_path('logs/laravel.log');
+                if (file_exists($logPath)) {
+                    // Get the last 20 lines of the log file that mention UpdatePermissionsSeeder
+                    $logContent = file_get_contents($logPath);
+                    $logLines = explode("\n", $logContent);
+                    $relevantLines = [];
+                    
+                    foreach (array_reverse($logLines) as $line) {
+                        if (strpos($line, 'UpdatePermissionsSeeder') !== false) {
+                            $relevantLines[] = $line;
+                            if (count($relevantLines) >= 20) {
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!empty($relevantLines)) {
+                        $results[] = "<details>";
+                        $results[] = "<summary>Log entries from UpdatePermissionsSeeder</summary>";
+                        $results[] = "<pre style='max-height: 300px; overflow-y: auto;'>";
+                        foreach (array_reverse($relevantLines) as $line) {
+                            $results[] = htmlspecialchars($line);
+                        }
+                        $results[] = "</pre>";
+                        $results[] = "</details>";
+                    }
                 }
+            } catch (Exception $e) {
+                $results[] = "⚠️ Could not read log file: " . $e->getMessage();
             }
             
+        } catch (Exception $e) {
             $results[] = "❌ Error updating permissions: " . $e->getMessage();
             $results[] = "Error details: " . $e->getTraceAsString();
         }

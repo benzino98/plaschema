@@ -16,6 +16,9 @@ class UpdatePermissionsSeeder extends Seeder
      */
     public function run(): void
     {
+        // Set up logging
+        Log::info('Starting UpdatePermissionsSeeder');
+        
         // Define all expected permissions
         $permissionModules = [
             // User management permissions
@@ -98,7 +101,7 @@ class UpdatePermissionsSeeder extends Seeder
         $addedPermissions = [];
         $existingCount = count($existingPermissions);
         
-        $this->command->info("Found {$existingCount} existing permissions");
+        Log::info("Found {$existingCount} existing permissions");
 
         // Add only missing permissions
         foreach ($permissionModules as $module => $permissions) {
@@ -110,12 +113,12 @@ class UpdatePermissionsSeeder extends Seeder
                         'module' => $module,
                     ]);
                     $addedPermissions[] = $slug;
-                    $this->command->info("Added missing permission: {$slug}");
+                    Log::info("Added missing permission: {$slug}");
                 }
             }
         }
 
-        $this->command->info("Added " . count($addedPermissions) . " missing permissions");
+        Log::info("Added " . count($addedPermissions) . " missing permissions");
 
         // Get roles
         $superAdmin = Role::where('slug', 'super-admin')->first();
@@ -124,7 +127,7 @@ class UpdatePermissionsSeeder extends Seeder
         $viewer = Role::where('slug', 'viewer')->first();
 
         if (!$superAdmin || !$admin || !$editor || !$viewer) {
-            $this->command->error("One or more required roles are missing. Please run the RoleAndPermissionSeeder first.");
+            Log::error("One or more required roles are missing. Please run the RoleAndPermissionSeeder first.");
             return;
         }
 
@@ -140,7 +143,7 @@ class UpdatePermissionsSeeder extends Seeder
             $existingRolePermMap[$key] = true;
         }
         
-        $this->command->info("Found " . count($existingRolePermMap) . " existing role-permission assignments");
+        Log::info("Found " . count($existingRolePermMap) . " existing role-permission assignments");
 
         // Function to sync missing permissions for a role
         $syncMissingPermissions = function($role, $permissions) use ($existingRolePermMap) {
@@ -162,23 +165,23 @@ class UpdatePermissionsSeeder extends Seeder
 
         // Super admin gets all permissions
         $addedSuperAdmin = $syncMissingPermissions($superAdmin, $allPermissions);
-        $this->command->info("Added {$addedSuperAdmin} missing permissions to Super Admin role");
+        Log::info("Added {$addedSuperAdmin} missing permissions to Super Admin role");
 
         // Admin gets all permissions except role management
         $adminPermissions = Permission::whereNot('module', 'roles')->get();
         $addedAdmin = $syncMissingPermissions($admin, $adminPermissions);
-        $this->command->info("Added {$addedAdmin} missing permissions to Admin role");
+        Log::info("Added {$addedAdmin} missing permissions to Admin role");
 
         // Editor gets content permissions (providers, news, faqs, resources) but not user/role management
         $editorPermissions = Permission::whereIn('module', ['providers', 'news', 'faqs', 'resources', 'resource-categories'])->get();
         $addedEditor = $syncMissingPermissions($editor, $editorPermissions);
-        $this->command->info("Added {$addedEditor} missing permissions to Editor role");
+        Log::info("Added {$addedEditor} missing permissions to Editor role");
 
         // Viewer gets only view permissions
         $viewerPermissions = Permission::where('slug', 'like', 'view-%')->get();
         $addedViewer = $syncMissingPermissions($viewer, $viewerPermissions);
-        $this->command->info("Added {$addedViewer} missing permissions to Viewer role");
+        Log::info("Added {$addedViewer} missing permissions to Viewer role");
 
-        $this->command->info("Permission update completed successfully");
+        Log::info("Permission update completed successfully");
     }
 } 
