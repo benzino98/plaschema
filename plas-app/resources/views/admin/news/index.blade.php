@@ -140,13 +140,18 @@
                                 <a href="{{ route('admin.news.show', $article->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <form action="{{ route('admin.news.destroy', $article->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this news article?');">
+                                <form action="{{ route('admin.news.destroy', $article->id) }}" method="POST" class="inline delete-news-form" onsubmit="return confirm('Are you sure you want to delete this news article?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                <!-- Fallback delete link using GET method -->
+                                <a href="{{ route('admin.news.delete-confirm', $article->id) }}" class="text-red-600 hover:text-red-900 ml-3" 
+                                   onclick="return confirm('Are you sure you want to delete this news article?');" title="Alternative Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -176,12 +181,42 @@
     // Make sure DOM is fully loaded before attaching event listeners
     document.addEventListener('DOMContentLoaded', function() {
         // Fix for individual delete forms
-        document.querySelectorAll('form[action*="/admin/news/"][method="POST"]').forEach(function(form) {
+        document.querySelectorAll('.delete-news-form').forEach(function(form) {
             form.addEventListener('submit', function(e) {
-                e.stopPropagation(); // Prevent event bubbling up to parent forms
+                e.preventDefault(); // Prevent default form submission
                 
-                // Confirm is already handled by the onsubmit attribute
-                // No need to add another confirmation dialog
+                if (confirm('Are you sure you want to delete this news article?')) {
+                    // Get the CSRF token from meta tag
+                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
+                    // Create a fetch request to delete the news article
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            '_method': 'DELETE'
+                        })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // If successful, redirect to the news index page
+                            window.location.href = "{{ route('admin.news.index') }}";
+                        } else {
+                            // If there's an error, show the error message
+                            return response.json().then(error => {
+                                throw new Error(error.message || 'Error deleting news article');
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error deleting news article: ' + error.message);
+                    });
+                }
             });
         });
     
