@@ -2132,6 +2132,133 @@ function handle_obfuscate_file(&$results) {
     }
 }
 
+// Function to update permissions and role assignments
+function handle_update_permissions(&$results) {
+    try {
+        // Bootstrap Laravel
+        list($app, $kernel) = bootstrap_laravel();
+        
+        $results[] = "<h3>Updating Permissions and Role Assignments</h3>";
+        
+        // Check if the UpdatePermissionsSeeder class exists
+        $seederClass = 'Database\\Seeders\\UpdatePermissionsSeeder';
+        if (!class_exists($seederClass)) {
+            $results[] = "❌ Error: UpdatePermissionsSeeder class not found.";
+            $results[] = "Please make sure the seeder file exists at database/seeders/UpdatePermissionsSeeder.php";
+            return;
+        }
+        
+        // Create an instance of the seeder
+        $seeder = new $seederClass();
+        
+        // Run the seeder
+        $results[] = "🔄 Running UpdatePermissionsSeeder...";
+        
+        try {
+            // Check if the database connection supports transactions
+            $supportsTransactions = false;
+            
+            try {
+                $pdo = $app['db']->connection()->getPdo();
+                // Only use transactions if connection is active and driver supports them
+                $supportsTransactions = $pdo && !$pdo->inTransaction();
+            } catch (Exception $e) {
+                $results[] = "⚠️ Database transaction check failed: " . $e->getMessage();
+                // Continue without transactions
+            }
+            
+            if ($supportsTransactions) {
+                // Start a database transaction
+                try {
+                    $app['db']->beginTransaction();
+                    $results[] = "✅ Database transaction started.";
+                } catch (Exception $e) {
+                    $results[] = "⚠️ Could not start transaction: " . $e->getMessage();
+                    $supportsTransactions = false;
+                }
+            } else {
+                $results[] = "⚠️ Running seeder without transaction support.";
+            }
+            
+            // Set up a custom output handler to capture seeder output
+            $outputBuffer = [];
+            $seeder->setCommand(new class($outputBuffer) {
+                protected $buffer;
+                
+                public function __construct(&$buffer) {
+                    $this->buffer = &$buffer;
+                }
+                
+                public function info($message) {
+                    $this->buffer[] = "ℹ️ " . $message;
+                }
+                
+                public function error($message) {
+                    $this->buffer[] = "❌ " . $message;
+                }
+                
+                public function warn($message) {
+                    $this->buffer[] = "⚠️ " . $message;
+                }
+            });
+            
+            // Run the seeder
+            $seeder->run();
+            
+            // Add seeder output to results
+            $results = array_merge($results, $outputBuffer);
+            
+            // Commit the transaction if we're using transactions
+            if ($supportsTransactions && $app['db']->transactionLevel() > 0) {
+                try {
+                    $app['db']->commit();
+                    $results[] = "✅ Database transaction committed.";
+                } catch (Exception $e) {
+                    $results[] = "⚠️ Could not commit transaction: " . $e->getMessage();
+                    // Try to rollback if commit fails
+                    if ($app['db']->transactionLevel() > 0) {
+                        $app['db']->rollBack();
+                    }
+                }
+            }
+            
+            $results[] = "✅ Successfully updated permissions and role assignments!";
+            
+            // Count the number of roles and permissions
+            try {
+                $roleCount = $app['db']->table('roles')->count();
+                $permissionCount = $app['db']->table('permissions')->count();
+                $rolePermissionCount = $app['db']->table('role_permission')->count();
+                
+                $results[] = "📊 Current Database Status:";
+                $results[] = "- {$roleCount} roles in database";
+                $results[] = "- {$permissionCount} permissions in database";
+                $results[] = "- {$rolePermissionCount} role-permission associations in database";
+            } catch (Exception $e) {
+                $results[] = "⚠️ Could not count items: " . $e->getMessage();
+            }
+            
+        } catch (Exception $e) {
+            // Rollback the transaction in case of error (only if we're using transactions)
+            if (isset($app['db']) && method_exists($app['db'], 'transactionLevel') && $app['db']->transactionLevel() > 0) {
+                try {
+                    $app['db']->rollBack();
+                    $results[] = "⚠️ Transaction rolled back due to error.";
+                } catch (Exception $rollbackEx) {
+                    $results[] = "⚠️ Could not rollback transaction: " . $rollbackEx->getMessage();
+                }
+            }
+            
+            $results[] = "❌ Error updating permissions: " . $e->getMessage();
+            $results[] = "Error details: " . $e->getTraceAsString();
+        }
+        
+    } catch (Exception $e) {
+        $results[] = "❌ Error initializing Laravel: " . $e->getMessage();
+        $results[] = "Error details: " . $e->getTraceAsString();
+    }
+}
+
 // Main execution
 // ===============================================================
 
@@ -2192,6 +2319,10 @@ switch ($utility) {
     case 'update_build':
         handle_update_build($results);
         break;
+        
+    case 'update_permissions':
+        handle_update_permissions($results);
+        break;
     
     // ... existing code ...
         
@@ -2211,6 +2342,7 @@ switch ($utility) {
         $results[] = "- fix_htaccess: Fix routing and .htaccess configuration";
         $results[] = "- create_admin: Create admin user and assign roles";
         $results[] = "- role_permission_seeder: Run Role and Permission Seeder";
+        $results[] = "- update_permissions: Fix missing permissions";
         $results[] = "- update_build: Update build directory timestamps";
         $results[] = "- obfuscate: Hide this utility file with a random name";
         break;
@@ -2409,6 +2541,7 @@ if ($api_mode) {
                 <div class="actions">
                     <a href="?utility=create_admin" class="btn">Create Admin User</a>
                     <a href="?utility=role_permission_seeder" class="btn">Run Role & Permission Seeder</a>
+                    <a href="?utility=update_permissions" class="btn">Fix Missing Permissions</a>
                 </div>
             </div>
             
