@@ -39,6 +39,8 @@ return [
         'url' => env('EXTERNAL_API_URL', 'https://enrollments.plaschema.app/api'),
         'timeout' => env('EXTERNAL_API_TIMEOUT', 30),
         'connect_timeout' => env('EXTERNAL_API_CONNECT_TIMEOUT', 15),
+        'verify_ssl' => env('EXTERNAL_API_VERIFY_SSL', true),
+        'alternative_host' => env('EXTERNAL_API_ALTERNATIVE_HOST', null),
     ],
 
 ];

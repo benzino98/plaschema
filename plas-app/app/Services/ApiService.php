@@ -69,12 +69,10 @@ class ApiService
         
         // No cache, try to fetch from API
         try {
-            $response = Http::timeout($this->timeout)
-                ->retry(5, 3000) // Retry 5 times with 3 seconds between attempts
-                ->connectTimeout($this->connectTimeout) // Increased connection timeout
-                ->get($this->baseUrl . '/data-records');
+            // Try with the primary URL first
+            $response = $this->makeApiRequest($this->baseUrl . '/data-records');
             
-            if ($response->successful()) {
+            if ($response && $response->successful()) {
                 $data = $response->json();
                 
                 // Map and format the data as needed - fix to access the nested data
@@ -96,30 +94,102 @@ class ApiService
                 return $statistics;
             }
             
-            Log::warning('External API returned unsuccessful response', [
-                'status' => $response->status(),
-                'body' => $response->body()
+            // Log the failure but continue with fallback attempts
+            Log::warning('Primary API URL returned unsuccessful response', [
+                'status' => $response ? $response->status() : 'No response',
+                'body' => $response ? $response->body() : 'No response body'
             ]);
+            
         } catch (\Exception $e) {
             // Detailed error logging with API URL
-            Log::error('Failed to fetch enrollment statistics from external API', [
+            Log::error('Failed to fetch enrollment statistics from primary API URL', [
                 'exception' => $e->getMessage(),
                 'api_url' => $this->baseUrl . '/data-records',
                 'timeout_setting' => $this->timeout,
                 'connect_timeout_setting' => $this->connectTimeout
             ]);
-            
-            // If there's an existing cached value that's expired but still available
-            $oldCache = $this->cacheService->getExpired($cacheKey);
-            if ($oldCache) {
-                Log::info('Using expired cache data for enrollment statistics due to API failure');
-                // Add a flag to indicate this is expired data
-                $oldCache['is_expired'] = true;
-                return $oldCache;
-            }
         }
         
-        // API failed, use fallback demo data
+        // Try with fallback options if primary URL failed
+        try {
+            // Option 1: Try different protocol
+            $alternativeUrl = str_replace('https://', 'http://', $this->baseUrl);
+            if ($alternativeUrl !== $this->baseUrl) {
+                Log::info('Trying alternative protocol (HTTP) for API call');
+                $response = $this->makeApiRequest($alternativeUrl . '/data-records');
+                
+                if ($response && $response->successful()) {
+                    $data = $response->json();
+                    
+                    // Map and format the data
+                    $statistics = [
+                        'total_count' => $data['data']['total_count'] ?? 0,
+                        'formal_count' => $data['data']['formal_count'] ?? 0,
+                        'total_informal_count' => $data['data']['total_informal_count'] ?? 0,
+                        'bhcpf_count' => $data['data']['bhcpf_count'] ?? 0,
+                        'equity_count' => $data['data']['equity_count'] ?? 0,
+                        'spouse_count' => $data['data']['spouse_count'] ?? 0,
+                        'children_count' => $data['data']['children_count'] ?? 0,
+                        'principals_count' => $data['data']['principals_count'] ?? 0,
+                        'last_updated' => now()->toDateTimeString(),
+                        'used_alternative_url' => true,
+                    ];
+                    
+                    // Cache the result
+                    $this->cacheService->put($cacheKey, $statistics, $cacheDuration);
+                    
+                    return $statistics;
+                }
+            }
+            
+            // Option 2: Try IP address directly if hostname lookup is failing
+            // This would need to be configured or added to your .env file
+            $alternativeHost = config('services.external_api.alternative_host');
+            if ($alternativeHost) {
+                Log::info('Trying alternative host for API call', ['host' => $alternativeHost]);
+                $alternativeUrl = str_replace(parse_url($this->baseUrl, PHP_URL_HOST), $alternativeHost, $this->baseUrl);
+                $response = $this->makeApiRequest($alternativeUrl . '/data-records');
+                
+                if ($response && $response->successful()) {
+                    $data = $response->json();
+                    
+                    // Map and format the data
+                    $statistics = [
+                        'total_count' => $data['data']['total_count'] ?? 0,
+                        'formal_count' => $data['data']['formal_count'] ?? 0,
+                        'total_informal_count' => $data['data']['total_informal_count'] ?? 0,
+                        'bhcpf_count' => $data['data']['bhcpf_count'] ?? 0,
+                        'equity_count' => $data['data']['equity_count'] ?? 0,
+                        'spouse_count' => $data['data']['spouse_count'] ?? 0,
+                        'children_count' => $data['data']['children_count'] ?? 0,
+                        'principals_count' => $data['data']['principals_count'] ?? 0,
+                        'last_updated' => now()->toDateTimeString(),
+                        'used_alternative_host' => true,
+                    ];
+                    
+                    // Cache the result
+                    $this->cacheService->put($cacheKey, $statistics, $cacheDuration);
+                    
+                    return $statistics;
+                }
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch enrollment statistics from alternative URLs', [
+                'exception' => $e->getMessage()
+            ]);
+        }
+        
+        // If there's an existing cached value that's expired but still available
+        $oldCache = $this->cacheService->getExpired($cacheKey);
+        if ($oldCache) {
+            Log::info('Using expired cache data for enrollment statistics due to API failure');
+            // Add a flag to indicate this is expired data
+            $oldCache['is_expired'] = true;
+            return $oldCache;
+        }
+        
+        // All API attempts failed, use fallback demo data
         $fallbackData = $this->getFallbackData();
         
         // Cache the fallback data for a shorter period
@@ -139,12 +209,10 @@ class ApiService
         
         // Force a fresh fetch from the API
         try {
-            $response = Http::timeout($this->timeout)
-                ->retry(5, 3000) // Retry 5 times with 3 seconds between attempts
-                ->connectTimeout($this->connectTimeout)
-                ->get($this->baseUrl . '/data-records');
+            // Try with the primary URL first
+            $response = $this->makeApiRequest($this->baseUrl . '/data-records');
             
-            if ($response->successful()) {
+            if ($response && $response->successful()) {
                 $data = $response->json();
                 
                 $statistics = [
@@ -165,16 +233,86 @@ class ApiService
                 return $statistics;
             }
             
-            Log::warning('External API returned unsuccessful response during refresh', [
-                'status' => $response->status(),
-                'body' => $response->body()
+            // Log the failure but continue with fallback attempts
+            Log::warning('Primary API URL returned unsuccessful response during refresh', [
+                'status' => $response ? $response->status() : 'No response',
+                'body' => $response ? $response->body() : 'No response body'
             ]);
         } catch (\Exception $e) {
-            Log::error('Failed to refresh enrollment statistics from external API', [
+            Log::error('Failed to refresh enrollment statistics from primary API URL', [
                 'exception' => $e->getMessage(),
                 'api_url' => $this->baseUrl . '/data-records',
                 'timeout_setting' => $this->timeout,
                 'connect_timeout_setting' => $this->connectTimeout
+            ]);
+        }
+        
+        // Try with fallback options if primary URL failed
+        try {
+            // Option 1: Try different protocol
+            $alternativeUrl = str_replace('https://', 'http://', $this->baseUrl);
+            if ($alternativeUrl !== $this->baseUrl) {
+                Log::info('Trying alternative protocol (HTTP) for API refresh');
+                $response = $this->makeApiRequest($alternativeUrl . '/data-records');
+                
+                if ($response && $response->successful()) {
+                    $data = $response->json();
+                    
+                    // Map and format the data
+                    $statistics = [
+                        'total_count' => $data['data']['total_count'] ?? 0,
+                        'formal_count' => $data['data']['formal_count'] ?? 0,
+                        'total_informal_count' => $data['data']['total_informal_count'] ?? 0,
+                        'bhcpf_count' => $data['data']['bhcpf_count'] ?? 0,
+                        'equity_count' => $data['data']['equity_count'] ?? 0,
+                        'spouse_count' => $data['data']['spouse_count'] ?? 0,
+                        'children_count' => $data['data']['children_count'] ?? 0,
+                        'principals_count' => $data['data']['principals_count'] ?? 0,
+                        'last_updated' => now()->toDateTimeString(),
+                        'used_alternative_url' => true,
+                    ];
+                    
+                    // Cache the result
+                    $this->cacheService->put($cacheKey, $statistics, 1800);
+                    
+                    return $statistics;
+                }
+            }
+            
+            // Option 2: Try IP address directly if hostname lookup is failing
+            $alternativeHost = config('services.external_api.alternative_host');
+            if ($alternativeHost) {
+                Log::info('Trying alternative host for API refresh', ['host' => $alternativeHost]);
+                $alternativeUrl = str_replace(parse_url($this->baseUrl, PHP_URL_HOST), $alternativeHost, $this->baseUrl);
+                $response = $this->makeApiRequest($alternativeUrl . '/data-records');
+                
+                if ($response && $response->successful()) {
+                    $data = $response->json();
+                    
+                    // Map and format the data
+                    $statistics = [
+                        'total_count' => $data['data']['total_count'] ?? 0,
+                        'formal_count' => $data['data']['formal_count'] ?? 0,
+                        'total_informal_count' => $data['data']['total_informal_count'] ?? 0,
+                        'bhcpf_count' => $data['data']['bhcpf_count'] ?? 0,
+                        'equity_count' => $data['data']['equity_count'] ?? 0,
+                        'spouse_count' => $data['data']['spouse_count'] ?? 0,
+                        'children_count' => $data['data']['children_count'] ?? 0,
+                        'principals_count' => $data['data']['principals_count'] ?? 0,
+                        'last_updated' => now()->toDateTimeString(),
+                        'used_alternative_host' => true,
+                    ];
+                    
+                    // Cache the result
+                    $this->cacheService->put($cacheKey, $statistics, 1800);
+                    
+                    return $statistics;
+                }
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to refresh enrollment statistics from alternative URLs', [
+                'exception' => $e->getMessage()
             ]);
         }
         
@@ -207,5 +345,34 @@ class ApiService
             'last_updated' => now()->toDateTimeString(),
             'is_fallback' => true,
         ];
+    }
+
+    /**
+     * Make an API request with consistent settings
+     * 
+     * @param string $url
+     * @return \Illuminate\Http\Client\Response|null
+     */
+    protected function makeApiRequest($url)
+    {
+        try {
+            $request = Http::timeout($this->timeout)
+                ->retry(5, 3000) // Retry 5 times with 3 seconds between attempts
+                ->connectTimeout($this->connectTimeout); // Increased connection timeout
+            
+            // Option to disable SSL verification if needed (only in exceptional cases)
+            if (config('services.external_api.verify_ssl', true) === false) {
+                $request->withoutVerifying();
+            }
+            
+            // Make the request
+            return $request->get($url);
+        } catch (\Exception $e) {
+            Log::error('API request failed', [
+                'url' => $url,
+                'exception' => $e->getMessage()
+            ]);
+            return null;
+        }
     }
 } 
