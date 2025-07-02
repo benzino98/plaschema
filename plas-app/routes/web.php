@@ -90,6 +90,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('news', AdminNewsController::class);
         Route::get('news/activity/logs', [AdminNewsController::class, 'activity'])->name('news.activity');
         Route::post('news/bulk-action', [AdminNewsController::class, 'bulkAction'])->name('news.bulk-action');
+        Route::get('news/{id}/delete', [AdminNewsController::class, 'deleteConfirm'])->name('news.delete-confirm');
         
         // Healthcare Providers Management
         // Healthcare Providers Import Routes

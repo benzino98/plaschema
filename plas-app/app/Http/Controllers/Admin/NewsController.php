@@ -232,6 +232,60 @@ class NewsController extends Controller
     }
     
     /**
+     * Confirm and delete a news article via GET request (fallback method).
+     * 
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function deleteConfirm(string $id)
+    {
+        // Check if the user has permission to delete news
+        if (!auth()->user()->can('delete-news')) {
+            return redirect()->route('admin.news.index')
+                ->with('error', 'You do not have permission to delete news articles.');
+        }
+        
+        $news = News::findOrFail($id);
+        
+        try {
+            // Delete image if exists
+            if ($news->image_path) {
+                $this->imageService->delete($news->image_path);
+            }
+            if ($news->image_path_small) {
+                $this->imageService->delete($news->image_path_small);
+            }
+            if ($news->image_path_medium) {
+                $this->imageService->delete($news->image_path_medium);
+            }
+            if ($news->image_path_large) {
+                $this->imageService->delete($news->image_path_large);
+            }
+            
+            // Log the activity before deletion
+            $this->activityLogService->logDeleted($news);
+            
+            $news->delete();
+            
+            // Clear news-related caches
+            try {
+                $this->cacheService->forget('home_latest_news');
+                $this->cacheService->clearTag('news');
+                $this->cacheService->deleteByPattern('news_*');
+            } catch (\Exception $e) {
+                // Log cache error but don't fail the request
+                Log::warning('Cache clearing error: ' . $e->getMessage());
+            }
+            
+            return redirect()->route('admin.news.index')
+                ->with('success', 'News article deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.news.index')
+                ->with('error', 'There was a problem deleting the news article: ' . $e->getMessage());
+        }
+    }
+    
+    /**
      * Perform bulk actions on selected news articles.
      * 
      * @param  \Illuminate\Http\Request  $request
