@@ -160,6 +160,9 @@ jobs:
             echo "Backup .env file created."
           fi
 
+          # Never deploy CI .env — it overwrites production DB credentials and APP_KEY
+          rm -f deployment/laravel/.env
+
           # Remove CI-built config cache (contains /home/runner/... log paths)
           rm -f deployment/laravel/bootstrap/cache/config.php
           rm -f deployment/laravel/bootstrap/cache/routes-v7.php
@@ -262,6 +265,8 @@ jobs:
             **/node_modules/**
             **/tests/**
             **/.github/**
+            **/.env
+            **/.env.*
 
       # Deploy public files
       - name: Deploy public files

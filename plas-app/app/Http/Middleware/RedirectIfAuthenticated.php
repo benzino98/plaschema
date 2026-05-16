@@ -22,8 +22,13 @@ class RedirectIfAuthenticated
             if (Auth::guard($guard)->check()) {
                 $user = Auth::guard($guard)->user();
 
-                if ($request->is('admin*') && $user && $user->hasAnyAdminRole()) {
+                if ($user && $user->hasAnyAdminRole()) {
                     return redirect()->route('admin.dashboard');
+                }
+
+                // Allow non-admin users to stay on the login page (see error message)
+                if ($request->routeIs('login')) {
+                    return $next($request);
                 }
 
                 return redirect()->route('home');
