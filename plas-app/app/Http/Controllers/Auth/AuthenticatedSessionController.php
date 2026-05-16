@@ -34,13 +34,20 @@ class AuthenticatedSessionController extends Controller
         
         // Debug logs removed for clarity
         
-        // Check for admin roles and redirect to admin dashboard
-        if ($user && ($user->hasRole('admin') || $user->hasRole('super-admin') || $user->hasRole('editor') || $user->hasRole('viewer'))) {
-            // Use the named route for consistency
+        if ($user && $user->hasAnyAdminRole()) {
+            $intended = session()->pull('url.intended');
+
+            if ($intended && str_contains($intended, '/admin')) {
+                return redirect($intended);
+            }
+
             return redirect()->route('admin.dashboard');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Non-admin users must not be sent back to /admin (avoids 403 after login)
+        session()->forget('url.intended');
+
+        return redirect()->intended(route('home', absolute: false));
     }
 
     /**

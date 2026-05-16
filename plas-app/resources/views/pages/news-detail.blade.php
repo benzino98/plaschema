@@ -2,6 +2,51 @@
 
 @section('title', $news->title)
 
+@push('styles')
+<style>
+    .news-content {
+        line-height: 1.8;
+        color: #374151;
+    }
+    
+    .news-content p {
+        margin-bottom: 1.5rem;
+        text-align: justify;
+        text-justify: inter-word;
+    }
+    
+    .news-content p:first-child {
+        font-size: 1.125rem;
+        color: #1f2937;
+        font-weight: 500;
+        margin-bottom: 2rem;
+    }
+    
+    .news-content p:last-child {
+        margin-bottom: 0;
+    }
+    
+    /* Enhanced typography for better readability */
+    .news-content {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        letter-spacing: 0.025em;
+    }
+    
+    /* Responsive text sizing */
+    @media (max-width: 768px) {
+        .news-content p {
+            text-align: left;
+            margin-bottom: 1.25rem;
+        }
+        
+        .news-content p:first-child {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
     <!-- Hero Section -->
     <section class="bg-plaschema-dark text-white py-16 md:py-24">
@@ -47,8 +92,8 @@
                 </div>
                 @endif
                 
-                <div class="prose max-w-none">
-                    {!! $news->content !!}
+                <div class="news-content">
+                    {!! $formattedContent !!}
                 </div>
                 
                 <!-- Tags -->

@@ -56,6 +56,13 @@ class ApiService
      */
     public function getEnrollmentStatistics()
     {
+        // In local environment, avoid slow external HTTP calls and return
+        // deterministic test data immediately to keep development fast and reliable.
+        // Production and other environments will continue to hit the real API.
+        if (app()->environment('local')) {
+            return $this->getFallbackData();
+        }
+
         $cacheKey = 'enrollment_statistics';
         $cacheDuration = 1800; // 30 minutes - increased from 5 to reduce API calls
         

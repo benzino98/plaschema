@@ -68,6 +68,17 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user has any admin panel role.
+     */
+    public function hasAnyAdminRole(): bool
+    {
+        return $this->hasRole('admin')
+            || $this->hasRole('super-admin')
+            || $this->hasRole('editor')
+            || $this->hasRole('viewer');
+    }
+
+    /**
      * Check if the user has the given permission through any of their roles.
      *
      * @param string $permission
