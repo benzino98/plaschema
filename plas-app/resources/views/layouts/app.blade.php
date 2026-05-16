@@ -18,6 +18,8 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        @stack('styles')
+
         <style>
             /* Custom Colors */
             :root {
@@ -194,7 +196,11 @@
 
             <!-- Page Content -->
             <main>
-                @yield('content')
+                @hasSection('content')
+                    @yield('content')
+                @else
+                    {{ $slot ?? '' }}
+                @endif
             </main>
 
             <!-- Footer -->

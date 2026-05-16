@@ -27,14 +27,13 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/refresh-statistics', [HomeController::class, 'refreshStatistics'])->name('refresh-statistics');
 
 Route::get('/dashboard', function () {
-    // Check if user has admin role and redirect to admin dashboard
     $user = auth()->user();
-    if ($user && ($user->hasRole('admin') || $user->hasRole('super-admin') || $user->hasRole('editor') || $user->hasRole('viewer'))) {
+
+    if ($user && $user->hasAnyAdminRole()) {
         return redirect()->route('admin.dashboard');
     }
-    
-    // Otherwise show regular dashboard
-    return view('dashboard');
+
+    return redirect()->route('home');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -79,12 +78,33 @@ Route::get('/resources/{slug}/download', [ResourceController::class, 'download']
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Entry points — no role middleware so guests are sent to login cleanly
     Route::get('/login', function () {
+        if (auth()->check() && auth()->user()->hasAnyAdminRole()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         return redirect()->route('login');
     })->name('login');
-    
+
+    Route::get('/', function () {
+        if (! auth()->check()) {
+            return redirect()->guest(route('login'));
+        }
+
+        if (! auth()->user()->hasAnyAdminRole()) {
+            return redirect()
+                ->route('login')
+                ->withErrors([
+                    'email' => 'Your account does not have permission to access the admin area.',
+                ]);
+        }
+
+        return redirect()->route('admin.dashboard');
+    })->name('index');
+
     Route::middleware(['auth', 'role:admin,super-admin,editor,viewer'])->group(function () {
-        Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         
         // News Management
         Route::resource('news', AdminNewsController::class);

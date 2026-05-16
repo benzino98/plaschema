@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,12 +20,13 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                // If the user is trying to access the admin login or other admin routes
-                if ($request->is('admin*')) {
-                    return redirect('/admin');
+                $user = Auth::guard($guard)->user();
+
+                if ($request->is('admin*') && $user && $user->hasAnyAdminRole()) {
+                    return redirect()->route('admin.dashboard');
                 }
-                
-                return redirect(RouteServiceProvider::HOME);
+
+                return redirect()->route('home');
             }
         }
 

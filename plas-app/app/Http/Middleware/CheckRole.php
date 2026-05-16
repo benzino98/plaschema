@@ -53,6 +53,14 @@ class CheckRole
         }
         
         if (!$hasRole) {
+            if ($request->is('admin') || $request->is('admin/*')) {
+                return redirect()
+                    ->route('login')
+                    ->withErrors([
+                        'email' => 'Your account does not have permission to access the admin area.',
+                    ]);
+            }
+
             abort(403, 'Unauthorized action.');
         }
 

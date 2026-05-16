@@ -107,10 +107,70 @@ class NewsController extends Controller
                 ->get();
         });
 
+        // Format the content for proper paragraph display
+        $formattedContent = $this->formatNewsContent($news->content);
+
         return view('pages.news-detail', [
             'news' => $news,
             'relatedNews' => $relatedNews,
-            'slug' => $slug
+            'slug' => $slug,
+            'formattedContent' => $formattedContent
         ]);
+    }
+
+    /**
+     * Format news content with proper paragraph breaks
+     *
+     * @param string $content
+     * @return string
+     */
+    private function formatNewsContent($content)
+    {
+        // If content already has HTML tags, return as is
+        if (strip_tags($content) !== $content) {
+            return $content;
+        }
+
+        // Clean up the content first
+        $content = trim($content);
+        
+        // If content is empty, return empty string
+        if (empty($content)) {
+            return '';
+        }
+        
+        // Handle different paragraph separators
+        // Split by double line breaks, or single line breaks if no doubles exist
+        if (strpos($content, "\n\n") !== false) {
+            $paragraphs = preg_split('/\n\s*\n/', $content);
+        } else {
+            // If no double line breaks, split by single line breaks
+            $paragraphs = preg_split('/\n/', $content);
+        }
+        
+        // Filter out empty paragraphs and wrap each in <p> tags
+        $formattedParagraphs = array_filter($paragraphs, function($paragraph) {
+            return trim($paragraph) !== '';
+        });
+        
+        // If no valid paragraphs, wrap the entire content in one paragraph
+        if (empty($formattedParagraphs)) {
+            return '<p class="mb-4 leading-relaxed text-gray-600">' . $content . '</p>';
+        }
+        
+        // Wrap each paragraph in <p> tags with proper styling
+        $formattedParagraphs = array_map(function($paragraph, $index) {
+            $paragraph = trim($paragraph);
+            
+            // Add special styling for first paragraph (intro)
+            if ($index === 0) {
+                return '<p class="mb-6 leading-relaxed text-lg text-gray-700 font-medium">' . $paragraph . '</p>';
+            }
+            
+            return '<p class="mb-4 leading-relaxed text-gray-600">' . $paragraph . '</p>';
+        }, $formattedParagraphs, array_keys($formattedParagraphs));
+        
+        // Join paragraphs with line breaks
+        return implode("\n", $formattedParagraphs);
     }
 }
