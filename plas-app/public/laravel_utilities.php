@@ -920,37 +920,16 @@ function handle_fix_log_path(&$results) {
         $results[] = "⚠️ .env file does not exist";
     }
     
-    // Fix CI/CD path issue by creating a symlink or directory
-    $ci_cd_logs_path = '/home/runner/work/plaschema/plaschema/plas-app/storage/logs';
-    if (!file_exists($ci_cd_logs_path)) {
-        // Create the directory structure
-        if (!file_exists(dirname($ci_cd_logs_path))) {
-            mkdir(dirname($ci_cd_logs_path), 0755, true);
-            $results[] = "✅ Created CI/CD storage directory structure";
-        }
-        
-        // Try to create a symlink first
-        if (function_exists('symlink') && !in_array('symlink', explode(',', ini_get('disable_functions')))) {
-            if (symlink($logs_path, $ci_cd_logs_path)) {
-                $results[] = "✅ Created symlink from CI/CD logs path to actual logs path";
-            } else {
-                // If symlink fails, create the directory
-                if (mkdir($ci_cd_logs_path, 0755, true)) {
-                    $results[] = "✅ Created CI/CD logs directory";
-                } else {
-                    $results[] = "❌ Failed to create CI/CD logs directory";
-                }
-            }
+    // Remove config cache that may contain CI runner paths from GitHub Actions builds
+    $config_cache = $laravel_root . '/bootstrap/cache/config.php';
+    if (file_exists($config_cache)) {
+        if (unlink($config_cache)) {
+            $results[] = "✅ Removed stale config cache (CI path fix)";
         } else {
-            // If symlink function is not available, create the directory
-            if (mkdir($ci_cd_logs_path, 0755, true)) {
-                $results[] = "✅ Created CI/CD logs directory";
-            } else {
-                $results[] = "❌ Failed to create CI/CD logs directory";
-            }
+            $results[] = "❌ Failed to remove config cache at: $config_cache";
         }
     } else {
-        $results[] = "ℹ️ CI/CD logs path already exists";
+        $results[] = "ℹ️ No config cache file present (good)";
     }
 }
 
