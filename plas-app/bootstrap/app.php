@@ -7,6 +7,38 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
+// Resolve production paths BEFORE the application boots so config/logging never
+// picks up CI runner paths from a pre-built config cache.
+$isProduction = (isset($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], 'plaschema.pl.gov.ng'))
+    || is_dir('/home/plaschem/public_html');
+
+$isCI = ! $isProduction && (getenv('GITHUB_ACTIONS') === 'true' || is_dir('/home/runner/work/plaschema'));
+
+if ($isProduction) {
+    $storagePath = '/home/plaschem/laravel/storage';
+    $logsPath = $storagePath.'/logs';
+    $publicPath = '/home/plaschem/public_html';
+
+    $_ENV['STORAGE_PATH'] = $storagePath;
+    $_ENV['LOG_PATH'] = $logsPath;
+    putenv('STORAGE_PATH='.$storagePath);
+    putenv('LOG_PATH='.$logsPath);
+} elseif ($isCI) {
+    $storagePath = dirname(__DIR__).'/storage';
+    $logsPath = $storagePath.'/logs';
+    $publicPath = null;
+
+    putenv('STORAGE_PATH='.$storagePath);
+    putenv('LOG_PATH='.$logsPath);
+} else {
+    $storagePath = dirname(__DIR__).'/storage';
+    $logsPath = $storagePath.'/logs';
+    $publicPath = null;
+
+    putenv('STORAGE_PATH='.$storagePath);
+    putenv('LOG_PATH='.$logsPath);
+}
+
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -26,62 +58,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
         //
     })->create();
 
-// Define common paths based on environment detection
-$isProduction = false;
-$isCI = false;
-
-// Check for production environment first
-if (isset($_SERVER['SERVER_NAME']) && strpos($_SERVER['SERVER_NAME'], 'plaschema.pl.gov.ng') !== false) {
-    $isProduction = true;
-}
-
-// Alternative check for production - check for specific directory
-if (!$isProduction && is_dir('/home/plaschem/public_html')) {
-    $isProduction = true;
-}
-
-// Only check for CI/CD environment if we're not in production
-if (!$isProduction) {
-    if (getenv('GITHUB_ACTIONS') === 'true' || is_dir('/home/runner/work/plaschema')) {
-        $isCI = true;
-    }
-}
-
-// Set paths based on environment
 if ($isProduction) {
-    // Production environment
-    $publicPath = '/home/plaschem/public_html';
-    $storagePath = '/home/plaschem/laravel/storage';
-    $logsPath = $storagePath . '/logs';
-    
-    // Set public path for the web server
     $app->usePublicPath($publicPath);
-    
-    // Set storage path for logs and other storage needs
     $app->useStoragePath($storagePath);
-    
-    // Set environment variables for paths
-    putenv("STORAGE_PATH=" . $storagePath);
-    putenv("LOG_PATH=" . $logsPath);
 } elseif ($isCI) {
-    // CI/CD environment
-    $storagePath = dirname(__DIR__) . '/storage';
-    $logsPath = $storagePath . '/logs';
-    
-    // Set storage path
     $app->useStoragePath($storagePath);
-    
-    // Set environment variables for paths
-    putenv("STORAGE_PATH=" . $storagePath);
-    putenv("LOG_PATH=" . $logsPath);
-} else {
-    // Local development environment - ensure we have default paths
-    $storagePath = dirname(__DIR__) . '/storage';
-    $logsPath = $storagePath . '/logs';
-    
-    // Ensure environment variables are set
-    putenv("STORAGE_PATH=" . $storagePath);
-    putenv("LOG_PATH=" . $logsPath);
 }
 
 return $app;

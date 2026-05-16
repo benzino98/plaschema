@@ -8,29 +8,21 @@ use Monolog\Processor\PsrLogMessageProcessor;
 // Define a helper function for getting log path if it doesn't exist
 if (!function_exists('get_log_path')) {
     function get_log_path($file = 'laravel.log') {
-        // First try environment variable
-        $logPath = getenv('LOG_PATH');
+        $logPath = $_ENV['LOG_PATH'] ?? getenv('LOG_PATH') ?: env('LOG_PATH');
+
         if ($logPath) {
-            return rtrim($logPath, '/') . '/' . $file;
+            return rtrim($logPath, '/\\').'/'.$file;
         }
-        
-        // Next try storage_path if available
+
+        if (isset($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], 'plaschema.pl.gov.ng')) {
+            return '/home/plaschem/laravel/storage/logs/'.$file;
+        }
+
         if (function_exists('storage_path')) {
-            return storage_path('logs/' . $file);
+            return storage_path('logs/'.$file);
         }
-        
-        // Fallback to a hardcoded path
-        if (isset($_SERVER['SERVER_NAME']) && strpos($_SERVER['SERVER_NAME'], 'plaschema.pl.gov.ng') !== false) {
-            return '/home/plaschem/laravel/storage/logs/' . $file;
-        }
-        
-        // Last resort - use a path relative to base_path
-        if (function_exists('base_path')) {
-            return base_path('storage/logs/' . $file);
-        }
-        
-        // Ultimate fallback
-        return sys_get_temp_dir() . '/laravel.log';
+
+        return sys_get_temp_dir().'/laravel.log';
     }
 }
 
