@@ -1679,6 +1679,49 @@ EOT;
 }
 
 // Create Admin User utility
+function handle_check_user_roles(&$results) {
+    global $app;
+
+    $email = trim($_GET['email'] ?? '');
+
+    if ($email === '') {
+        $results[] = 'Provide an email: ?utility=check_user_roles&email=your@email.com';
+        return;
+    }
+
+    try {
+        $user = $app['db']->table('users')->where('email', $email)->first();
+
+        if (!$user) {
+            $results[] = "❌ No user found with email: {$email}";
+            return;
+        }
+
+        $roles = $app['db']->table('user_role')
+            ->join('roles', 'roles.id', '=', 'user_role.role_id')
+            ->where('user_role.user_id', $user->id)
+            ->pluck('roles.slug')
+            ->toArray();
+
+        $results[] = "✅ User found: {$user->name} (ID {$user->id})";
+
+        if (empty($roles)) {
+            $results[] = '❌ This user has NO roles assigned.';
+            $results[] = 'Use ?utility=create_admin to assign super-admin to this email.';
+        } else {
+            $results[] = 'Roles: ' . implode(', ', $roles);
+            $adminRoles = array_intersect($roles, ['admin', 'super-admin', 'editor', 'viewer']);
+            if (empty($adminRoles)) {
+                $results[] = '❌ None of these roles grant admin panel access.';
+            } else {
+                $results[] = '✅ Admin access should work. Try logging in at /login';
+            }
+        }
+    } catch (Exception $e) {
+        $results[] = '❌ Error: ' . $e->getMessage();
+    }
+}
+
 function handle_create_admin(&$results) {
     global $laravel_root;
     
@@ -2242,6 +2285,10 @@ switch ($utility) {
         handle_fix_htaccess($results);
         break;
     
+    case 'check_user_roles':
+        handle_check_user_roles($results);
+        break;
+
     case 'create_admin':
         handle_create_admin($results);
         break;
@@ -2278,6 +2325,7 @@ switch ($utility) {
         $results[] = "- app_key: Generate application encryption key";
         $results[] = "- vite_assets: Fix Vite asset issues";
         $results[] = "- fix_htaccess: Fix routing and .htaccess configuration";
+        $results[] = "- check_user_roles: Check roles for an email (?email=)";
         $results[] = "- create_admin: Create admin user and assign roles";
         $results[] = "- role_permission_seeder: Run Role and Permission Seeder";
         $results[] = "- update_permissions: Fix missing permissions";

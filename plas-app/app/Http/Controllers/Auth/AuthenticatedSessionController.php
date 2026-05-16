@@ -44,10 +44,17 @@ class AuthenticatedSessionController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        // Non-admin users must not be sent back to /admin (avoids 403 after login)
-        session()->forget('url.intended');
+        // Valid credentials but no admin role — log out so the login page can show an error
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        return redirect()->intended(route('home', absolute: false));
+        return redirect()
+            ->route('login')
+            ->withErrors([
+                'email' => 'This account does not have admin access. Ask a super admin to assign you a role, or use the server create-admin utility.',
+            ])
+            ->withInput($request->only('email'));
     }
 
     /**
