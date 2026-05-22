@@ -39,6 +39,20 @@ if (! function_exists('format_faq_answer')) {
     }
 }
 
+if (! function_exists('format_news_content')) {
+    /**
+     * Render news article body with safe links and rich formatting.
+     */
+    function format_news_content(?string $content): string
+    {
+        if ($content === null || trim($content) === '') {
+            return '';
+        }
+
+        return app(\App\Services\FaqContentService::class)->formatForDisplay($content, 'news');
+    }
+}
+
 if (!function_exists('safe_log_path')) {
     /**
      * Get the path to the logs directory with fallback to environment variable.

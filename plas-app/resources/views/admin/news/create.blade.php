@@ -16,7 +16,7 @@
     <h1 class="text-3xl font-bold mb-6">Add News Article</h1>
 
     <div class="bg-white rounded-lg shadow p-6">
-        <form action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="news-form" action="{{ route('admin.news.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             <div class="mb-4">
@@ -46,19 +46,14 @@
 
             <div class="mb-4">
                 <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Content</label>
-                <textarea name="content" id="content" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('content') border-red-500 @enderror" rows="10" required>{{ old('content') }}</textarea>
+                <p class="text-gray-500 text-xs mb-2">Use the editor for headings, lists, bold, italic, and hyperlinks.</p>
+                <textarea name="content" id="content" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('content') border-red-500 @enderror" rows="12" required>{{ old('content') }}</textarea>
                 @error('content')
                 <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Featured Image</label>
-                <input type="file" name="image" id="image" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('image') border-red-500 @enderror">
-                @error('image')
-                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                @enderror
-            </div>
+            @include('admin.news.partials.gallery-upload')
 
             <div class="mb-4">
                 <label for="published_at" class="block text-gray-700 text-sm font-bold mb-2">Publish Date</label>
@@ -89,22 +84,20 @@
 </div>
 @endsection
 
-@section('scripts')
+@include('admin.news.partials.rich-editor')
+
+@push('scripts')
 <script>
-    // Auto-generate slug from title
-    document.getElementById('title').addEventListener('blur', function() {
-        const title = this.value;
+    document.getElementById('title')?.addEventListener('blur', function() {
         const slugField = document.getElementById('slug');
-        
-        if (slugField.value === '') {
-            // Only auto-generate if slug field is empty
-            slugField.value = title
+        if (slugField && slugField.value === '') {
+            slugField.value = this.value
                 .toLowerCase()
-                .replace(/[^\w\s-]/g, '') // Remove special characters
-                .replace(/\s+/g, '-') // Replace spaces with hyphens
-                .replace(/--+/g, '-') // Replace multiple hyphens with single hyphen
-                .trim(); // Trim leading/trailing spaces
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/--+/g, '-')
+                .trim();
         }
     });
 </script>
-@endsection 
+@endpush

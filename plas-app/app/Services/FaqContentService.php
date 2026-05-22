@@ -11,7 +11,7 @@ class FaqContentService
     /**
      * Format FAQ answer HTML for safe display on the public site.
      */
-    public function formatForDisplay(string $answer): string
+    public function formatForDisplay(string $answer, string $profile = 'basic'): string
     {
         $answer = trim($answer);
 
@@ -20,7 +20,7 @@ class FaqContentService
         }
 
         if ($this->containsHtml($answer)) {
-            return $this->sanitizeHtml($answer);
+            return $this->sanitizeHtml($answer, $profile);
         }
 
         return nl2br(e($answer));
@@ -29,7 +29,7 @@ class FaqContentService
     /**
      * Sanitize answer HTML before saving to the database.
      */
-    public function sanitizeForStorage(string $answer): string
+    public function sanitizeForStorage(string $answer, string $profile = 'basic'): string
     {
         $answer = trim($answer);
 
@@ -37,7 +37,7 @@ class FaqContentService
             return $answer;
         }
 
-        return $this->sanitizeHtml($answer);
+        return $this->sanitizeHtml($answer, $profile);
     }
 
     /**
@@ -64,10 +64,17 @@ class FaqContentService
         return $text !== strip_tags($text);
     }
 
-    protected function sanitizeHtml(string $html): string
+    protected function allowedTags(string $profile): string
     {
-        $allowed = '<p><br><a><strong><b><em><i><ul><ol><li>';
-        $html = strip_tags($html, $allowed);
+        return match ($profile) {
+            'news' => '<p><br><a><strong><b><em><i><ul><ol><li><h2><h3><h4><blockquote>',
+            default => '<p><br><a><strong><b><em><i><ul><ol><li>',
+        };
+    }
+
+    protected function sanitizeHtml(string $html, string $profile = 'basic'): string
+    {
+        $html = strip_tags($html, $this->allowedTags($profile));
 
         $dom = new DOMDocument();
         libxml_use_internal_errors(true);

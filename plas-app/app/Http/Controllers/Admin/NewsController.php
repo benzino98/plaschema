@@ -5,20 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\NewsRequest;
 use App\Models\News;
-use App\Services\ImageService;
 use App\Services\ActivityLogService;
 use App\Services\CacheService;
+use App\Services\NewsImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class NewsController extends Controller
 {
-    /**
-     * The image service instance.
-     */
-    protected $imageService;
-
     /**
      * The activity log service instance.
      */
@@ -29,16 +24,18 @@ class NewsController extends Controller
      */
     protected $cacheService;
 
+    protected $newsImageService;
+
     /**
      * Create a new controller instance.
      */
     public function __construct(
-        ImageService $imageService, 
+        NewsImageService $newsImageService,
         ActivityLogService $activityLogService,
         CacheService $cacheService
     )
     {
-        $this->imageService = $imageService;
+        $this->newsImageService = $newsImageService;
         $this->activityLogService = $activityLogService;
         $this->cacheService = $cacheService;
         
@@ -107,26 +104,16 @@ class NewsController extends Controller
      */
     public function store(NewsRequest $request)
     {
-        // Validation handled by the form request
         $validated = $request->validated();
-        
-        // Handle file upload with optimization
-        if ($request->hasFile('image')) {
-            $imagePaths = $this->imageService->storeResponsive(
-                $request->file('image'),
-                'news'
-            );
-            
-            $validated['image_path'] = $imagePaths['original'];
-            $validated['image_path_small'] = $imagePaths['small'];
-            $validated['image_path_medium'] = $imagePaths['medium'];
-            $validated['image_path_large'] = $imagePaths['large'];
-        }
+        unset($validated['gallery_images'], $validated['remove_image_ids'], $validated['image_captions'],
+            $validated['image_links'], $validated['new_image_captions'], $validated['new_image_links'],
+            $validated['cover_image_id'], $validated['new_cover_index']);
 
         try {
             $news = News::create($validated);
-            
-            // Log the activity
+            $this->newsImageService->syncGallery($news, $request);
+            $news->refresh();
+
             $this->activityLogService->logCreated($news);
             
             return redirect()->route('admin.news.index')
@@ -151,7 +138,10 @@ class NewsController extends Controller
      */
     public function edit(string $id)
     {
-        $news = News::findOrFail($id);
+        $news = News::with('images')->findOrFail($id);
+        $this->newsImageService->importLegacyFeaturedImage($news);
+        $news->load('images');
+
         return view('admin.news.edit', compact('news'));
     }
 
@@ -162,41 +152,17 @@ class NewsController extends Controller
     {
         $news = News::findOrFail($id);
         
-        // Validation handled by the form request
         $validated = $request->validated();
-        
-        // Store original values for logging
+        unset($validated['gallery_images'], $validated['remove_image_ids'], $validated['image_captions'],
+            $validated['image_links'], $validated['new_image_captions'], $validated['new_image_links'],
+            $validated['cover_image_id'], $validated['new_cover_index']);
+
         $originalValues = $news->getAttributes();
 
         try {
-            // Handle file upload with optimization
-            if ($request->hasFile('image')) {
-                // Delete old images if they exist
-                if ($news->image_path) {
-                    $this->imageService->delete($news->image_path);
-                }
-                if ($news->image_path_small) {
-                    $this->imageService->delete($news->image_path_small);
-                }
-                if ($news->image_path_medium) {
-                    $this->imageService->delete($news->image_path_medium);
-                }
-                if ($news->image_path_large) {
-                    $this->imageService->delete($news->image_path_large);
-                }
-                
-                $imagePaths = $this->imageService->storeResponsive(
-                    $request->file('image'),
-                    'news'
-                );
-                
-                $validated['image_path'] = $imagePaths['original'];
-                $validated['image_path_small'] = $imagePaths['small'];
-                $validated['image_path_medium'] = $imagePaths['medium'];
-                $validated['image_path_large'] = $imagePaths['large'];
-            }
-
             $news->update($validated);
+            $this->newsImageService->syncGallery($news, $request);
+            $news->refresh();
             
             // Log the activity
             $this->activityLogService->logUpdated($news, $originalValues);
@@ -217,35 +183,15 @@ class NewsController extends Controller
         $news = News::findOrFail($id);
         
         try {
-            // Delete image if exists
-            if ($news->image_path) {
-                $this->imageService->delete($news->image_path);
-            }
-            if ($news->image_path_small) {
-                $this->imageService->delete($news->image_path_small);
-            }
-            if ($news->image_path_medium) {
-                $this->imageService->delete($news->image_path_medium);
-            }
-            if ($news->image_path_large) {
-                $this->imageService->delete($news->image_path_large);
-            }
-            
-            // Log the activity before deletion
+            $this->newsImageService->deleteAllForNews($news);
+            $this->deleteLegacyNewsImages($news);
+
             $this->activityLogService->logDeleted($news);
-            
+
             $news->delete();
-            
-            // Clear news-related caches
-            try {
-                $this->cacheService->forget('home_latest_news');
-                $this->cacheService->clearTag('news');
-                $this->cacheService->deleteByPattern('news_*');
-            } catch (\Exception $e) {
-                // Log cache error but don't fail the request
-                Log::warning('Cache clearing error: ' . $e->getMessage());
-            }
-            
+
+            $this->clearNewsCaches();
+
             return redirect()->route('admin.news.index')
                 ->with('success', 'News article deleted successfully.');
         } catch (\Exception $e) {
@@ -274,35 +220,15 @@ class NewsController extends Controller
         $news = News::findOrFail($id);
         
         try {
-            // Delete image if exists
-            if ($news->image_path) {
-                $this->imageService->delete($news->image_path);
-            }
-            if ($news->image_path_small) {
-                $this->imageService->delete($news->image_path_small);
-            }
-            if ($news->image_path_medium) {
-                $this->imageService->delete($news->image_path_medium);
-            }
-            if ($news->image_path_large) {
-                $this->imageService->delete($news->image_path_large);
-            }
-            
-            // Log the activity before deletion
+            $this->newsImageService->deleteAllForNews($news);
+            $this->deleteLegacyNewsImages($news);
+
             $this->activityLogService->logDeleted($news);
-            
+
             $news->delete();
-            
-            // Clear news-related caches
-            try {
-                $this->cacheService->forget('home_latest_news');
-                $this->cacheService->clearTag('news');
-                $this->cacheService->deleteByPattern('news_*');
-            } catch (\Exception $e) {
-                // Log cache error but don't fail the request
-                Log::warning('Cache clearing error: ' . $e->getMessage());
-            }
-            
+
+            $this->clearNewsCaches();
+
             return redirect()->route('admin.news.index')
                 ->with('success', 'News article deleted successfully.');
         } catch (\Exception $e) {
@@ -339,23 +265,11 @@ class NewsController extends Controller
             switch ($validated['action']) {
                 case 'delete':
                     foreach ($newsItems as $news) {
-                        // Delete image if exists
-                        if ($news->image_path) {
-                            $this->imageService->delete($news->image_path);
-                        }
-                        if ($news->image_path_small) {
-                            $this->imageService->delete($news->image_path_small);
-                        }
-                        if ($news->image_path_medium) {
-                            $this->imageService->delete($news->image_path_medium);
-                        }
-                        if ($news->image_path_large) {
-                            $this->imageService->delete($news->image_path_large);
-                        }
-                        
-                        // Log the activity before deletion
+                        $this->newsImageService->deleteAllForNews($news);
+                        $this->deleteLegacyNewsImages($news);
+
                         $this->activityLogService->logDeleted($news, ['bulk_action' => true]);
-                        
+
                         $news->delete();
                     }
                     $message = count($newsItems) . ' news article(s) deleted successfully.';
@@ -438,5 +352,25 @@ class NewsController extends Controller
             ->pluck('action');
         
         return view('admin.news.activity', compact('logs', 'actions'));
+    }
+
+    protected function deleteLegacyNewsImages(News $news): void
+    {
+        foreach (['image_path', 'image_path_small', 'image_path_medium', 'image_path_large'] as $field) {
+            if ($news->{$field}) {
+                app(\App\Services\ImageService::class)->delete($news->{$field});
+            }
+        }
+    }
+
+    protected function clearNewsCaches(): void
+    {
+        try {
+            $this->cacheService->forget('home_latest_news');
+            $this->cacheService->clearTag('news');
+            $this->cacheService->deleteByPattern('news_*');
+        } catch (\Exception $e) {
+            Log::warning('Cache clearing error: '.$e->getMessage());
+        }
     }
 }
