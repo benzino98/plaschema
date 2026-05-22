@@ -37,11 +37,25 @@ class ResourceCategoryRequest extends FormRequest
                     }
                 }
             ],
-            'is_active' => 'boolean',
-            'display_order' => 'nullable|integer|min:0',
+            'is_active' => 'nullable|boolean',
+            'order' => 'nullable|integer|min:0',
         ];
 
         return $rules;
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_active' => $this->boolean('is_active'),
+        ]);
+
+        if ($this->filled('display_order') && ! $this->filled('order')) {
+            $this->merge(['order' => $this->input('display_order')]);
+        }
     }
 
     /**

@@ -37,10 +37,10 @@ class FaqRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // Convert checkboxes to boolean
+        // Convert checkboxes to boolean (default active so new FAQs appear on the site)
         $this->merge([
-            'is_active' => $this->has('is_active'),
-            'show_on_plans_page' => $this->has('show_on_plans_page'),
+            'is_active' => $this->boolean('is_active'),
+            'show_on_plans_page' => $this->boolean('show_on_plans_page'),
         ]);
         
         // Convert empty order to 0

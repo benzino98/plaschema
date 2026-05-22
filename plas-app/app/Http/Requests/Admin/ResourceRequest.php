@@ -40,6 +40,17 @@ class ResourceRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'is_active' => $this->boolean('is_active'),
+            'is_featured' => $this->boolean('is_featured'),
+        ]);
+    }
+
+    /**
      * Get the error messages for the defined validation rules.
      *
      * @return array<string, string>
