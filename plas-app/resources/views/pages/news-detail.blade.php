@@ -17,10 +17,6 @@
         color: #4b5563;
     }
     
-    .news-content p:last-child {
-        margin-bottom: 0;
-    }
-
     .news-content h2,
     .news-content h3,
     .news-content h4 {
@@ -78,12 +74,149 @@
         min-height: 0;
     }
 
-    .news-collage__link,
+    .news-collage__trigger,
     .news-collage__img {
         display: block;
         width: 100%;
         height: 100%;
         min-height: 100%;
+    }
+
+    .news-collage__external {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.92);
+        color: #166534;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .news-collage__external:hover {
+        background: #fff;
+    }
+
+    .news-hero-lightbox {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        padding: 0;
+        cursor: zoom-in;
+        background: transparent;
+    }
+
+    .news-lightbox {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .news-lightbox[hidden] {
+        display: none;
+    }
+
+    body.news-lightbox-open {
+        overflow: hidden;
+    }
+
+    .news-lightbox__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.88);
+    }
+
+    .news-lightbox__panel {
+        position: relative;
+        z-index: 1;
+        width: min(92vw, 1100px);
+        max-height: 92vh;
+        padding: 1rem;
+    }
+
+    .news-lightbox__figure {
+        margin: 0;
+        text-align: center;
+    }
+
+    .news-lightbox__image {
+        max-width: 100%;
+        max-height: calc(92vh - 8rem);
+        margin: 0 auto;
+        border-radius: 0.5rem;
+        object-fit: contain;
+    }
+
+    .news-lightbox__caption {
+        margin-top: 0.75rem;
+        color: #f3f4f6;
+        font-size: 0.95rem;
+    }
+
+    .news-lightbox__counter {
+        margin-top: 0.5rem;
+        text-align: center;
+        color: #d1d5db;
+        font-size: 0.875rem;
+    }
+
+    .news-lightbox__external {
+        display: inline-block;
+        margin-top: 0.75rem;
+        color: #86efac;
+        text-decoration: underline;
+    }
+
+    .news-lightbox__close,
+    .news-lightbox__nav {
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border: 0;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .news-lightbox__close:hover,
+    .news-lightbox__nav:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.28);
+    }
+
+    .news-lightbox__nav:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    .news-lightbox__close {
+        top: 0;
+        right: 0;
+    }
+
+    .news-lightbox__nav--prev {
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .news-lightbox__nav--next {
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
     }
 
     .news-collage__img {
@@ -196,25 +329,60 @@
                         $news->image_path_small,
                     ]);
                 @endphp
-                @if($featuredImageUrl)
-                <div class="mb-8 rounded-lg overflow-hidden" style="aspect-ratio: 16/9;">
-                    <img
-                        src="{{ $featuredImageUrl }}"
-                        alt="{{ $news->title }}"
-                        class="w-full h-full object-cover"
-                        loading="eager"
-                        decoding="async"
-                        style="object-position: center 30%;"
-                    >
-                </div>
-                @endif
-
                 @php
                     $galleryImages = $news->relationLoaded('images')
                         ? $news->images->where('is_cover', false)->values()
                         : collect();
                     $contentParts = split_news_content_after_paragraphs($formattedContent, 2);
+                    $lightboxSlides = [];
+                    $lightboxIndex = 0;
+
+                    if ($featuredImageUrl) {
+                        $lightboxSlides[] = [
+                            'src' => $featuredImageUrl,
+                            'caption' => $news->title,
+                            'external' => null,
+                        ];
+                        $lightboxIndex = 1;
+                    }
+
+                    foreach ($galleryImages as $galleryImage) {
+                        $slideUrl = ImageHelper::bestUrl([
+                            $galleryImage->image_path_large,
+                            $galleryImage->image_path_medium,
+                            $galleryImage->image_path,
+                            $galleryImage->image_path_small,
+                        ]);
+
+                        if ($slideUrl) {
+                            $lightboxSlides[] = [
+                                'src' => $slideUrl,
+                                'caption' => $galleryImage->caption ?: $news->title,
+                                'external' => $galleryImage->link_url,
+                            ];
+                        }
+                    }
                 @endphp
+
+                @if($featuredImageUrl)
+                <div class="mb-8 rounded-lg overflow-hidden" style="aspect-ratio: 16/9;">
+                    <button
+                        type="button"
+                        class="news-hero-lightbox news-lightbox-open w-full h-full"
+                        data-news-lightbox-index="0"
+                        aria-label="View cover image"
+                    >
+                        <img
+                            src="{{ $featuredImageUrl }}"
+                            alt="{{ $news->title }}"
+                            class="w-full h-full object-cover"
+                            loading="eager"
+                            decoding="async"
+                            style="object-position: center 30%;"
+                        >
+                    </button>
+                </div>
+                @endif
 
                 <div class="news-content">
                     @if($contentParts['before'] !== '')
@@ -222,7 +390,11 @@
                     @endif
 
                     @if($galleryImages->isNotEmpty())
-                        <x-news-gallery-collage :images="$galleryImages" :title="$news->title" />
+                        <x-news-gallery-collage
+                            :images="$galleryImages"
+                            :title="$news->title"
+                            :lightbox-start-index="$lightboxIndex"
+                        />
                     @endif
 
                     @if($contentParts['after'] !== '')
@@ -357,4 +529,6 @@
             </div>
         </x-section>
     @endif
-@endsection 
+
+    <x-news-image-lightbox :slides="$lightboxSlides ?? []" />
+@endsection

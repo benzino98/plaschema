@@ -49,7 +49,71 @@ if (! function_exists('format_news_content')) {
             return '';
         }
 
-        return app(\App\Services\FaqContentService::class)->formatForDisplay($content, 'news');
+        $formatted = app(\App\Services\FaqContentService::class)->formatForDisplay($content, 'news');
+
+        return normalize_news_content_paragraphs($formatted);
+    }
+}
+
+if (! function_exists('normalize_news_content_paragraphs')) {
+    /**
+     * Ensure article body uses separate paragraph blocks for spacing.
+     */
+    function normalize_news_content_paragraphs(string $html): string
+    {
+        $html = trim($html);
+
+        if ($html === '') {
+            return '';
+        }
+
+        if (preg_match_all('/<p\b[^>]*>/i', $html) >= 2) {
+            return $html;
+        }
+
+        if (! preg_match('/<p\b/i', $html) && preg_match('/<br\s*\/?>/i', $html)) {
+            $chunks = preg_split('/(?:<br\s*\/?>\s*){2,}/i', $html);
+            $chunks = array_values(array_filter(array_map('trim', $chunks ?: []), function (string $chunk): bool {
+                return $chunk !== '' && trim(strip_tags($chunk)) !== '';
+            }));
+
+            if (count($chunks) > 1) {
+                $paragraphs = [];
+
+                foreach ($chunks as $chunk) {
+                    $paragraphs[] = '<p>'.$chunk.'</p>';
+                }
+
+                return implode("\n", $paragraphs);
+            }
+        }
+
+        $inner = $html;
+
+        if (preg_match('/^<p\b[^>]*>(.*)<\/p>$/is', $html, $matches)) {
+            $inner = $matches[1];
+        }
+
+        $chunks = preg_split('/(?:<br\s*\/?>\s*){2,}|\r\n\r\n|\n\n/', $inner);
+        $chunks = array_values(array_filter(array_map('trim', $chunks ?: []), function (string $chunk): bool {
+            return $chunk !== '' && trim(strip_tags($chunk)) !== '';
+        }));
+
+        if (count($chunks) <= 1) {
+            return $html;
+        }
+
+        $paragraphs = [];
+
+        foreach ($chunks as $chunk) {
+            if (preg_match('/^<p\b/i', $chunk)) {
+                $paragraphs[] = $chunk;
+            } else {
+                $paragraphs[] = '<p>'.$chunk.'</p>';
+            }
+        }
+
+        return implode("\n", $paragraphs);
     }
 }
 
@@ -67,60 +131,28 @@ if (! function_exists('split_news_content_after_paragraphs')) {
             return ['before' => $html, 'after' => ''];
         }
 
-        libxml_use_internal_errors(true);
-        $dom = new DOMDocument();
-        $dom->loadHTML(
-            '<?xml encoding="utf-8"><div id="news-content-wrap">'.$html.'</div>',
-            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
-        );
-        libxml_clear_errors();
+        $count = 0;
+        $offset = 0;
+        $splitAt = null;
 
-        $wrap = $dom->getElementById('news-content-wrap');
+        while (preg_match('/<\/p>/i', $html, $matches, PREG_OFFSET_CAPTURE, $offset)) {
+            $count++;
+            $splitAt = $matches[0][1] + strlen($matches[0][0]);
 
-        if (! $wrap) {
-            return ['before' => $html, 'after' => ''];
+            if ($count >= $paragraphCount) {
+                break;
+            }
+
+            $offset = $splitAt;
         }
 
-        $beforeParts = [];
-        $afterParts = [];
-        $paragraphsSeen = 0;
-        $splitDone = false;
-
-        foreach ($wrap->childNodes as $child) {
-            $chunk = $dom->saveHTML($child);
-
-            if ($child->nodeType !== XML_ELEMENT_NODE && trim($chunk) === '') {
-                continue;
-            }
-
-            if (! $splitDone && strtolower($child->nodeName) === 'p') {
-                $paragraphsSeen++;
-
-                if ($paragraphsSeen <= $paragraphCount) {
-                    $beforeParts[] = $chunk;
-                } else {
-                    $splitDone = true;
-                    $afterParts[] = $chunk;
-                }
-
-                continue;
-            }
-
-            if ($splitDone || $paragraphsSeen >= $paragraphCount) {
-                $splitDone = true;
-                $afterParts[] = $chunk;
-            } else {
-                $beforeParts[] = $chunk;
-            }
-        }
-
-        if ($paragraphsSeen === 0) {
+        if ($splitAt === null || $count < $paragraphCount) {
             return ['before' => $html, 'after' => ''];
         }
 
         return [
-            'before' => implode('', $beforeParts),
-            'after' => implode('', $afterParts),
+            'before' => substr($html, 0, $splitAt),
+            'after' => substr($html, $splitAt),
         ];
     }
 }
