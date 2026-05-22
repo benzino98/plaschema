@@ -48,7 +48,7 @@
             <div class="mb-4">
                 <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Content</label>
                 <p class="text-gray-500 text-xs mb-2">Use the editor for headings, lists, bold, italic, and hyperlinks.</p>
-                <textarea name="content" id="content" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('content') border-red-500 @enderror" rows="12" required>{{ old('content', $news->content) }}</textarea>
+                <textarea name="content" id="content" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('content') border-red-500 @enderror" rows="12">{{ old('content', $news->content) }}</textarea>
                 @error('content')
                 <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                 @enderror

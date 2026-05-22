@@ -65,16 +65,28 @@ class NewsRequest extends FormRequest
             'is_featured' => $this->has('is_featured'),
         ]);
 
-        if ($this->has('content')) {
-            $this->merge([
-                'content' => app(FaqContentService::class)->sanitizeForStorage((string) $this->content, 'news'),
-            ]);
-        }
     }
 
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            $rawContent = (string) $this->input('content', '');
+            $plainText = trim(strip_tags(html_entity_decode($rawContent, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+
+            if ($plainText === '') {
+                $validator->errors()->add('content', 'The news content is required.');
+
+                return;
+            }
+
+            $this->merge([
+                'content' => app(FaqContentService::class)->sanitizeForStorage($rawContent, 'news'),
+            ]);
+
             $newsId = $this->route('news');
             $existingCount = 0;
 
