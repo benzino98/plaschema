@@ -39,7 +39,7 @@ class FaqRequest extends FormRequest
     {
         // Convert checkboxes to boolean (default active so new FAQs appear on the site)
         $this->merge([
-            'is_active' => $this->boolean('is_active'),
+            'is_active' => $this->has('is_active') ? $this->boolean('is_active') : true,
             'show_on_plans_page' => $this->boolean('show_on_plans_page'),
         ]);
         

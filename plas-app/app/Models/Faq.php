@@ -24,6 +24,17 @@ class Faq extends Model
     ];
 
     /**
+     * Default attribute values.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_active' => true,
+        'order' => 0,
+        'show_on_plans_page' => false,
+    ];
+
+    /**
      * The attributes that should be cast.
      *
      * @var array<string, string>
@@ -42,7 +53,7 @@ class Faq extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('is_active', true);
+        return $query->where('is_active', 1);
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\FaqRequest;
 use App\Models\Faq;
 use App\Services\ActivityLogService;
+use App\Services\CacheService;
 use Illuminate\Http\Request;
 
 class FaqController extends Controller
@@ -15,12 +16,15 @@ class FaqController extends Controller
      */
     protected $activityLogService;
 
+    protected $cacheService;
+
     /**
      * Create a new controller instance.
      */
-    public function __construct(ActivityLogService $activityLogService)
+    public function __construct(ActivityLogService $activityLogService, CacheService $cacheService)
     {
         $this->activityLogService = $activityLogService;
+        $this->cacheService = $cacheService;
         
         // Add permission middleware
         $this->middleware('permission:view-faqs')->only(['index', 'show']);
@@ -89,6 +93,7 @@ class FaqController extends Controller
             
             // Log the activity
             $this->activityLogService->logCreated($faq);
+            $this->clearFaqCaches();
 
             return redirect()->route('admin.faqs.index')
                 ->with('success', 'FAQ created successfully.');
@@ -134,6 +139,7 @@ class FaqController extends Controller
             
             // Log the activity
             $this->activityLogService->logUpdated($faq, $originalValues);
+            $this->clearFaqCaches();
 
             return redirect()->route('admin.faqs.index')
                 ->with('success', 'FAQ updated successfully.');
@@ -155,6 +161,7 @@ class FaqController extends Controller
             $this->activityLogService->logDeleted($faq);
             
             $faq->delete();
+            $this->clearFaqCaches();
 
             return redirect()->route('admin.faqs.index')
                 ->with('success', 'FAQ deleted successfully.');
@@ -245,10 +252,22 @@ class FaqController extends Controller
                     return back()->with('error', 'Invalid action selected.');
             }
             
+            $this->clearFaqCaches();
+
             return back()->with('success', $message);
         } catch (\Exception $e) {
             return back()->with('error', 'There was a problem performing the bulk action: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Clear cached FAQ data used on public pages.
+     */
+    protected function clearFaqCaches(): void
+    {
+        $this->cacheService->forget('faqs_all');
+        $this->cacheService->forget('faq_categories');
+        $this->cacheService->forget('faqs_plans_page');
     }
 
     /**
