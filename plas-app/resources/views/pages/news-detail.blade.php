@@ -62,14 +62,85 @@
         font-weight: 500;
     }
 
-    .news-gallery img {
-        transition: transform 0.2s ease;
+    .news-collage {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-auto-rows: 100px;
+        gap: 0.75rem;
     }
 
-    .news-gallery a:hover img {
-        transform: scale(1.02);
+    .news-collage__item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 0.75rem;
+        background: #f3f4f6;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        min-height: 0;
     }
-    
+
+    .news-collage__link,
+    .news-collage__img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+    }
+
+    .news-collage__img {
+        object-fit: cover;
+        transition: transform 0.35s ease;
+    }
+
+    .news-collage__item:hover .news-collage__img {
+        transform: scale(1.04);
+    }
+
+    .news-collage__caption {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        color: #fff;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
+    }
+
+    /* Collage tile sizes (8-tile repeating pattern) */
+    .news-collage__item--1 { grid-column: span 7; grid-row: span 3; }
+    .news-collage__item--2 { grid-column: span 5; grid-row: span 2; }
+    .news-collage__item--3 { grid-column: span 5; grid-row: span 2; }
+    .news-collage__item--4 { grid-column: span 4; grid-row: span 2; }
+    .news-collage__item--5 { grid-column: span 4; grid-row: span 2; }
+    .news-collage__item--6 { grid-column: span 4; grid-row: span 2; }
+    .news-collage__item--7 { grid-column: span 6; grid-row: span 2; }
+    .news-collage__item--8 { grid-column: span 6; grid-row: span 2; }
+
+    @media (max-width: 768px) {
+        .news-collage {
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: 140px;
+        }
+
+        .news-collage__item--1,
+        .news-collage__item--2,
+        .news-collage__item--3,
+        .news-collage__item--4,
+        .news-collage__item--5,
+        .news-collage__item--6,
+        .news-collage__item--7,
+        .news-collage__item--8 {
+            grid-column: span 1;
+            grid-row: span 1;
+        }
+
+        .news-collage__item--1 {
+            grid-column: span 2;
+            grid-row: span 2;
+        }
+    }
+
     /* Enhanced typography for better readability */
     .news-content {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -142,37 +213,23 @@
                     $galleryImages = $news->relationLoaded('images')
                         ? $news->images->where('is_cover', false)->values()
                         : collect();
+                    $contentParts = split_news_content_after_paragraphs($formattedContent, 2);
                 @endphp
-                @if($galleryImages->isNotEmpty())
-                <div class="news-gallery mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    @foreach($galleryImages as $galleryImage)
-                    @php
-                        $galleryUrl = ImageHelper::bestUrl([
-                            $galleryImage->image_path_large,
-                            $galleryImage->image_path_medium,
-                            $galleryImage->image_path,
-                        ]);
-                    @endphp
-                    @if($galleryUrl)
-                    <figure class="rounded-lg overflow-hidden bg-gray-100">
-                        @if($galleryImage->link_url)
-                        <a href="{{ $galleryImage->link_url }}" target="_blank" rel="noopener noreferrer" class="block">
-                            <img src="{{ $galleryUrl }}" alt="{{ $galleryImage->caption ?: $news->title }}" class="w-full h-48 object-cover" loading="lazy" decoding="async">
-                        </a>
-                        @else
-                        <img src="{{ $galleryUrl }}" alt="{{ $galleryImage->caption ?: $news->title }}" class="w-full h-48 object-cover" loading="lazy" decoding="async">
-                        @endif
-                        @if($galleryImage->caption)
-                        <figcaption class="text-sm text-gray-600 px-3 py-2">{{ $galleryImage->caption }}</figcaption>
-                        @endif
-                    </figure>
-                    @endif
-                    @endforeach
-                </div>
-                @endif
-                
+
                 <div class="news-content">
-                    {!! $formattedContent !!}
+                    @if($contentParts['before'] !== '')
+                        {!! $contentParts['before'] !!}
+                    @endif
+
+                    @if($galleryImages->isNotEmpty())
+                        <x-news-gallery-collage :images="$galleryImages" :title="$news->title" />
+                    @endif
+
+                    @if($contentParts['after'] !== '')
+                        {!! $contentParts['after'] !!}
+                    @elseif($contentParts['before'] === '' && $formattedContent !== '')
+                        {!! $formattedContent !!}
+                    @endif
                 </div>
                 
                 <!-- Tags -->
