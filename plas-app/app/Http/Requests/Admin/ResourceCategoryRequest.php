@@ -50,7 +50,7 @@ class ResourceCategoryRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'is_active' => $this->boolean('is_active'),
+            'is_active' => $this->has('is_active') ? $this->boolean('is_active') : true,
         ]);
 
         if ($this->filled('display_order') && ! $this->filled('order')) {

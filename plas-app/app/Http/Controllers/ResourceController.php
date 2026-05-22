@@ -30,7 +30,7 @@ class ResourceController extends Controller
     public function index(Request $request)
     {
         try {
-            $categoryId = $request->get('category');
+            $categoryId = $request->filled('category') ? (int) $request->get('category') : null;
             $search = $request->get('search');
             $featured = $request->has('featured') ? true : null;
             
@@ -43,7 +43,7 @@ class ResourceController extends Controller
                 'desc'
             );
             
-            $categories = $this->resourceCategoryService->getAllActive();
+            $categories = $this->resourceCategoryService->getForPublicFilter();
             $featuredResources = $this->resourceService->getFeaturedResources(3);
             
             return view('pages.resources.index', compact('resources', 'categories', 'featuredResources'));
@@ -121,7 +121,7 @@ class ResourceController extends Controller
                 'desc'
             );
             
-            $categories = $this->resourceCategoryService->getAllActive();
+            $categories = $this->resourceCategoryService->getForPublicFilter();
             
             return view('pages.resources.category', compact('resources', 'category', 'categories'));
         } catch (\Exception $e) {

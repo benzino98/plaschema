@@ -329,6 +329,19 @@ class ResourceCategoryService
      * @param int|null $categoryId
      * @return void
      */
+    /**
+     * Clear caches used on the public resources pages.
+     */
+    public function clearPublicCategoryCache(): void
+    {
+        $this->cacheService->forget('resource_categories_all_active');
+        $this->cacheService->forget('resource_categories_active');
+        $this->cacheService->forget('resource_categories_ordered');
+        $this->cacheService->forget('resource_categories_hierarchical');
+        $this->cacheService->forget('resource_categories_for_select_active');
+        $this->cacheService->forget('resource_categories_for_select_all');
+    }
+
     protected function clearCategoryCache(?int $categoryId = null)
     {
         // Clear specific category cache if ID is provided
@@ -342,7 +355,23 @@ class ResourceCategoryService
             }
         }
         
-        // Clear collection caches
+        $this->clearPublicCategoryCache();
         $this->cacheService->deleteByPattern('resource_categories_*');
+    }
+
+    /**
+     * Active categories for the public resources filter (never cached).
+     */
+    public function getForPublicFilter()
+    {
+        return ResourceCategory::query()
+            ->where(function ($query) {
+                $query->where('is_active', 1)
+                    ->orWhereHas('resources', function ($resourceQuery) {
+                        $resourceQuery->published();
+                    });
+            })
+            ->orderBy('name')
+            ->get();
     }
 } 
