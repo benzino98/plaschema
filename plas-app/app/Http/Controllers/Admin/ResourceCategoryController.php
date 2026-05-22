@@ -73,14 +73,7 @@ class ResourceCategoryController extends Controller
     public function store(ResourceCategoryRequest $request)
     {
         try {
-            $category = $this->resourceCategoryService->create($request->validated());
-            
-            $this->activityLogService->log(
-                'created',
-                'resource_category',
-                $category->id,
-                'Resource category "' . $category->name . '" was created'
-            );
+            $this->resourceCategoryService->create($request->validated());
 
             return redirect()->route('admin.resource-categories.index')
                 ->with('success', 'Resource category created successfully.');
@@ -133,13 +126,6 @@ class ResourceCategoryController extends Controller
     {
         try {
             $this->resourceCategoryService->update($resourceCategory->id, $request->validated());
-            
-            $this->activityLogService->log(
-                'updated',
-                'resource_category',
-                $resourceCategory->id,
-                'Resource category "' . $resourceCategory->name . '" was updated'
-            );
 
             return redirect()->route('admin.resource-categories.index')
                 ->with('success', 'Resource category updated successfully.');
@@ -164,13 +150,6 @@ class ResourceCategoryController extends Controller
             $id = $resourceCategory->id;
             
             $this->resourceCategoryService->delete($id);
-            
-            $this->activityLogService->log(
-                'deleted',
-                'resource_category',
-                $id,
-                'Resource category "' . $name . '" was deleted'
-            );
 
             return redirect()->route('admin.resource-categories.index')
                 ->with('success', 'Resource category deleted successfully.');
@@ -188,7 +167,7 @@ class ResourceCategoryController extends Controller
      */
     public function activity()
     {
-        $logs = $this->activityLogService->getLogsForEntity('resource_category', 15);
+        $logs = $this->activityLogService->getLogsByEntityType('ResourceCategory', 15);
         return view('admin.resources.categories.activity', compact('logs'));
     }
 
@@ -217,10 +196,10 @@ class ResourceCategoryController extends Controller
                     return redirect()->back()->with('error', 'Invalid action selected.');
             }
 
-            $this->activityLogService->log(
+            $this->activityLogService->logByEntityInfo(
                 'bulk-' . $action,
                 'resource_category',
-                implode(',', $ids),
+                0,
                 'Bulk action "' . $action . '" performed on resource categories'
             );
 

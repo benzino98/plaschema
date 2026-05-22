@@ -58,12 +58,32 @@ class ResourceCategory extends Model
     }
 
     /**
-     * Generate a slug from the name attribute.
+     * Generate a unique slug from the name attribute.
      */
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = $value;
-        $this->attributes['slug'] = Str::slug($value);
+
+        if (! array_key_exists('slug', $this->attributes) || $this->attributes['slug'] === null || $this->attributes['slug'] === '') {
+            $this->attributes['slug'] = $this->generateUniqueSlug($value);
+        }
+    }
+
+    /**
+     * Generate a slug that does not collide with existing categories.
+     */
+    protected function generateUniqueSlug(string $name): string
+    {
+        $baseSlug = Str::slug($name);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (static::where('slug', $slug)->when($this->exists, fn ($query) => $query->where('id', '!=', $this->id))->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 
     /**

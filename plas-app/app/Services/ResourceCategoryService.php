@@ -110,18 +110,14 @@ class ResourceCategoryService
     public function create(array $data)
     {
         $category = $this->categoryRepository->create($data);
-        
-        // Log activity
-        $this->activityLogService->log(
-            'created',
-            'resource_category',
-            $category->id,
+
+        $this->activityLogService->logCreated(
+            $category,
             "Created resource category: {$category->name}"
         );
-        
-        // Clear cache
+
         $this->clearCategoryCache();
-        
+
         return $category;
     }
 
@@ -140,19 +136,17 @@ class ResourceCategoryService
             throw new Exception('Resource category not found');
         }
         
+        $originalValues = $category->getAttributes();
         $category = $this->categoryRepository->update($id, $data);
-        
-        // Log activity
-        $this->activityLogService->log(
-            'updated',
-            'resource_category',
-            $category->id,
+
+        $this->activityLogService->logUpdated(
+            $category,
+            $originalValues,
             "Updated resource category: {$category->name}"
         );
-        
-        // Clear cache
+
         $this->clearCategoryCache($id);
-        
+
         return $category;
     }
 
@@ -183,19 +177,27 @@ class ResourceCategoryService
         $result = $this->categoryRepository->delete($id);
         
         if ($result) {
-            // Log activity
-            $this->activityLogService->log(
-                'deleted',
-                'resource_category',
-                $id,
+            $this->activityLogService->logDeleted(
+                $category,
                 "Deleted resource category: {$category->name}"
             );
-            
-            // Clear cache
+
             $this->clearCategoryCache($id);
         }
-        
+
         return $result;
+    }
+
+    /**
+     * Delete multiple resource categories.
+     *
+     * @param  array<int>  $ids
+     */
+    public function bulkDelete(array $ids): void
+    {
+        foreach ($ids as $id) {
+            $this->delete((int) $id);
+        }
     }
 
     /**
@@ -273,7 +275,7 @@ class ResourceCategoryService
         string $sortBy = 'created_at',
         string $sortDirection = 'desc'
     ) {
-        $query = ResourceCategory::query()->withCount('resources');
+        $query = ResourceCategory::query()->with('parent')->withCount('resources');
         
         // Apply search filter
         if ($search) {
@@ -306,33 +308,18 @@ class ResourceCategoryService
      * @param bool $activeOnly Whether to return only active categories
      * @return \Illuminate\Support\Collection
      */
-    public function getAllForSelect(bool $activeOnly = true)
+    public function getAllForSelect(bool $activeOnly = false)
     {
         $cacheKey = 'resource_categories_for_select_' . ($activeOnly ? 'active' : 'all');
-        
+
         return $this->cacheService->remember($cacheKey, 3600, function () use ($activeOnly) {
-            // Get base query
-            $query = ResourceCategory::query();
-            
-            // Filter by active status if required
+            $query = ResourceCategory::query()->orderBy('name');
+
             if ($activeOnly) {
                 $query->where('is_active', true);
             }
-            
-            // Order by name
-            $query->orderBy('name');
-            
-            // Get all categories
-            $categories = $query->get();
-            
-            // Format for select dropdown
-            return $categories->map(function($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'parent_id' => $category->parent_id
-                ];
-            });
+
+            return $query->get();
         });
     }
 
