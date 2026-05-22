@@ -2,38 +2,45 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\News;
+use App\Services\FaqContentService;
+use App\Services\NewsImageService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class NewsRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        // Since we're already using auth middleware on admin routes
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         $rules = [
             'title' => 'required|max:255',
             'excerpt' => 'required',
-            'content' => 'required',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'content' => 'required|string|max:50000',
+            'gallery_images' => 'nullable|array|max:'.NewsImageService::MAX_IMAGES,
+            'gallery_images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'remove_image_ids' => 'nullable|array',
+            'remove_image_ids.*' => 'integer|exists:news_images,id',
+            'image_captions' => 'nullable|array',
+            'image_captions.*' => 'nullable|string|max:255',
+            'image_links' => 'nullable|array',
+            'image_links.*' => 'nullable|string|max:2048',
+            'new_image_captions' => 'nullable|array',
+            'new_image_captions.*' => 'nullable|string|max:255',
+            'new_image_links' => 'nullable|array',
+            'new_image_links.*' => 'nullable|string|max:2048',
+            'cover_image_id' => 'nullable|string|max:50',
+            'new_cover_index' => 'nullable|integer|min:0',
             'published_at' => 'nullable|date',
             'is_featured' => 'nullable|boolean',
         ];
 
-        // Add slug uniqueness check for updates
         if ($this->isMethod('put') || $this->isMethod('patch')) {
             $rules['slug'] = [
                 'nullable',
@@ -46,29 +53,54 @@ class NewsRequest extends FormRequest
         return $rules;
     }
 
-    /**
-     * Prepare the data for validation.
-     */
     protected function prepareForValidation(): void
     {
-        // Generate slug if not provided
         if (empty($this->slug) && $this->has('title')) {
             $this->merge([
                 'slug' => Str::slug($this->title),
             ]);
         }
 
-        // Convert checkbox to boolean
         $this->merge([
             'is_featured' => $this->has('is_featured'),
         ]);
+
+        if ($this->has('content')) {
+            $this->merge([
+                'content' => app(FaqContentService::class)->sanitizeForStorage((string) $this->content, 'news'),
+            ]);
+        }
     }
 
-    /**
-     * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
-     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $newsId = $this->route('news');
+            $existingCount = 0;
+
+            if ($newsId) {
+                $news = News::find($newsId);
+                if ($news) {
+                    $existingCount = $news->images()->count();
+                    if ($existingCount === 0 && $news->image_path) {
+                        $existingCount = 1;
+                    }
+                }
+            }
+
+            $removed = count((array) $this->input('remove_image_ids', []));
+            $newCount = count($this->file('gallery_images') ?? []);
+            $total = $existingCount - $removed + $newCount;
+
+            if ($total > NewsImageService::MAX_IMAGES) {
+                $validator->errors()->add(
+                    'gallery_images',
+                    'A news article can have at most '.NewsImageService::MAX_IMAGES.' images.'
+                );
+            }
+        });
+    }
+
     public function messages(): array
     {
         return [
@@ -76,11 +108,12 @@ class NewsRequest extends FormRequest
             'title.max' => 'The news title cannot exceed 255 characters.',
             'excerpt.required' => 'A short excerpt is required.',
             'content.required' => 'The news content is required.',
-            'image.image' => 'The file must be an image.',
-            'image.mimes' => 'The image must be a jpeg, png, jpg, or gif.',
-            'image.max' => 'The image size cannot exceed 2MB.',
+            'gallery_images.max' => 'You can upload at most '.NewsImageService::MAX_IMAGES.' images per article.',
+            'gallery_images.*.image' => 'Each gallery file must be an image.',
+            'gallery_images.*.mimes' => 'Gallery images must be JPEG, PNG, JPG, GIF, or WebP.',
+            'gallery_images.*.max' => 'Each gallery image cannot exceed 5MB.',
             'slug.unique' => 'This slug is already in use. Please modify it or leave blank for auto-generation.',
             'published_at.date' => 'The published date must be a valid date.',
         ];
     }
-} 
+}

@@ -16,7 +16,7 @@
     <h1 class="text-3xl font-bold mb-6">Edit News Article</h1>
 
     <div class="bg-white rounded-lg shadow p-6">
-        <form action="{{ route('admin.news.update', $news->id) }}" method="POST" enctype="multipart/form-data">
+        <form id="news-form" action="{{ route('admin.news.update', $news->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -47,34 +47,14 @@
 
             <div class="mb-4">
                 <label for="content" class="block text-gray-700 text-sm font-bold mb-2">Content</label>
-                <textarea name="content" id="content" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('content') border-red-500 @enderror" rows="10" required>{{ old('content', $news->content) }}</textarea>
+                <p class="text-gray-500 text-xs mb-2">Use the editor for headings, lists, bold, italic, and hyperlinks.</p>
+                <textarea name="content" id="content" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('content') border-red-500 @enderror" rows="12" required>{{ old('content', $news->content) }}</textarea>
                 @error('content')
                 <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="mb-4">
-                <label for="image" class="block text-gray-700 text-sm font-bold mb-2">Featured Image</label>
-                @if($news->image_path)
-                <div class="mb-2">
-                    <x-responsive-image
-                        :path-small="$news->image_path_small"
-                        :path-medium="$news->image_path_medium"
-                        :path-large="$news->image_path_large"
-                        :path-original="$news->image_path"
-                        :alt="$news->title"
-                        class="w-48 h-auto mb-2"
-                        loading="lazy"
-                    />
-                    <p class="text-sm text-gray-500">Current image</p>
-                </div>
-                @endif
-                <input type="file" name="image" id="image" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('image') border-red-500 @enderror">
-                <p class="text-gray-500 text-xs mt-1">Accepted formats: JPG, PNG, GIF (max: 2MB). Leave blank to keep current image.</p>
-                @error('image')
-                <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
-                @enderror
-            </div>
+            @include('admin.news.partials.gallery-upload', ['news' => $news])
 
             <div class="mb-4">
                 <label for="published_at" class="block text-gray-700 text-sm font-bold mb-2">Publish Date</label>
@@ -105,22 +85,20 @@
 </div>
 @endsection
 
-@section('scripts')
+@include('admin.news.partials.rich-editor')
+
+@push('scripts')
 <script>
-    // Auto-generate slug from title if slug is empty
-    document.getElementById('title').addEventListener('blur', function() {
-        const title = this.value;
+    document.getElementById('title')?.addEventListener('blur', function() {
         const slugField = document.getElementById('slug');
-        
-        if (slugField.value === '') {
-            // Only auto-generate if slug field is empty
-            slugField.value = title
+        if (slugField && slugField.value === '') {
+            slugField.value = this.value
                 .toLowerCase()
-                .replace(/[^\w\s-]/g, '') // Remove special characters
-                .replace(/\s+/g, '-') // Replace spaces with hyphens
-                .replace(/--+/g, '-') // Replace multiple hyphens with single hyphen
-                .trim(); // Trim leading/trailing spaces
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/--+/g, '-')
+                .trim();
         }
     });
 </script>
-@endsection 
+@endpush

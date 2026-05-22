@@ -20,6 +20,55 @@
     .news-content p:last-child {
         margin-bottom: 0;
     }
+
+    .news-content h2,
+    .news-content h3,
+    .news-content h4 {
+        font-weight: 700;
+        color: #1f2937;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .news-content h2 { font-size: 1.5rem; }
+    .news-content h3 { font-size: 1.25rem; }
+    .news-content h4 { font-size: 1.125rem; }
+
+    .news-content ul,
+    .news-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+        color: #4b5563;
+    }
+
+    .news-content ul { list-style-type: disc; }
+    .news-content ol { list-style-type: decimal; }
+
+    .news-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .news-content blockquote {
+        border-left: 4px solid #16a34a;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        color: #6b7280;
+        font-style: italic;
+    }
+
+    .news-content a {
+        color: #16a34a;
+        text-decoration: underline;
+        font-weight: 500;
+    }
+
+    .news-gallery img {
+        transition: transform 0.2s ease;
+    }
+
+    .news-gallery a:hover img {
+        transform: scale(1.02);
+    }
     
     /* Enhanced typography for better readability */
     .news-content {
@@ -86,6 +135,39 @@
                         decoding="async"
                         style="object-position: center 30%;"
                     >
+                </div>
+                @endif
+
+                @php
+                    $galleryImages = $news->relationLoaded('images')
+                        ? $news->images->where('is_cover', false)->values()
+                        : collect();
+                @endphp
+                @if($galleryImages->isNotEmpty())
+                <div class="news-gallery mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach($galleryImages as $galleryImage)
+                    @php
+                        $galleryUrl = ImageHelper::bestUrl([
+                            $galleryImage->image_path_large,
+                            $galleryImage->image_path_medium,
+                            $galleryImage->image_path,
+                        ]);
+                    @endphp
+                    @if($galleryUrl)
+                    <figure class="rounded-lg overflow-hidden bg-gray-100">
+                        @if($galleryImage->link_url)
+                        <a href="{{ $galleryImage->link_url }}" target="_blank" rel="noopener noreferrer" class="block">
+                            <img src="{{ $galleryUrl }}" alt="{{ $galleryImage->caption ?: $news->title }}" class="w-full h-48 object-cover" loading="lazy" decoding="async">
+                        </a>
+                        @else
+                        <img src="{{ $galleryUrl }}" alt="{{ $galleryImage->caption ?: $news->title }}" class="w-full h-48 object-cover" loading="lazy" decoding="async">
+                        @endif
+                        @if($galleryImage->caption)
+                        <figcaption class="text-sm text-gray-600 px-3 py-2">{{ $galleryImage->caption }}</figcaption>
+                        @endif
+                    </figure>
+                    @endif
+                    @endforeach
                 </div>
                 @endif
                 

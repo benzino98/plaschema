@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class News extends Model
 {
@@ -67,5 +68,20 @@ class News extends Model
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(NewsImage::class)->orderBy('sort_order');
+    }
+
+    public function coverImage(): ?NewsImage
+    {
+        return $this->images->firstWhere('is_cover', true) ?? $this->images->first();
+    }
+
+    public function galleryImages()
+    {
+        return $this->images->where('is_cover', false)->values();
     }
 }
