@@ -53,6 +53,78 @@ if (! function_exists('format_news_content')) {
     }
 }
 
+if (! function_exists('split_news_content_after_paragraphs')) {
+    /**
+     * Split formatted HTML so a gallery can be injected after N paragraphs.
+     *
+     * @return array{before: string, after: string}
+     */
+    function split_news_content_after_paragraphs(string $html, int $paragraphCount = 2): array
+    {
+        $html = trim($html);
+
+        if ($html === '' || $paragraphCount < 1) {
+            return ['before' => $html, 'after' => ''];
+        }
+
+        libxml_use_internal_errors(true);
+        $dom = new DOMDocument();
+        $dom->loadHTML(
+            '<?xml encoding="utf-8"><div id="news-content-wrap">'.$html.'</div>',
+            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+        );
+        libxml_clear_errors();
+
+        $wrap = $dom->getElementById('news-content-wrap');
+
+        if (! $wrap) {
+            return ['before' => $html, 'after' => ''];
+        }
+
+        $beforeParts = [];
+        $afterParts = [];
+        $paragraphsSeen = 0;
+        $splitDone = false;
+
+        foreach ($wrap->childNodes as $child) {
+            $chunk = $dom->saveHTML($child);
+
+            if ($child->nodeType !== XML_ELEMENT_NODE && trim($chunk) === '') {
+                continue;
+            }
+
+            if (! $splitDone && strtolower($child->nodeName) === 'p') {
+                $paragraphsSeen++;
+
+                if ($paragraphsSeen <= $paragraphCount) {
+                    $beforeParts[] = $chunk;
+                } else {
+                    $splitDone = true;
+                    $afterParts[] = $chunk;
+                }
+
+                continue;
+            }
+
+            if ($splitDone || $paragraphsSeen >= $paragraphCount) {
+                $splitDone = true;
+                $afterParts[] = $chunk;
+            } else {
+                $beforeParts[] = $chunk;
+            }
+        }
+
+        if ($paragraphsSeen === 0) {
+            return ['before' => $html, 'after' => ''];
+        }
+
+        return [
+            'before' => implode('', $beforeParts),
+            'after' => implode('', $afterParts),
+        ];
+    }
+}
+
 if (!function_exists('safe_log_path')) {
     /**
      * Get the path to the logs directory with fallback to environment variable.
