@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Permission;
 use App\Models\Role;
+use Illuminate\Database\Migrations\Migration;
 
 class AddAnalyticsPermissions extends Migration
 {
@@ -13,7 +11,6 @@ class AddAnalyticsPermissions extends Migration
      */
     public function up(): void
     {
-        // Create analytics permissions
         $permissions = [
             [
                 'name' => 'View analytics dashboard',
@@ -28,21 +25,24 @@ class AddAnalyticsPermissions extends Migration
         ];
 
         foreach ($permissions as $permissionData) {
-            Permission::create($permissionData);
+            Permission::firstOrCreate(
+                ['slug' => $permissionData['slug']],
+                $permissionData
+            );
         }
 
-        // Assign permissions to roles
         $superAdmin = Role::where('slug', 'super-admin')->first();
         $admin = Role::where('slug', 'admin')->first();
+        $analyticsPermissionIds = Permission::where('module', 'analytics')->pluck('id')->toArray();
 
-        if ($superAdmin) {
-            $analyticsPermissions = Permission::where('module', 'analytics')->get();
-            $superAdmin->permissions()->attach($analyticsPermissions->pluck('id')->toArray());
+        if ($superAdmin && $analyticsPermissionIds !== []) {
+            $current = $superAdmin->permissions()->pluck('permissions.id')->toArray();
+            $superAdmin->permissions()->sync(array_values(array_unique(array_merge($current, $analyticsPermissionIds))));
         }
 
-        if ($admin) {
-            $analyticsPermissions = Permission::where('module', 'analytics')->get();
-            $admin->permissions()->attach($analyticsPermissions->pluck('id')->toArray());
+        if ($admin && $analyticsPermissionIds !== []) {
+            $current = $admin->permissions()->pluck('permissions.id')->toArray();
+            $admin->permissions()->sync(array_values(array_unique(array_merge($current, $analyticsPermissionIds))));
         }
     }
 
@@ -51,13 +51,11 @@ class AddAnalyticsPermissions extends Migration
      */
     public function down(): void
     {
-        // Find and delete analytics permissions
         $analyticsPermissions = Permission::where('module', 'analytics')->get();
-        
-        // Detach permissions from roles
+
         foreach ($analyticsPermissions as $permission) {
             $permission->roles()->detach();
             $permission->delete();
         }
     }
-} 
+}
