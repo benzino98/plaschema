@@ -2,6 +2,29 @@
 
 @section('title', 'Frequently Asked Questions')
 
+@push('styles')
+<style>
+    .faq-answer-content a {
+        color: #10B981;
+        text-decoration: underline;
+        font-weight: 500;
+    }
+
+    .faq-answer-content a:hover {
+        color: #059669;
+    }
+
+    .faq-answer-content p {
+        margin-bottom: 0.75rem;
+    }
+
+    .faq-answer-content ul,
+    .faq-answer-content ol {
+        margin: 0.75rem 0 0.75rem 1.25rem;
+    }
+</style>
+@endpush
+
 @section('content')
     <!-- Hero Section -->
     <section class="bg-plaschema-dark text-white py-16 md:py-24">
@@ -36,8 +59,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
-                        <div id="faq-{{ $faq->id }}-content" class="mt-4 text-gray-600 hidden">
-                            {!! nl2br(e($faq->answer)) !!}
+                        <div id="faq-{{ $faq->id }}-content" class="mt-4 text-gray-600 hidden faq-answer-content">
+                            {!! format_faq_answer($faq->answer) !!}
                         </div>
                     </div>
                 @empty

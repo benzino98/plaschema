@@ -252,7 +252,7 @@
                 @forelse($plansFaqs as $faq)
                     <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
                         <h3 class="text-xl font-bold mb-4">{{ $faq->question }}</h3>
-                        <p class="text-gray-600">{!! nl2br(e($faq->answer)) !!}</p>
+                        <div class="text-gray-600 faq-answer-content">{!! format_faq_answer($faq->answer) !!}</div>
                     </div>
                 @empty
                     <div class="bg-white rounded-lg shadow-md p-6 md:p-8">

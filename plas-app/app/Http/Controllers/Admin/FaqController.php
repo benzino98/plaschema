@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\FaqRequest;
 use App\Models\Faq;
+use App\Models\Resource;
 use App\Services\ActivityLogService;
 use App\Services\CacheService;
+use App\Services\FaqContentService;
 use Illuminate\Http\Request;
 
 class FaqController extends Controller
@@ -75,9 +77,9 @@ class FaqController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(FaqContentService $faqContentService)
     {
-        return view('admin.faqs.create');
+        return view('admin.faqs.create', $this->linkBuilderData($faqContentService));
     }
 
     /**
@@ -115,10 +117,11 @@ class FaqController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id, FaqContentService $faqContentService)
     {
         $faq = Faq::findOrFail($id);
-        return view('admin.faqs.edit', compact('faq'));
+
+        return view('admin.faqs.edit', array_merge(compact('faq'), $this->linkBuilderData($faqContentService)));
     }
 
     /**
@@ -258,6 +261,24 @@ class FaqController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'There was a problem performing the bulk action: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Data for the FAQ answer link builder in admin forms.
+     *
+     * @return array<string, mixed>
+     */
+    protected function linkBuilderData(FaqContentService $faqContentService): array
+    {
+        $resources = Resource::query()
+            ->published()
+            ->orderBy('title')
+            ->get(['id', 'title', 'slug']);
+
+        return [
+            'sitePages' => $faqContentService->sitePageOptions(),
+            'downloadableResources' => $resources,
+        ];
     }
 
     /**

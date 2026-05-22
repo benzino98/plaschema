@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Services\FaqContentService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class FaqRequest extends FormRequest
@@ -24,7 +25,7 @@ class FaqRequest extends FormRequest
     {
         return [
             'question' => 'required|max:255',
-            'answer' => 'required',
+            'answer' => 'required|string|max:10000',
             'category' => 'nullable|max:100',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'nullable|boolean',
@@ -46,6 +47,12 @@ class FaqRequest extends FormRequest
         // Convert empty order to 0
         if (empty($this->order)) {
             $this->merge(['order' => 0]);
+        }
+
+        if ($this->has('answer')) {
+            $this->merge([
+                'answer' => app(FaqContentService::class)->sanitizeForStorage((string) $this->answer),
+            ]);
         }
     }
 
