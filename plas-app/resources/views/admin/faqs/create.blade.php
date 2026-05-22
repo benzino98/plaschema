@@ -27,9 +27,12 @@
                 @enderror
             </div>
 
+            @include('admin.faqs.partials.answer-link-builder')
+
             <div class="mb-4">
                 <label for="answer" class="block text-gray-700 text-sm font-bold mb-2">Answer</label>
-                <textarea name="answer" id="answer" rows="6" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('answer') border-red-500 @enderror" required>{{ old('answer') }}</textarea>
+                <p class="text-gray-500 text-xs mb-2">Write your answer below. Use the link tool above to add links to pages, resource downloads, or external sites.</p>
+                <textarea name="answer" id="answer" rows="8" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('answer') border-red-500 @enderror" required>{{ old('answer') }}</textarea>
                 @error('answer')
                 <p class="text-red-500 text-xs italic mt-1">{{ $message }}</p>
                 @enderror

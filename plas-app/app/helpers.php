@@ -25,6 +25,20 @@ if (!function_exists('safe_storage_path')) {
     }
 }
 
+if (! function_exists('format_faq_answer')) {
+    /**
+     * Render a FAQ answer with support for safe links and basic formatting.
+     */
+    function format_faq_answer(?string $answer): string
+    {
+        if ($answer === null || trim($answer) === '') {
+            return '';
+        }
+
+        return app(\App\Services\FaqContentService::class)->formatForDisplay($answer);
+    }
+}
+
 if (!function_exists('safe_log_path')) {
     /**
      * Get the path to the logs directory with fallback to environment variable.
