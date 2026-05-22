@@ -155,20 +155,15 @@ class NewsController extends Controller
         
         // If no valid paragraphs, wrap the entire content in one paragraph
         if (empty($formattedParagraphs)) {
-            return '<p class="mb-4 leading-relaxed text-gray-600">' . $content . '</p>';
+            return '<p class="mb-4 leading-relaxed text-gray-600">' . e($content) . '</p>';
         }
         
-        // Wrap each paragraph in <p> tags with proper styling
-        $formattedParagraphs = array_map(function($paragraph, $index) {
+        // Wrap each paragraph in <p> tags with consistent styling
+        $formattedParagraphs = array_map(function ($paragraph) {
             $paragraph = trim($paragraph);
-            
-            // Add special styling for first paragraph (intro)
-            if ($index === 0) {
-                return '<p class="mb-6 leading-relaxed text-lg text-gray-700 font-medium">' . $paragraph . '</p>';
-            }
-            
-            return '<p class="mb-4 leading-relaxed text-gray-600">' . $paragraph . '</p>';
-        }, $formattedParagraphs, array_keys($formattedParagraphs));
+
+            return '<p class="mb-4 leading-relaxed text-gray-600">' . e($paragraph) . '</p>';
+        }, $formattedParagraphs);
         
         // Join paragraphs with line breaks
         return implode("\n", $formattedParagraphs);

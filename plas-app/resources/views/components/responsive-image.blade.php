@@ -4,22 +4,8 @@
     // Additional attributes that aren't props
     $additionalAttributes = $attributes->except(['pathSmall', 'pathMedium', 'pathLarge', 'pathOriginal', 'alt', 'class', 'loading', 'sizes', 'objectPosition']);
     
-    // Helper function to create correct URL without duplication
-    $formatImageUrl = function($path) {
-        if (!$path) return '';
-        
-        // Check if this is already a full URL
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
-        }
-        
-        // Check if it already has 'storage/' prefix to avoid duplication
-        if (str_starts_with($path, 'storage/') || str_starts_with($path, '/storage/')) {
-            return asset(ltrim($path, '/'));
-        }
-        
-        // Standard path, add storage prefix
-        return asset('storage/' . $path);
+    $formatImageUrl = function ($path) {
+        return \App\Helpers\ImageHelper::url($path) ?? '';
     };
     
     // Generate URLs for lazy loading

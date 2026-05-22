@@ -26,7 +26,7 @@ class NewsObserver
      */
     public function created(News $news): void
     {
-        $this->clearCaches();
+        $this->clearCaches($news);
     }
 
     /**
@@ -34,7 +34,7 @@ class NewsObserver
      */
     public function updated(News $news): void
     {
-        $this->clearCaches();
+        $this->clearCaches($news);
     }
 
     /**
@@ -42,7 +42,7 @@ class NewsObserver
      */
     public function deleted(News $news): void
     {
-        $this->clearCaches();
+        $this->clearCaches($news);
     }
 
     /**
@@ -50,7 +50,7 @@ class NewsObserver
      */
     public function restored(News $news): void
     {
-        $this->clearCaches();
+        $this->clearCaches($news);
     }
 
     /**
@@ -58,17 +58,25 @@ class NewsObserver
      */
     public function forceDeleted(News $news): void
     {
-        $this->clearCaches();
+        $this->clearCaches($news);
     }
 
     /**
      * Clear all news-related caches.
      */
-    private function clearCaches(): void
+    private function clearCaches(?News $news = null): void
     {
         // Clear home page latest news cache
         $this->cacheService->forget('home_latest_news');
-        
+
+        if ($news?->slug) {
+            $this->cacheService->forget("news_article_{$news->slug}");
+        }
+
+        if ($news?->id) {
+            $this->cacheService->forget("related_news_{$news->id}");
+        }
+
         // Clear other news-related caches
         $this->cacheService->clearByTags(['news', 'collections']);
     }

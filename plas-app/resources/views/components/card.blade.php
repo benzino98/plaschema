@@ -12,26 +12,8 @@
 ])
 
 @php
-/**
- * Format image URL if it's not already a full URL
- */
-$formatCardImageUrl = function($path) {
-    if (!$path) {
-        return null;
-    }
-    
-    // If it's already a full URL, return as is
-    if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-        return $path;
-    }
-    
-    // If it already has storage/ prefix, use asset()
-    if (str_starts_with($path, '/storage/') || str_starts_with($path, 'storage/')) {
-        return asset(ltrim($path, '/'));
-    }
-    
-    // Otherwise, assume it's a relative path in storage and prefix it
-    return asset('storage/' . $path);
+$formatCardImageUrl = function ($path) {
+    return \App\Helpers\ImageHelper::url($path);
 };
 @endphp
 
