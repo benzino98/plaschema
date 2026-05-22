@@ -13,13 +13,8 @@
         margin-bottom: 1.5rem;
         text-align: justify;
         text-justify: inter-word;
-    }
-    
-    .news-content p:first-child {
-        font-size: 1.125rem;
-        color: #1f2937;
-        font-weight: 500;
-        margin-bottom: 2rem;
+        font-weight: 400;
+        color: #4b5563;
     }
     
     .news-content p:last-child {
@@ -39,10 +34,6 @@
             margin-bottom: 1.25rem;
         }
         
-        .news-content p:first-child {
-            font-size: 1rem;
-            margin-bottom: 1.5rem;
-        }
     }
 </style>
 @endpush
@@ -77,18 +68,24 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
             <!-- Main Content -->
             <div class="lg:col-span-2">
-                @if($news->image_path)
+                @php
+                    $featuredImageUrl = ImageHelper::bestUrl([
+                        $news->image_path_large,
+                        $news->image_path_medium,
+                        $news->image_path,
+                        $news->image_path_small,
+                    ]);
+                @endphp
+                @if($featuredImageUrl)
                 <div class="mb-8 rounded-lg overflow-hidden" style="aspect-ratio: 16/9;">
-                    <x-responsive-image
-                        :path-small="ImageHelper::formatPath($news->image_path_small)"
-                        :path-medium="ImageHelper::formatPath($news->image_path_medium)"
-                        :path-large="ImageHelper::formatPath($news->image_path_large)"
-                        :path-original="ImageHelper::formatPath($news->image_path)"
-                        :alt="$news->title"
+                    <img
+                        src="{{ $featuredImageUrl }}"
+                        alt="{{ $news->title }}"
                         class="w-full h-full object-cover"
-                        loading="lazy"
-                        objectPosition="center 30%"
-                    />
+                        loading="eager"
+                        decoding="async"
+                        style="object-position: center 30%;"
+                    >
                 </div>
                 @endif
                 

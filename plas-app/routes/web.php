@@ -21,6 +21,18 @@ use App\Http\Controllers\Admin\ResourceController as AdminResourceController;
 use App\Http\Controllers\Admin\ResourceCategoryController as AdminResourceCategoryController;
 use App\Http\Controllers\PlansController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+
+// Serve uploaded public-disk files (reliable on shared hosting without symlinks)
+Route::get('/media/{path}', function (string $path) {
+    $path = ltrim($path, '/');
+
+    if ($path === '' || str_contains($path, '..') || ! Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+
+    return Storage::disk('public')->response($path);
+})->where('path', '.*')->name('media.serve');
 
 // Home Route
 Route::get('/', [HomeController::class, 'index'])->name('home');
