@@ -149,6 +149,7 @@ jobs:
             echo "DB_PASSWORD=" >> deployment/laravel/.env
             echo "" >> deployment/laravel/.env
             echo "BROADCAST_DRIVER=log" >> deployment/laravel/.env
+            echo "CACHE_STORE=file" >> deployment/laravel/.env
             echo "CACHE_DRIVER=file" >> deployment/laravel/.env
             echo "FILESYSTEM_DISK=local" >> deployment/laravel/.env
             echo "QUEUE_CONNECTION=sync" >> deployment/laravel/.env
