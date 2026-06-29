@@ -367,6 +367,30 @@ function bootstrap_laravel() {
 // ===============================================================
 
 // Migration utility
+function run_all_migrations_ordered($kernel, $laravel_root, &$results): void
+{
+    $files = glob($laravel_root . '/database/migrations/*.php') ?: [];
+    sort($files);
+
+    $results[] = 'Running '.count($files).' migrations in filename order...';
+
+    foreach ($files as $file) {
+        $basename = basename($file);
+        $relativePath = 'database/migrations/'.$basename;
+
+        try {
+            $output = [];
+            $kernel->call('migrate', [
+                '--path' => $relativePath,
+                '--force' => true,
+            ], $output);
+            $results[] = '✅ '.$basename;
+        } catch (Exception $e) {
+            $results[] = '⚠️ '.$basename.': '.$e->getMessage();
+        }
+    }
+}
+
 function handle_migrations($action, &$results) {
     global $laravel_root;
     
@@ -392,7 +416,23 @@ function handle_migrations($action, &$results) {
                 $results = array_merge($results, $output);
             } catch (Exception $e) {
                 $results[] = "Error running migrations: " . $e->getMessage();
-                $results[] = "Try using the 'Sequential Migration' option below to resolve dependencies.";
+                $results[] = "Trying ordered migration pass to create missing tables...";
+                try {
+                    list($app, $kernel) = bootstrap_laravel();
+                    run_all_migrations_ordered($kernel, $laravel_root, $results);
+                } catch (Exception $retryException) {
+                    $results[] = "Ordered migration pass failed: " . $retryException->getMessage();
+                }
+            }
+            break;
+
+        case 'run_all_ordered':
+            $results[] = "Running all migrations in order (continues on individual errors)...";
+            try {
+                list($app, $kernel) = bootstrap_laravel();
+                run_all_migrations_ordered($kernel, $laravel_root, $results);
+            } catch (Exception $e) {
+                $results[] = "Error running ordered migrations: " . $e->getMessage();
             }
             break;
             
@@ -485,6 +525,12 @@ function handle_migrations($action, &$results) {
                     '2023_09_15_000001_alter_resources_table_searchable_content.php',
                     '2025_05_13_152941_alter_resources_table_increase_searchable_content_size.php',
                     '2025_05_18_112641_add_show_on_plans_page_to_faqs_table.php',
+                    '2023_08_14_000000_add_analytics_permissions.php',
+                    '2025_05_06_120903_add_translation_permissions.php',
+                    '2025_05_06_120932_add_translation_permission.php',
+                    '2025_05_13_133945_add_resource_permissions.php',
+                    '2025_05_14_120000_ensure_analytics_permissions.php',
+                    '2026_05_22_000001_create_news_images_table.php',
                 ];
                 foreach ($alterFiles as $file) {
                     $migrationPath = $laravel_root . '/database/migrations/' . $file;
@@ -543,6 +589,9 @@ function handle_migrations($action, &$results) {
                 } else {
                     $results[] = "✅ All migrations have been processed!";
                 }
+
+                $results[] = "Running final ordered migration pass for any remaining files...";
+                run_all_migrations_ordered($kernel, $laravel_root, $results);
                 
                 // Count the total tables
                 try {
@@ -667,7 +716,8 @@ function handle_migrations($action, &$results) {
             $results[] = "Available migration actions:";
             $results[] = "- status: Check migration status";
             $results[] = "- run: Run pending migrations";
-            $results[] = "- fix_migration: Fix migration issues and create all 24 tables";
+            $results[] = "- run_all_ordered: Run every migration file in order";
+            $results[] = "- fix_migration: Fix migration issues and create all tables";
             $results[] = "- sequential: Run migrations and seeders in the correct sequence";
             $results[] = "- schema_only: Run only table creation migrations";
             $results[] = "- seed: Run database seeders";
@@ -2523,6 +2573,7 @@ if ($api_mode) {
                 <div class="actions">
                     <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
                     <a href="?utility=migrations&action=fix_migration" class="btn">Fix Migrations (Create All Tables)</a>
+                    <a href="?utility=migrations&action=run_all_ordered" class="btn">Run All Migrations (Ordered)</a>
                     <a href="?utility=migrations&action=sequential" class="btn">Sequential Migration</a>
                     <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
                     <a href="?utility=migrations&action=schema_only" class="btn">Schema Only</a>
@@ -2582,6 +2633,7 @@ if ($api_mode) {
                 <?php if ($utility === 'migrations'): ?>
                     <a href="?utility=migrations&action=status" class="btn">Migration Status</a>
                     <a href="?utility=migrations&action=fix_migration" class="btn">Fix Migrations (Create All Tables)</a>
+                    <a href="?utility=migrations&action=run_all_ordered" class="btn">Run All Migrations (Ordered)</a>
                     <a href="?utility=migrations&action=sequential" class="btn">Sequential Migration</a>
                     <a href="?utility=migrations&action=run" class="btn">Run Migrations</a>
                     <a href="?utility=migrations&action=schema_only" class="btn">Schema Only</a>

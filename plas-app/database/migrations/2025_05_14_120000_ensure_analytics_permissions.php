@@ -5,16 +5,14 @@ use App\Models\Role;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-class AddAnalyticsPermissions extends Migration
+return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         if (! Schema::hasTable('permissions') || ! Schema::hasTable('roles')) {
             return;
         }
+
         $permissions = [
             [
                 'name' => 'View analytics dashboard',
@@ -50,11 +48,12 @@ class AddAnalyticsPermissions extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
+        if (! Schema::hasTable('permissions')) {
+            return;
+        }
+
         $analyticsPermissions = Permission::where('module', 'analytics')->get();
 
         foreach ($analyticsPermissions as $permission) {
@@ -62,4 +61,4 @@ class AddAnalyticsPermissions extends Migration
             $permission->delete();
         }
     }
-}
+};

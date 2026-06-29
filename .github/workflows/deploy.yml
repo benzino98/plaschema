@@ -369,6 +369,19 @@ jobs:
           retryWait: 10000
         continue-on-error: true
 
+      # Run pending database migrations
+      - name: Run database migrations on server
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://plaschema.pl.gov.ng/laravel_utilities.php?utility=migrations&action=run_all_ordered
+          method: "GET"
+          timeout: 300000
+          preventFailureOnNoResponse: true
+          ignoreStatusCodes: "404,500"
+          retry: 2
+          retryWait: 15000
+        continue-on-error: true
+
       # Run post-deployment script
       - name: Run post-deployment script
         uses: fjogeleit/http-request-action@v1
