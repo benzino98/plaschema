@@ -838,27 +838,46 @@ function handle_fix_cache_paths(&$results) {
         create_gitignore($path, $results);
     }
     
-    // Update .env file with CACHE_DRIVER if it exists
+    // Ensure .env uses file-based cache (Laravel 11 reads CACHE_STORE, not only CACHE_DRIVER)
     $env_file = $laravel_root . '/.env';
     if (file_exists($env_file)) {
         $env_content = file_get_contents($env_file);
-        
-        // Check if CACHE_DRIVER already exists in .env
+        $env_updated = false;
+
+        if (strpos($env_content, 'CACHE_STORE=') === false) {
+            if (strpos($env_content, 'CACHE_DRIVER=') !== false) {
+                $env_content = preg_replace(
+                    '/(CACHE_DRIVER=.*?)(\r?\n)/i',
+                    "$1$2CACHE_STORE=file$2",
+                    $env_content
+                );
+            } else {
+                $env_content = preg_replace(
+                    '/(LOG_CHANNEL=.*?)(\r?\n)/i',
+                    "$1$2CACHE_STORE=file$2CACHE_DRIVER=file$2",
+                    $env_content
+                );
+            }
+            $env_updated = true;
+        }
+
         if (strpos($env_content, 'CACHE_DRIVER=') === false) {
-            // Add CACHE_DRIVER after LOG_CHANNEL
             $env_content = preg_replace(
-                '/(LOG_CHANNEL=.*?)(\r?\n)/i',
+                '/(CACHE_STORE=.*?)(\r?\n)/i',
                 "$1$2CACHE_DRIVER=file$2",
                 $env_content
             );
-            
+            $env_updated = true;
+        }
+
+        if ($env_updated) {
             if (file_put_contents($env_file, $env_content)) {
-                $results[] = "✅ Added CACHE_DRIVER to .env file";
+                $results[] = "✅ Set CACHE_STORE=file in .env file";
             } else {
-                $results[] = "❌ Failed to update .env file";
+                $results[] = "❌ Failed to update .env file for cache store";
             }
         } else {
-            $results[] = "ℹ️ CACHE_DRIVER already exists in .env file";
+            $results[] = "ℹ️ CACHE_STORE already exists in .env file";
         }
     } else {
         $results[] = "⚠️ .env file does not exist";
