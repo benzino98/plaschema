@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\HealthcareProvider;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 class ProviderController extends Controller
 {
@@ -39,7 +39,13 @@ class ProviderController extends Controller
      */
     protected function columnExists($column)
     {
-        return Schema::hasColumn('healthcare_providers', $column);
+        return Schema::hasTable('healthcare_providers')
+            && Schema::hasColumn('healthcare_providers', $column);
+    }
+
+    protected function emptyProvidersPaginator(): LengthAwarePaginator
+    {
+        return new LengthAwarePaginator([], 0, 10);
     }
 
     /**
@@ -50,6 +56,18 @@ class ProviderController extends Controller
      */
     public function index(Request $request)
     {
+        if (! Schema::hasTable('healthcare_providers')) {
+            return view('pages.providers', [
+                'providers' => $this->emptyProvidersPaginator(),
+                'categories' => collect(),
+                'cities' => collect(),
+                'currentCategory' => $request->category,
+                'currentCity' => $request->city,
+                'searchQuery' => $request->search,
+                'hasProviderTypeColumn' => false,
+            ]);
+        }
+
         // Check if provider_type column exists
         $hasProviderTypeColumn = $this->columnExists('provider_type');
         
@@ -174,6 +192,10 @@ class ProviderController extends Controller
      */
     public function show($id)
     {
+        if (! Schema::hasTable('healthcare_providers')) {
+            abort(404);
+        }
+
         // Get provider from cache or database
         $cacheKey = $this->cacheService->collectionKey(HealthcareProvider::class, ['id' => $id]);
         $provider = $this->cacheService->remember($cacheKey, $this->cacheTime, function () use ($id) {
